@@ -1,0 +1,65 @@
+{
+  "id": "auto-brakes-01",
+  "trade": "automotive",
+  "title": "Front brake pads and rotors",
+  "setting": "Small independent shop, customer's sedan on the floor, no lift free.",
+  "apprentice": "Jess",
+  "steps": [
+    {
+      "id": 1,
+      "line": "Car's on the ground, cracking the lug nuts loose on both front wheels before I lift it.",
+      "error": null
+    },
+    {
+      "id": 2,
+      "line": "Floor jack under the front pinch weld, lifting it up. Lift's taken, so I'll just work with it on the jack, it's only a pad swap.",
+      "error": {
+        "severity": "critical",
+        "summary": "Working under a car supported only by a jack",
+        "why": "Jacks are for lifting, not holding. Hydraulic jacks can bleed down or slip, and you'll have your hands and head in the wheel well.",
+        "correctAction": "Set jack stands at the manufacturer's support points, lower the car onto them, and chock the rear wheels.",
+        "consequence": "The jack's seal let go while Jess was reaching behind the rotor, and the car dropped onto the rotor with Jess's arm in the wheel well.",
+        "keywords": ["jack stand", "stands", "stand", "support", "jack", "drop", "fall", "crush"]
+      }
+    },
+    {
+      "id": 3,
+      "line": "Wheel's off. Removing the two caliper bolts.",
+      "error": null
+    },
+    {
+      "id": 4,
+      "line": "I'll just let the caliper hang by the brake hose while I swap the rotor.",
+      "error": {
+        "severity": "minor",
+        "summary": "Let the caliper hang by its brake hose",
+        "why": "The weight of the caliper can damage the flexible brake hose internally, which can cause a soft pedal or a pull later.",
+        "correctAction": "Hang the caliper from the spring or strut with a hook or wire so the hose isn't stretched.",
+        "consequence": "The hose collapsed internally, and the car came back pulling to one side under braking.",
+        "keywords": ["hose", "hang", "hook", "wire", "support", "line"]
+      }
+    },
+    {
+      "id": 5,
+      "line": "New rotor's on. Pushing the caliper piston back with a C-clamp so the new pads fit.",
+      "error": null
+    },
+    {
+      "id": 6,
+      "line": "Pads in, caliper back on, torquing the caliper bolts to spec. Same on the other side.",
+      "error": null
+    },
+    {
+      "id": 7,
+      "line": "Wheels on, lugs torqued in a star pattern, car's on the ground. Keys back to the customer, they can just drive it out.",
+      "error": {
+        "severity": "critical",
+        "summary": "Didn't pump the brake pedal before releasing the car",
+        "why": "Pushing the pistons back means the first pedal press goes nearly to the floor until the pads are brought back against the rotors.",
+        "correctAction": "Pump the pedal until it's firm, check the fluid level, and road test before handing the car back.",
+        "consequence": "The customer backed out, pressed the brake, and the pedal went to the floor. They rolled into a parked car.",
+        "keywords": ["pump", "pedal", "firm", "test drive", "road test", "piston", "floor", "fluid"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "hvac-brazing-01",
+  "trade": "hvac",
+  "title": "Braze a replacement section of suction line",
+  "setting": "Residential split system, condenser on the side of the house next to landscaping. Leak found on the suction line.",
+  "apprentice": "Marcus",
+  "steps": [
+    {
+      "id": 1,
+      "line": "Refrigerant's recovered into the recovery tank, gauges are reading zero. Cutting out the leaking section with the tubing cutter.",
+      "error": null
+    },
+    {
+      "id": 2,
+      "line": "Deburring the cut ends and cleaning them up with sand cloth till they're shiny.",
+      "error": null
+    },
+    {
+      "id": 3,
+      "line": "Fitting the new section and coupling in. Gonna skip flowing nitrogen, the bottle's way out in the truck and it's just one joint.",
+      "error": {
+        "severity": "major",
+        "summary": "Brazing without flowing nitrogen",
+        "why": "Without a low nitrogen purge, copper oxidizes inside the pipe and forms scale that flakes off into the system.",
+        "correctAction": "Flow nitrogen at a few CFH through the line while brazing to displace oxygen.",
+        "consequence": "Copper scale broke loose, clogged the TXV screen, and the system came back two weeks later starving for refrigerant.",
+        "keywords": ["nitrogen", "purge", "oxid", "scale", "flow", "inert"]
+      }
+    },
+    {
+      "id": 4,
+      "line": "Unit's tight against the hedge here, kinda dry and crunchy, but I'll be quick. No need for the extinguisher, we're outside.",
+      "error": {
+        "severity": "critical",
+        "summary": "Hot work next to dry combustibles with no extinguisher",
+        "why": "A brazing torch easily ignites dry vegetation. Hot work requires clearing or shielding combustibles and having an extinguisher in reach.",
+        "correctAction": "Clear or wet down the area, put up a heat shield or blanket, keep an extinguisher within reach, and keep a fire watch after.",
+        "consequence": "The hedge caught, the fire ran up to the vinyl siding, and the homeowner's wall had to be replaced. Nobody was hurt this time.",
+        "keywords": ["fire", "extinguisher", "hedge", "bush", "dry", "combustible", "shield", "blanket", "flammable"]
+      }
+    },
+    {
+      "id": 5,
+      "line": "Lighting the oxy-acetylene torch, bringing the fitting up to a dull cherry red.",
+      "error": null
+    },
+    {
+      "id": 6,
+      "line": "Service valve's only a couple inches from this joint. Not gonna wrap it, it's a fast braze.",
+      "error": {
+        "severity": "minor",
+        "summary": "Didn't protect the nearby service valve from heat",
+        "why": "Service valves have internal seals and a Schrader core that heat damages. Joints close to them need a wet rag or heat-sink paste.",
+        "correctAction": "Wrap the valve with a wet rag or apply heat-blocking paste, and remove the Schrader core before brazing.",
+        "consequence": "The valve's seals cooked and it started leaking at the stem, so the job had to be redone with a new valve.",
+        "keywords": ["wet rag", "rag", "heat sink", "valve", "seal", "schrader", "wrap", "paste"]
+      }
+    },
+    {
+      "id": 7,
+      "line": "Feeding the fifteen percent silver rod, letting it draw into the joint all the way around.",
+      "error": null
+    },
+    {
+      "id": 8,
+      "line": "Joint's cooled. Pressure testing with nitrogen and it's holding steady.",
+      "error": null
+    },
+    {
+      "id": 9,
+      "line": "Pulling a vacuum down below five hundred microns and doing a decay test before charging.",
+      "error": null
+    }
+  ]
+}

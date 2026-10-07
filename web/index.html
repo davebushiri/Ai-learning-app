@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stop the Apprentice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Stop the Apprentice</h1>
+    <div class="status">
+      <span id="mode-badge" class="badge">…</span>
+      <span class="score">Score <strong id="score">0</strong></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- SETUP -->
+    <section id="setup-screen" class="screen">
+      <p class="lede">You're the supervisor. Your apprentice talks through the job out loud. When they're about to do something wrong, hit <b>STOP</b> and tell them why.</p>
+      <label>Job
+        <select id="trade-select"></select>
+      </label>
+      <label class="check"><input type="checkbox" id="voice-toggle" checked> Read aloud</label>
+      <label class="check"><input type="checkbox" id="cached-toggle"> Use cached scenario (demo safe)</label>
+      <button id="start-btn" class="primary">Start the job</button>
+      <p id="setup-msg" class="muted"></p>
+    </section>
+
+    <!-- PLAY -->
+    <section id="play-screen" class="screen" hidden>
+      <div class="job-header">
+        <h2 id="job-title"></h2>
+        <p id="job-setting" class="muted"></p>
+      </div>
+      <ol id="transcript" class="transcript" aria-live="polite"></ol>
+      <button id="stop-btn" class="stop" aria-label="Stop the apprentice">STOP</button>
+      <p class="hint muted">Space bar works too</p>
+    </section>
+
+    <!-- EXPLAIN (overlay) -->
+    <section id="explain-panel" class="panel" hidden>
+      <h3>What's wrong, and why?</h3>
+      <textarea id="explain-input" rows="3" placeholder="He didn't test that it was dead…"></textarea>
+      <div class="row">
+        <button id="mic-btn" class="secondary">🎤 Talk</button>
+        <button id="submit-btn" class="primary">Submit</button>
+      </div>
+      <p id="mic-msg" class="muted"></p>
+    </section>
+
+    <!-- FEEDBACK (overlay) -->
+    <section id="feedback-panel" class="panel" hidden>
+      <p id="feedback-verdict" class="verdict"></p>
+      <p id="feedback-text"></p>
+      <p id="feedback-points" class="points"></p>
+      <button id="continue-btn" class="primary">Back to work</button>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results-screen" class="screen" hidden>
+      <h2 id="result-rating"></h2>
+      <p class="big"><span id="result-total"></span> <span class="muted">/ <span id="result-max"></span> possible</span></p>
+      <p id="result-summary" class="muted"></p>
+      <h3 id="missed-heading">What happened next</h3>
+      <ul id="missed-list" class="missed"></ul>
+      <button id="again-btn" class="primary">Run another job</button>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

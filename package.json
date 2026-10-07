@@ -1,0 +1,19 @@
+{
+  "name": "stop-the-apprentice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI apprentice narrates a trade job and makes mistakes; the learner hits STOP and explains what's wrong.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "mock": "MOCK=1 node server/index.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.0"
+  }
+}

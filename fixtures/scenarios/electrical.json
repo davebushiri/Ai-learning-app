@@ -1,0 +1,75 @@
+{
+  "id": "electrical-receptacle-01",
+  "trade": "electrical",
+  "title": "Replace a kitchen countertop receptacle",
+  "setting": "Occupied home. Homeowner says the outlet next to the sink is loose and sparks sometimes.",
+  "apprentice": "Danny",
+  "steps": [
+    {
+      "id": 1,
+      "line": "Alright, outlet by the sink is loose and the homeowner says it sparks sometimes. Easy swap. Heading to the panel in the garage.",
+      "error": null
+    },
+    {
+      "id": 2,
+      "line": "Breaker's labeled kitchen. Flipping it off.",
+      "error": null
+    },
+    {
+      "id": 3,
+      "line": "Kitchen lights just went out, so that's the right one. I'm not gonna bother with the tester, it's clearly dead. Back inside.",
+      "error": {
+        "severity": "critical",
+        "summary": "Didn't verify the circuit was dead",
+        "why": "Lights going out proves nothing about the receptacle. Countertop outlets are usually on separate small-appliance circuits, and panel labels are often wrong.",
+        "correctAction": "Test the tester on a known live source, test the receptacle itself, then test the tester again (live-dead-live) before touching anything.",
+        "consequence": "The outlet was on a different breaker. Danny grabbed the hot conductor while pulling the receptacle out and took 120 volts hand to hand while leaning on a grounded sink.",
+        "keywords": ["test", "tester", "verify", "meter", "live", "hot", "dead", "voltage", "lights"]
+      }
+    },
+    {
+      "id": 4,
+      "line": "Cover plate's off. Backing out the two mounting screws and pulling the receptacle out of the box.",
+      "error": null
+    },
+    {
+      "id": 5,
+      "line": "Grabbed a standard fifteen amp duplex from the truck. It's next to the sink but a regular one's fine, the old one was regular too.",
+      "error": {
+        "severity": "major",
+        "summary": "Installed a non-GFCI receptacle next to a sink",
+        "why": "Kitchen countertop receptacles, especially near a sink, require GFCI protection. Replacing like-for-like doesn't grandfather in a hazard.",
+        "correctAction": "Install a GFCI receptacle, or confirm the circuit is already GFCI-protected upstream, and test it with the test button.",
+        "consequence": "Months later a wet toaster cord faulted to ground. Without GFCI protection the homeowner got a shock that a GFCI would have tripped in milliseconds.",
+        "keywords": ["gfci", "ground fault", "gfi", "sink", "water", "wet", "code"]
+      }
+    },
+    {
+      "id": 6,
+      "line": "Old one was wired with the push-in backstab holes. Doing the same on the new one, way faster than the screws.",
+      "error": {
+        "severity": "minor",
+        "summary": "Used backstab connections on a circuit that was already arcing",
+        "why": "Push-in backstab connections loosen and heat up over time. The sparking the homeowner reported was likely a failing backstab.",
+        "correctAction": "Loop the conductors clockwise around the screw terminals, or use back-wire clamp terminals, and torque them.",
+        "consequence": "The backstab loosened again, and the homeowner called back three weeks later about the same sparking outlet, now scorched.",
+        "keywords": ["backstab", "push-in", "push in", "screw", "terminal", "loose", "arc", "spark"]
+      }
+    },
+    {
+      "id": 7,
+      "line": "Black to brass, white to silver, bare copper to the green ground screw.",
+      "error": null
+    },
+    {
+      "id": 8,
+      "line": "Folding the wires back in, mounting it, cover plate on.",
+      "error": null
+    },
+    {
+      "id": 9,
+      "line": "Breaker back on. Plug-in tester shows two ambers, correct wiring. Done.",
+      "error": null
+    }
+  ]
+}
