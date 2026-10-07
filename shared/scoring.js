@@ -12,7 +12,8 @@ export const RULES = {
   reasoningFloor: 0.5,
   // A wrong explanation on a real mistake still gets partial credit for stopping.
   wrongExplanationMultiplier: 0.25,
-  falseAlarmPenalty: -50,
+  // -75 keeps "hit STOP on every step" from scoring as a good supervisor (see npm run simulate).
+  falseAlarmPenalty: -75,
   missedPenalty: { minor: -25, major: -75, critical: -300 }
 };
 

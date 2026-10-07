@@ -13,7 +13,7 @@ npm run mock      # no API key needed: cached scenarios + keyword grading
 
 To use Claude for real, copy `.env.example` to `.env`, set `ANTHROPIC_API_KEY`, and run `npm start`. The badge in the top bar shows **MOCK** or **LIVE**.
 
-`npm test` runs the scoring and contract tests in under a second. Run it before every push.
+`npm test` runs the scoring, contract, and game-balance tests in under a second. Run it before every push. `npm run simulate` prints a score table for scripted players on every job.
 
 Requires Node 20.12 or newer.
 
@@ -75,13 +75,13 @@ Each person works in their own files, so merges stay clean.
 - [ ] Make sure the whole loop works with the keyboard only (Space to stop, Enter to submit), in case the mic dies.
 
 ### 3. The Ringmaster: game, integration, and demo
-**Owns:** `shared/scoring.js`, `tests/*`, deployment, demo script, pitch
+**Owns:** `shared/scoring.js`, `scripts/simulate.js`, `tests/*`, `DEMO.md`, `PITCH.md`, `render.yaml`
 
-- [ ] Tune `RULES` in `scoring.js`, and keep `npm test` green.
-- [ ] Play every fixture start to finish. File bugs to the owner.
-- [ ] Deploy anywhere that runs Node (e.g. Render or Railway: build `npm install`, start `npm start`, set `ANTHROPIC_API_KEY`).
-- [ ] Write the demo script and pick the scenario. Let a judge be the one who yells STOP.
-- [ ] Write the pitch paragraph: who pays (apprenticeship programs, contractors, insurers) and why "catching someone else's mistake" builds judgment.
+- [x] Tune `RULES` in `scoring.js`. Run `npm run simulate` to see how 9 scripted player types score on every job. `tests/game-balance.test.js` locks in the design rules (spamming STOP never rates well, a missed critical always fails, reacting one step late still counts).
+- [x] Play every fixture start to finish (all three pass with perfect play in Chrome).
+- [ ] Deploy: on Render, New → Blueprint → this repo (uses `render.yaml`), then set `ANTHROPIC_API_KEY`.
+- [ ] Rehearse [`DEMO.md`](DEMO.md) twice, and pick which judge holds the STOP button.
+- [ ] Paste [`PITCH.md`](PITCH.md) into the submission form. Add one real, sourced safety statistic if you have one.
 
 ## Sync points
 

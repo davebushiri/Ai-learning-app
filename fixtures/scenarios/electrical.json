@@ -24,7 +24,17 @@
         "why": "Lights going out proves nothing about the receptacle. Countertop outlets are usually on separate small-appliance circuits, and panel labels are often wrong.",
         "correctAction": "Test the tester on a known live source, test the receptacle itself, then test the tester again (live-dead-live) before touching anything.",
         "consequence": "The outlet was on a different breaker. Danny grabbed the hot conductor while pulling the receptacle out and took 120 volts hand to hand while leaning on a grounded sink.",
-        "keywords": ["test", "tester", "verify", "meter", "live", "hot", "dead", "voltage", "lights"]
+        "keywords": [
+          "test",
+          "tester",
+          "verify",
+          "meter",
+          "live",
+          "hot",
+          "dead",
+          "voltage",
+          "lights"
+        ]
       }
     },
     {
@@ -41,11 +51,24 @@
         "why": "Kitchen countertop receptacles, especially near a sink, require GFCI protection. Replacing like-for-like doesn't grandfather in a hazard.",
         "correctAction": "Install a GFCI receptacle, or confirm the circuit is already GFCI-protected upstream, and test it with the test button.",
         "consequence": "Months later a wet toaster cord faulted to ground. Without GFCI protection the homeowner got a shock that a GFCI would have tripped in milliseconds.",
-        "keywords": ["gfci", "ground fault", "gfi", "sink", "water", "wet", "code"]
+        "keywords": [
+          "gfci",
+          "ground fault",
+          "gfi",
+          "sink",
+          "water",
+          "wet",
+          "code"
+        ]
       }
     },
     {
       "id": 6,
+      "line": "Checking the box while it's open. No cracks, and the wires have plenty of length to work with.",
+      "error": null
+    },
+    {
+      "id": 7,
       "line": "Old one was wired with the push-in backstab holes. Doing the same on the new one, way faster than the screws.",
       "error": {
         "severity": "minor",
@@ -53,21 +76,30 @@
         "why": "Push-in backstab connections loosen and heat up over time. The sparking the homeowner reported was likely a failing backstab.",
         "correctAction": "Loop the conductors clockwise around the screw terminals, or use back-wire clamp terminals, and torque them.",
         "consequence": "The backstab loosened again, and the homeowner called back three weeks later about the same sparking outlet, now scorched.",
-        "keywords": ["backstab", "push-in", "push in", "screw", "terminal", "loose", "arc", "spark"]
+        "keywords": [
+          "backstab",
+          "push-in",
+          "push in",
+          "screw",
+          "terminal",
+          "loose",
+          "arc",
+          "spark"
+        ]
       }
     },
     {
-      "id": 7,
+      "id": 8,
       "line": "Black to brass, white to silver, bare copper to the green ground screw.",
       "error": null
     },
     {
-      "id": 8,
+      "id": 9,
       "line": "Folding the wires back in, mounting it, cover plate on.",
       "error": null
     },
     {
-      "id": 9,
+      "id": 10,
       "line": "Breaker back on. Plug-in tester shows two ambers, correct wiring. Done.",
       "error": null
     }
