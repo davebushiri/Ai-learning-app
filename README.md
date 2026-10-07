@@ -32,8 +32,9 @@ shared/  (imported by both browser and server)            fixtures/scenarios/*.j
 ```
 
 **Demo safety:**
-- If live generation fails or returns an invalid scenario, the server serves the cached fixture.
-- If live grading fails, the keyword grader takes over.
+- If live generation fails, returns an invalid scenario, or takes longer than `SCENARIO_DEADLINE_MS` (40s), the server serves the cached fixture. The browser gives up after 50s and asks for the cached one itself.
+- If live grading fails or takes longer than `GRADE_DEADLINE_MS` (8s), the keyword grader takes over. The browser gives up after 12s and grades locally.
+- Deadlines cover retries and `retry-after` waits, so a rate-limited key can't freeze the stage.
 - The "Use cached scenario" checkbox forces the fixture, so the demo stays the same on every run.
 
 ## The contract (agree on this first, change it only together)
@@ -99,8 +100,14 @@ Each person works in their own files, so merges stay clean.
 |---|---|
 | `.env` `CLAUDE_MODEL` | Model used for both calls (default `claude-opus-5-5`) |
 | `.env` `SCENARIO_EFFORT` / `GRADE_EFFORT` | Thinking effort, `low`…`max` (defaults `medium` / `low`) |
+| `.env` `SCENARIO_DEADLINE_MS` / `GRADE_DEADLINE_MS` | Hard limit per Claude call before falling back (defaults `40000` / `8000`) |
+| `.env` `ANTHROPIC_LOG=info` | SDK logs every request and retry (on top of the server's own `[claude]` / `[api]` lines) |
 | `shared/scoring.js` `RULES` | Points, grace window, penalties |
 | `web/app.js` `STEP_GAP_MS` | Pause between lines |
 | `web/speech.js` | Voice choice and speaking rate |
+
+## Is it really live?
+
+The **LIVE** badge only means a key is set. Every response carries `source` (`live`, `fixture`, `fixture-fallback`, `mock`, `mock-fallback`, or `local-fallback` from the browser). `GET /api/health` also reports `lastLiveOkAt` and `lastLiveError` (time, call, and error, e.g. a 401 from a bad key). The server log prints one `[claude] grade 2140 ms <model> <stop_reason> <in>/<out> tokens <id>` line per Claude call and one `[api] <route> <status> <source> <ms>` line per API request.
 
 The server requests use the Claude API's server-side refusal fallback (`fallbacks: "default"`). If a safety classifier declines a request (hazard narration can trip one), the request is retried on another model instead of failing. Remove it in `server/llm.js` if you don't want it.

@@ -91,3 +91,6 @@ button:disabled { opacity: .5; cursor: default; }
 .missed li.minor { border-left-color: var(--warn); }
 .missed .sev { text-transform: uppercase; font-size: .75rem; font-weight: 700; color: var(--muted); }
 .big .muted { font-size: 1rem; font-weight: 400; }
+
+.source { font-size: .8rem; margin: 2px 0 0; }
+.source.fallback { color: var(--warn); }
