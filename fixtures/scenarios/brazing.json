@@ -24,11 +24,23 @@
         "why": "Without a low nitrogen purge, copper oxidizes inside the pipe and forms scale that flakes off into the system.",
         "correctAction": "Flow nitrogen at a few CFH through the line while brazing to displace oxygen.",
         "consequence": "Copper scale broke loose, clogged the TXV screen, and the system came back two weeks later starving for refrigerant.",
-        "keywords": ["nitrogen", "purge", "oxid", "scale", "flow", "inert"]
+        "keywords": [
+          "nitrogen",
+          "purge",
+          "oxid",
+          "scale",
+          "flow",
+          "inert"
+        ]
       }
     },
     {
       "id": 4,
+      "line": "Coupling's seated all the way on both ends, and the pipe's supported so nothing shifts while I heat it.",
+      "error": null
+    },
+    {
+      "id": 5,
       "line": "Unit's tight against the hedge here, kinda dry and crunchy, but I'll be quick. No need for the extinguisher, we're outside.",
       "error": {
         "severity": "critical",
@@ -36,16 +48,26 @@
         "why": "A brazing torch easily ignites dry vegetation. Hot work requires clearing or shielding combustibles and having an extinguisher in reach.",
         "correctAction": "Clear or wet down the area, put up a heat shield or blanket, keep an extinguisher within reach, and keep a fire watch after.",
         "consequence": "The hedge caught, the fire ran up to the vinyl siding, and the homeowner's wall had to be replaced. Nobody was hurt this time.",
-        "keywords": ["fire", "extinguisher", "hedge", "bush", "dry", "combustible", "shield", "blanket", "flammable"]
+        "keywords": [
+          "fire",
+          "extinguisher",
+          "hedge",
+          "bush",
+          "dry",
+          "combustible",
+          "shield",
+          "blanket",
+          "flammable"
+        ]
       }
     },
     {
-      "id": 5,
+      "id": 6,
       "line": "Lighting the oxy-acetylene torch, bringing the fitting up to a dull cherry red.",
       "error": null
     },
     {
-      "id": 6,
+      "id": 7,
       "line": "Service valve's only a couple inches from this joint. Not gonna wrap it, it's a fast braze.",
       "error": {
         "severity": "minor",
@@ -53,21 +75,30 @@
         "why": "Service valves have internal seals and a Schrader core that heat damages. Joints close to them need a wet rag or heat-sink paste.",
         "correctAction": "Wrap the valve with a wet rag or apply heat-blocking paste, and remove the Schrader core before brazing.",
         "consequence": "The valve's seals cooked and it started leaking at the stem, so the job had to be redone with a new valve.",
-        "keywords": ["wet rag", "rag", "heat sink", "valve", "seal", "schrader", "wrap", "paste"]
+        "keywords": [
+          "wet rag",
+          "rag",
+          "heat sink",
+          "valve",
+          "seal",
+          "schrader",
+          "wrap",
+          "paste"
+        ]
       }
     },
     {
-      "id": 7,
+      "id": 8,
       "line": "Feeding the fifteen percent silver rod, letting it draw into the joint all the way around.",
       "error": null
     },
     {
-      "id": 8,
+      "id": 9,
       "line": "Joint's cooled. Pressure testing with nitrogen and it's holding steady.",
       "error": null
     },
     {
-      "id": 9,
+      "id": 10,
       "line": "Pulling a vacuum down below five hundred microns and doing a decay test before charging.",
       "error": null
     }

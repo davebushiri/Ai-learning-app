@@ -12,7 +12,7 @@ Narration
 
 Mistakes
 - Include 3 mistakes: exactly one "critical" (could seriously injure or kill someone), one "major" (code violation, property damage, or comeback), and one "minor" (poor workmanship or bad habit).
-- No mistake in the first two steps. Spread them out, and don't always put the critical one last.
+- No mistake in the first two steps or the last step. Put at least one correct step between any two mistakes, so a learner who reacts a moment late still catches the right one. Don't always put the critical one last.
 - Each mistake must be detectable from the narration alone: the apprentice must say or clearly imply the thing they are doing wrong or skipping. Never telegraph it ("oops", "I know I shouldn't").
 - Mistakes must be ones that really happen on jobsites and that a journeyman would catch, grounded in standard practice and code (for example NEC, OSHA, manufacturer specs). Do not invent rules.
 

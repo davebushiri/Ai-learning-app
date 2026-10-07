@@ -1,0 +1,15 @@
+# One-click deploy on Render: New -> Blueprint -> pick this repo.
+# Set ANTHROPIC_API_KEY in the dashboard when prompted (leave it unset to deploy in MOCK mode).
+services:
+  - type: web
+    name: stop-the-apprentice
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: NODE_VERSION
+        value: "22"

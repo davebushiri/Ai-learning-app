@@ -19,7 +19,16 @@
         "why": "Jacks are for lifting, not holding. Hydraulic jacks can bleed down or slip, and you'll have your hands and head in the wheel well.",
         "correctAction": "Set jack stands at the manufacturer's support points, lower the car onto them, and chock the rear wheels.",
         "consequence": "The jack's seal let go while Jess was reaching behind the rotor, and the car dropped onto the rotor with Jess's arm in the wheel well.",
-        "keywords": ["jack stand", "stands", "stand", "support", "jack", "drop", "fall", "crush"]
+        "keywords": [
+          "jack stand",
+          "stands",
+          "stand",
+          "support",
+          "jack",
+          "drop",
+          "fall",
+          "crush"
+        ]
       }
     },
     {
@@ -36,7 +45,14 @@
         "why": "The weight of the caliper can damage the flexible brake hose internally, which can cause a soft pedal or a pull later.",
         "correctAction": "Hang the caliper from the spring or strut with a hook or wire so the hose isn't stretched.",
         "consequence": "The hose collapsed internally, and the car came back pulling to one side under braking.",
-        "keywords": ["hose", "hang", "hook", "wire", "support", "line"]
+        "keywords": [
+          "hose",
+          "hang",
+          "hook",
+          "wire",
+          "support",
+          "line"
+        ]
       }
     },
     {
@@ -58,8 +74,22 @@
         "why": "Pushing the pistons back means the first pedal press goes nearly to the floor until the pads are brought back against the rotors.",
         "correctAction": "Pump the pedal until it's firm, check the fluid level, and road test before handing the car back.",
         "consequence": "The customer backed out, pressed the brake, and the pedal went to the floor. They rolled into a parked car.",
-        "keywords": ["pump", "pedal", "firm", "test drive", "road test", "piston", "floor", "fluid"]
+        "keywords": [
+          "pump",
+          "pedal",
+          "firm",
+          "test drive",
+          "road test",
+          "piston",
+          "floor",
+          "fluid"
+        ]
       }
+    },
+    {
+      "id": 8,
+      "line": "Writing up the work order. Pads, rotors, and I'll note the rear brakes have about half their life left.",
+      "error": null
     }
   ]
 }
