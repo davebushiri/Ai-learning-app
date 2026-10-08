@@ -8,6 +8,7 @@
 | [`user-flow.md`](user-flow.md) | Every screen and path a learner takes, from first launch to daily use |
 | [`ai-flow.md`](ai-flow.md) | Every AI pipeline: inputs, outputs, quality gates, fallbacks, models |
 | [`data-and-evidence.md`](data-and-evidence.md) | Event model, data model, metrics, and how we prove learning happens |
+| [`voice-first.md`](voice-first.md) | Voice-first sessions, text mode, speech stack, privacy, and the voice vs. text A/B test |
 | [`decisions.md`](decisions.md) | Architecture decisions already made, and the open questions |
 
 ## The one idea
@@ -42,7 +43,8 @@ These come from the research and apply to every component.
 5. **Degrade, never stall.** Every AI call has a deadline and a non-AI fallback. This carries over from the hackathon hardening.
 6. **Event-sourced truth.** What the learner did is stored as an append-only event log. Mastery, schedules and dashboards are derived from it and can be recomputed when a formula changes.
 7. **Measure learning, not just engagement.** Delayed probes on trained versus held-out mistake types are built in from day one. See [`data-and-evidence.md`](data-and-evidence.md).
-8. **Designed for focus.** 3–6 minute sessions, a decision every 30–40 seconds, resume anywhere, a daily plan instead of a menu, and weekly goals instead of punishing streaks.
+8. **Voice-first.** Sessions are playable hands-free: say "stop" and explain out loud. Text mode is always available.
+9. **Designed for focus.** 3–6 minute sessions, a decision every 30–40 seconds, resume anywhere, a daily plan instead of a menu, and weekly goals instead of punishing streaks.
 
 ## System at a glance
 

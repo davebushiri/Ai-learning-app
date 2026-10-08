@@ -30,6 +30,7 @@ Events follow the shape of **xAPI statements** (actor, verb, object, plus result
 | Session and card lifecycle | `planned`, `started`, `step-shown`, `resumed`, `abandoned`, `completed` |
 | Answers and grades | `stopped`, `explained`, `graded`, `chose` (next move) |
 | Feedback and probes | `flagged`, `rated-fairness`, `probe-answered` |
+| Voice and mode | `mode-assigned`, `mode-switched`, `mode-fallback`, `voice-command`, `stt-corrected` |
 | Subject changes | `subject-built`, `subject-edited`, `map-change-accepted` |
 
 **Outcomes on a mistake:** `caught`, `caught_late`, `wrong_reason`, `missed`, plus `false_alarm` on a clean step and `clean_pass` when a no-mistake run is correctly left alone.
@@ -96,6 +97,7 @@ CREATE TABLE daily_plan (learner_id TEXT, date TEXT, plan_json TEXT, PRIMARY KEY
 | | Verifier precision and recall | On a hand-labelled set of cards | Whether the gate itself works |
 | | Grader agreement | Cohen's κ between the grader and your "was this fair?" answers, plus periodic manual relabels | Whether grades can be trusted for mastery |
 | | Fallback rate | Share of grades and cards served by fallback | Reliability |
+| **Mode (A/B)** | Voice vs. text: completion, catch rate, explanation quality | Randomized per session; see [`voice-first.md`](voice-first.md#6-the-ab-test-voice-vs-text) | Whether voice-first helps you |
 | **Cost** | Cost per session, per learner-month | From `llm_call` | Viability |
 
 ## 4. Proving it works with one learner: the built-in experiment

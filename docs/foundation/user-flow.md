@@ -35,6 +35,7 @@ flowchart TD
 | 3 | **Building your subject** | Progress shown in plain words: "Mapping the main skills… Collecting common mistakes… Checking them…" (about 30–60 s, streamed). | AI pipeline SB-1 to SB-5. See [`ai-flow.md`](ai-flow.md#subject-builder). |
 | 4 | **Review your subject map** | A list of 8–20 competencies grouped into areas, each showing 3–6 mistake types. You can rename, remove, reorder, or add "I already know this". Anything low-confidence is marked "AI unsure". | Keeps you in the loop. Research shows LLMs extract concepts well but prerequisite links poorly, so you have the final say. |
 | 5 | **Starting check** | 5–8 quick **probe** cards: short scenarios or "which is the mistake?" questions spread across the map. No feedback during the check; the summary comes at the end. | Gives a baseline per area (cold-start mastery) and the first data point for measuring learning. |
+| 5b | **Voice check** | Allow the mic, say "stop" once, and hear a sample. If speech isn't available, the app explains and sets text mode. | Voice-first needs a working mic before the first real session. |
 | 6 | **Plan your habit** | "When will you study?" with an anchor ("after morning coffee") and a weekly goal (for example 4 sessions of 5 minutes), plus an optional reminder. | Implementation intentions (d ≈ .65), weekly rather than daily goals, and a 66-day framing. |
 | 7 | **Today** | The first plan is ready. | |
 
@@ -55,7 +56,7 @@ sequenceDiagram
   U->>SE: Start
   loop each card (about 90 s – 3 min)
     SE-->>U: Narration, step by step
-    U->>SE: STOP + explanation (voice or text)
+    U->>SE: "Stop!" + spoken explanation (or text mode)
     SE->>AS: Grade
     AS-->>SE: Verdict, why, what to do instead
     SE-->>U: Feedback (+ next-move question in stage 3+)
@@ -75,7 +76,7 @@ sequenceDiagram
 - **Length:** 3–6 minutes by default, sized from your measured attention span. "One more?" is offered once.
 - **Resumable:** saved after every step. Reopening shows a "previously…" recap of the last two lines.
 - **Pacing:** a decision point at least every 30–40 seconds. Guided cards ask "Would you let them continue?"
-- **Input:** voice or text, both always available. A hands-free "stop" hotword is optional.
+- **Input: voice-first.** Say "stop", explain out loud, and answer next-move options by voice. Every session can be played hands-free and eyes-free. **Text mode** is always one tap away. See [`voice-first.md`](voice-first.md).
 
 ## 4. Card types
 

@@ -17,13 +17,14 @@
 | D11 | **Vanilla JS, Node, SQLite, PWA; no framework** | Solo founder; the existing stack works and is tested | React/Next rewrite |
 | D12 | **Server owns cards; the client never sees answers before grading** | Integrity of the data and the evidence | Client-held scenarios (the hackathon shortcut) |
 | D13 | **The trades scenarios become `packs/demo-trades`,** used in onboarding | Keeps the hackathon work and teaches the mechanic in 30 s | Dropping them |
+| D14 | **Voice-first sessions, with full text mode as an option. A within-person A/B test (randomized per session) checks the choice** | Hands-free active listening suits focus; speaking the explanation is the self-explanation step. The test confirms it for you. | Text-first with voice optional |
 
 ## Open questions
 
 | # | Question | Options | How we'll decide |
 |---|---|---|---|
 | Q1 | Which 2 pilot subjects? | One you can judge plus one new to you (recommended) | You pick after Phase F1 |
-| Q2 | Voice-first or text-first in sessions? | Text by default with voice optional (recommended), or voice-first | A/B test on completion and time-to-STOP during the pilot |
+| ~~Q2~~ | ~~Voice-first or text-first?~~ | Resolved: voice-first, see D14 | |
 | Q3 | Grader model | Opus 5.5 low effort vs. Haiku 5.5 vs. Sonnet 5.5 | Eval set plus κ on your fairness ratings; cost per session |
 | Q4 | How long is the evidence window? | 2, 3 or 4 weeks before crossover | Probe volume: we need about 20 or more probe items per arm |
 | Q5 | Do probes use the same format as practice, or exam-style multiple choice? | Same format (cleaner comparison) vs. MCQ (transfer) | Probably both, tagged |

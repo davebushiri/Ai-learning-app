@@ -6,7 +6,7 @@
 |---|---|---|---|
 | **Experience** | Screens (`web/screens/*`) | Onboarding, Today, Session, Results, Progress, Subjects | API only |
 | | `web/state.js` | Session state rebuilt from events; resume | Offline queue |
-| | `web/speech.js` | TTS, speech-to-text, STOP hotword | — |
+| | `web/speech/` | Voice-first layer: TTS, speech-to-text, "stop" hotword with barge-in, voice commands, earcons, automatic fallback to text. One interface, swappable providers. See [`voice-first.md`](voice-first.md). | — |
 | | Offline queue | Buffers events when offline and syncs later | API |
 | **API** | `server/routes/*` | Thin HTTP handlers: validate input, call a service, shape the output | Services |
 | **Engine services** | Subject Builder | Goal → subject pack (AI flow SB) | AI gateway, Packs |
