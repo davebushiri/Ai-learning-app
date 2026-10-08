@@ -22,18 +22,21 @@
         "severity": "critical",
         "summary": "Didn't verify the circuit was dead",
         "why": "Lights going out proves nothing about the receptacle. Countertop outlets are usually on separate small-appliance circuits, and panel labels are often wrong.",
-        "correctAction": "Test the tester on a known live source, test the receptacle itself, then test the tester again (live-dead-live) before touching anything.",
+        "correctAction": "Test the tester on a known live outlet, test the receptacle itself, then test the tester again before touching anything. That's live, dead, live.",
         "consequence": "The outlet was on a different breaker. Danny grabbed the hot conductor while pulling the receptacle out and took 120 volts hand to hand while leaning on a grounded sink.",
         "keywords": [
           "test",
-          "tester",
+          "check",
           "verify",
+          "make sure",
           "meter",
           "live",
           "hot",
-          "dead",
-          "voltage",
-          "lights"
+          "power",
+          "off",
+          "breaker",
+          "circuit",
+          "different"
         ]
       }
     },
@@ -44,21 +47,26 @@
     },
     {
       "id": 5,
-      "line": "Grabbed a standard fifteen amp duplex from the truck. It's next to the sink but a regular one's fine, the old one was regular too.",
+      "line": "Grabbed a fifteen amp tamper-resistant duplex from the truck. It's next to the sink but a regular one's fine, the old one was regular too.",
       "error": {
         "severity": "major",
         "summary": "Installed a non-GFCI receptacle next to a sink",
-        "why": "Kitchen countertop receptacles, especially near a sink, require GFCI protection. Replacing like-for-like doesn't grandfather in a hazard.",
-        "correctAction": "Install a GFCI receptacle, or confirm the circuit is already GFCI-protected upstream, and test it with the test button.",
+        "why": "Kitchen countertop receptacles, especially near a sink, need ground fault protection. Replacing like for like doesn't grandfather in a hazard. The fifteen amp rating is fine on a twenty amp kitchen circuit, the protection is what's missing.",
+        "correctAction": "Install a GFCI receptacle, or confirm the circuit is already protected by a GFCI upstream, then push the test button to make sure it trips.",
         "consequence": "Months later a wet toaster cord faulted to ground. Without GFCI protection the homeowner got a shock that a GFCI would have tripped in milliseconds.",
         "keywords": [
           "gfci",
-          "ground fault",
           "gfi",
-          "sink",
+          "ground fault",
           "water",
           "wet",
-          "code"
+          "shock",
+          "trip",
+          "test button",
+          "reset",
+          "code",
+          "protect",
+          "sink"
         ]
       }
     },
@@ -73,18 +81,22 @@
       "error": {
         "severity": "minor",
         "summary": "Used backstab connections on a circuit that was already arcing",
-        "why": "Push-in backstab connections loosen and heat up over time. The sparking the homeowner reported was likely a failing backstab.",
-        "correctAction": "Loop the conductors clockwise around the screw terminals, or use back-wire clamp terminals, and torque them.",
+        "why": "Push-in backstab connections loosen and heat up over time, and they're only listed for fourteen gauge wire. Kitchen counter circuits are usually twelve gauge. The sparking the homeowner reported was likely a failing backstab.",
+        "correctAction": "Wrap each wire clockwise around the side screw terminals, or use the back-wire clamp terminals, and tighten them down to the right torque.",
         "consequence": "The backstab loosened again, and the homeowner called back three weeks later about the same sparking outlet, now scorched.",
         "keywords": [
-          "backstab",
-          "push-in",
-          "push in",
-          "screw",
           "terminal",
+          "wrap",
+          "loop",
+          "clamp",
           "loose",
+          "heat",
           "arc",
-          "spark"
+          "spark",
+          "burn",
+          "gauge",
+          "twelve",
+          "torque"
         ]
       }
     },

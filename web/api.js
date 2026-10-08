@@ -10,10 +10,16 @@ async function getJson(url, options) {
 export const fetchHealth = () => getJson('/api/health');
 export const fetchTrades = () => getJson('/api/trades');
 
-export function fetchScenario(trade, { cached = false } = {}) {
-  const qs = new URLSearchParams({ trade });
-  if (cached) qs.set('source', 'fixture');
-  return getJson(`/api/scenario?${qs}`);
+export async function fetchScenario(trade, { cached = false } = {}) {
+  const fixtureUrl = `/api/scenario?${new URLSearchParams({ trade, source: 'fixture' })}`;
+  if (cached) return getJson(fixtureUrl);
+  // Never leave "Start the job" hanging on a slow or broken live generation.
+  try {
+    return await getJson(`/api/scenario?${new URLSearchParams({ trade })}`, { signal: AbortSignal.timeout(50000) });
+  } catch (err) {
+    console.warn('live scenario failed, using cached one', err);
+    return { ...(await getJson(fixtureUrl)), source: 'fixture-fallback' };
+  }
 }
 
 // Never let a grading failure stall the demo: fall back to the keyword grader.
@@ -22,7 +28,8 @@ export async function gradeStop({ scenario, stepId, errorStepId, explanation }) 
     return await getJson('/api/grade', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenario, stepId, errorStepId, explanation })
+      body: JSON.stringify({ scenario, stepId, errorStepId, explanation }),
+      signal: AbortSignal.timeout(12000)
     });
   } catch (err) {
     console.warn('grade failed, using local keyword grader', err);

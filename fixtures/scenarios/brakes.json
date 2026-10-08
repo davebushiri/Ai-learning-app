@@ -2,7 +2,7 @@
   "id": "auto-brakes-01",
   "trade": "automotive",
   "title": "Front brake pads and rotors",
-  "setting": "Small independent shop, customer's sedan on the floor, no lift free.",
+  "setting": "Small independent shop, customer's sedan on the floor, and the only lift is taken.",
   "apprentice": "Jess",
   "steps": [
     {
@@ -12,83 +12,102 @@
     },
     {
       "id": 2,
-      "line": "Floor jack under the front pinch weld, lifting it up. Lift's taken, so I'll just work with it on the jack, it's only a pad swap.",
-      "error": {
-        "severity": "critical",
-        "summary": "Working under a car supported only by a jack",
-        "why": "Jacks are for lifting, not holding. Hydraulic jacks can bleed down or slip, and you'll have your hands and head in the wheel well.",
-        "correctAction": "Set jack stands at the manufacturer's support points, lower the car onto them, and chock the rear wheels.",
-        "consequence": "The jack's seal let go while Jess was reaching behind the rotor, and the car dropped onto the rotor with Jess's arm in the wheel well.",
-        "keywords": [
-          "jack stand",
-          "stands",
-          "stand",
-          "support",
-          "jack",
-          "drop",
-          "fall",
-          "crush"
-        ]
-      }
+      "line": "Rear wheels are chocked. Floor jack under the front center jacking point, lifting till both front tires are off the ground.",
+      "error": null
     },
     {
       "id": 3,
-      "line": "Wheel's off. Removing the two caliper bolts.",
-      "error": null
-    },
-    {
-      "id": 4,
-      "line": "I'll just let the caliper hang by the brake hose while I swap the rotor.",
+      "line": "Lift's taken, so I'll just leave it sitting up on the floor jack. I'm only gonna be in the wheel wells for a few minutes.",
       "error": {
-        "severity": "minor",
-        "summary": "Let the caliper hang by its brake hose",
-        "why": "The weight of the caliper can damage the flexible brake hose internally, which can cause a soft pedal or a pull later.",
-        "correctAction": "Hang the caliper from the spring or strut with a hook or wire so the hose isn't stretched.",
-        "consequence": "The hose collapsed internally, and the car came back pulling to one side under braking.",
+        "severity": "critical",
+        "summary": "Left the car sitting on just the floor jack",
+        "why": "A jack is for lifting, not holding. A hydraulic jack can bleed down or roll, and Jess's hands and arms are in the wheel well the whole job.",
+        "correctAction": "Set jack stands under the factory support points, lower the car onto them, and leave the jack snugged up underneath as a backup.",
+        "consequence": "The jack bled down while Jess was reaching behind the rotor, and the car came down on Jess's arm. Broken arm and a trip to the emergency room.",
         "keywords": [
-          "hose",
-          "hang",
-          "hook",
-          "wire",
+          "jack stand",
+          "stands",
           "support",
-          "line"
+          "hold",
+          "slip",
+          "fall",
+          "drop",
+          "crush",
+          "collapse",
+          "bleed down",
+          "leak down",
+          "safety"
         ]
       }
     },
     {
-      "id": 5,
-      "line": "New rotor's on. Pushing the caliper piston back with a C-clamp so the new pads fit.",
+      "id": 4,
+      "line": "Wheels off. Pulling the caliper bolts and the bracket bolts on the driver side.",
       "error": null
     },
     {
+      "id": 5,
+      "line": "Letting the caliper hang off the brake hose while I swap the rotor.",
+      "error": {
+        "severity": "minor",
+        "summary": "Let the caliper hang by its brake hose",
+        "why": "The weight of the caliper can tear the rubber hose on the inside, even when it looks fine from the outside. That can cause a soft pedal or a brake that drags.",
+        "correctAction": "Hang the caliper from the spring or strut with a hook, a bungee, or a piece of wire so there's no strain on the hose.",
+        "consequence": "The hose tore on the inside and started trapping pressure. The customer came back a month later with that brake dragging and the car pulling to one side.",
+        "keywords": [
+          "hook",
+          "wire",
+          "bungee",
+          "tie",
+          "support",
+          "strain",
+          "stretch",
+          "weight",
+          "damage",
+          "tear",
+          "kink",
+          "brake line"
+        ]
+      }
+    },
+    {
       "id": 6,
-      "line": "Pads in, caliper back on, torquing the caliper bolts to spec. Same on the other side.",
+      "line": "Wire brushed the rust off the hub, new rotor's on and wiped down with brake cleaner. Fluid level's checked, now pushing the piston back with the old pad and a C clamp.",
       "error": null
     },
     {
       "id": 7,
-      "line": "Wheels on, lugs torqued in a star pattern, car's on the ground. Keys back to the customer, they can just drive it out.",
+      "line": "Pads in with new clips, slide pins greased, caliper's back on. Running the bracket bolts in with the impact, a couple good hits and they're tight.",
       "error": {
-        "severity": "critical",
-        "summary": "Didn't pump the brake pedal before releasing the car",
-        "why": "Pushing the pistons back means the first pedal press goes nearly to the floor until the pads are brought back against the rotors.",
-        "correctAction": "Pump the pedal until it's firm, check the fluid level, and road test before handing the car back.",
-        "consequence": "The customer backed out, pressed the brake, and the pedal went to the floor. They rolled into a parked car.",
+        "severity": "major",
+        "summary": "Ran the bracket bolts in with an impact, no torque",
+        "why": "Caliper bracket bolts hold the whole brake to the knuckle and have a torque spec. An impact gun can strip the threads in the knuckle or leave the bolts loose, and there's no way to know which.",
+        "correctAction": "Start the bolts by hand, then tighten them with a torque wrench to the factory spec, with thread locker if the manual calls for it.",
+        "consequence": "One bracket bolt backed out over the next few weeks. The customer came back with a grinding clunk when braking, and the shop paid for a new rotor, a bracket, and a chewed up wheel.",
         "keywords": [
-          "pump",
-          "pedal",
-          "firm",
-          "test drive",
-          "road test",
-          "piston",
-          "floor",
-          "fluid"
+          "torque",
+          "wrench",
+          "spec",
+          "manual",
+          "look up",
+          "number",
+          "foot pounds",
+          "strip",
+          "thread",
+          "loose",
+          "back out",
+          "overtighten"
         ]
       }
     },
     {
       "id": 8,
-      "line": "Writing up the work order. Pads, rotors, and I'll note the rear brakes have about half their life left.",
+      "line": "Same on the other side. Wheels on, lugs run down snug, car's back on the ground, then torquing the lugs in a star pattern.",
+      "error": null
+    },
+    {
+      "id": 9,
+      "line": "Pumping the pedal till it's firm, checking the fluid level again, and taking it around the block to bed in the pads before I hand the keys back.",
       "error": null
     }
   ]

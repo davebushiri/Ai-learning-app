@@ -11,25 +11,47 @@ Narration
 - Correct steps must be genuinely correct practice. Do not put subtle mistakes in steps you mark as error: null.
 
 Mistakes
-- Include 3 mistakes: exactly one "critical" (could seriously injure or kill someone), one "major" (code violation, property damage, or comeback), and one "minor" (poor workmanship or bad habit).
-- No mistake in the first two steps or the last step. Put at least one correct step between any two mistakes, so a learner who reacts a moment late still catches the right one. Don't always put the critical one last.
-- Each mistake must be detectable from the narration alone: the apprentice must say or clearly imply the thing they are doing wrong or skipping. Never telegraph it ("oops", "I know I shouldn't").
-- Mistakes must be ones that really happen on jobsites and that a journeyman would catch, grounded in standard practice and code (for example NEC, OSHA, manufacturer specs). Do not invent rules.
+- Include exactly 3 mistakes: one "critical" (could seriously injure or kill someone), one "major" (code violation, property damage, or a comeback), and one "minor" (poor workmanship or a bad habit).
+- Steps are numbered 1 to N in order. No mistake in steps 1 or 2 or in the last step, and at least one correct step between any two mistakes, so a learner who reacts one line late still catches the right one. Vary where the critical one falls.
+- The learner should need trade knowledge, not wording cues, to spot a mistake. Vary how mistakes show up: at most one may be an announced shortcut ("not gonna bother with..."). The others should be stated matter-of-factly as what the apprentice is doing: a wrong part or material, a wrong order, a wrong method, or an important action plainly missing from a step that describes that part of the job.
+- Give at least two correct steps a shortcut-sounding or casual tone that is actually fine, so tone alone doesn't give anything away.
+- Each mistake must be detectable from the narration alone by someone who knows the trade, and grounded in standard practice and code (for example NEC, OSHA, EPA, manufacturer specs). Do not invent rules.
+- Correct steps must be ones a journeyman would not stop: either include the normally required actions for that part of the job (for example replacing a filter drier after opening a refrigerant system) or keep the step narrow enough that nothing required is missing from it.
 
 Mistake fields
 - summary: under 10 words.
 - why: one or two plain-language sentences.
-- correctAction: what a journeyman would do instead.
-- consequence: one or two sentences describing what realistically happened next because nobody stopped it. Serious but not gory.
-- keywords: 5 to 9 lowercase words or short phrases a learner might say when correctly explaining the mistake.
+- correctAction: what a journeyman would do instead, one sentence, in words that read well aloud (no parentheses or abbreviations).
+- consequence: one or two sentences describing what realistically happened next because nobody stopped it. Serious but not gory, and matching the severity.
+- keywords: 8 to 12 lowercase words, word stems, or short phrases a learner might say out loud when correctly explaining the mistake, including casual and slang wording (for example "juice", "nitro", "fire bottle"). Prefer stems that cover word forms ("purg" for purge and purging). Do not include words that appear in that step's narration line.
 
 Other fields
 - id: a short kebab-case id. trade: the trade id you were given. apprentice: a first name. setting: one sentence about the jobsite.`;
 
-export function scenarioUserPrompt(tradeId, trade) {
+const APPRENTICE_NAMES = ['Danny', 'Marcus', 'Jess', 'Priya', 'Luis', 'Tasha', 'Kenji', 'Ava', 'Rob', 'Mo'];
+const DEFAULT_TWISTS = [
+  'the homeowner is watching and chatty',
+  'it is getting dark',
+  'a part from the truck is the wrong size',
+  'the previous work was done by a handyman'
+];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+// Opus 5.5 rejects sampling params, so variety comes from the input: a random
+// critical hazard area (trade.criticalHints, else one of trade.hazardHints), jobsite twist, and apprentice name on every call.
+// recentSummaries (optional) lists mistakes from recent scenarios to avoid.
+export function scenarioUserPrompt(tradeId, trade, recentSummaries = []) {
+  const hints = (Array.isArray(trade.criticalHints) && trade.criticalHints.length
+    ? trade.criticalHints
+    : String(trade.hazardHints ?? '').split(',')).map(s => String(s).trim()).filter(Boolean);
+  const twists = Array.isArray(trade.twists) && trade.twists.length ? trade.twists : DEFAULT_TWISTS;
+  const recent = Array.isArray(recentSummaries) ? recentSummaries.filter(s => typeof s === 'string' && s.trim()) : [];
   return `Trade id: ${tradeId}
 Job: ${trade.brief}
 Hazard areas to draw mistakes from: ${trade.hazardHints}
-
-Write a fresh scenario. Vary the details from a typical textbook example.`;
+Draw the critical mistake from: ${hints.length ? pick(hints) : 'any of the hazard areas'}
+Jobsite twist to include: ${pick(twists)}
+Apprentice name: ${pick(APPRENTICE_NAMES)}
+${recent.length ? `Do not reuse these mistakes from recent scenarios: ${recent.join('; ')}\n` : ''}
+Write a fresh scenario.`;
 }

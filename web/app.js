@@ -29,6 +29,16 @@ const VERDICT_LABEL = {
   false_alarm: 'False alarm'
 };
 
+// Where the scenario and the grade came from, so a fallback is visible on stage.
+// Unknown values from the server are shown as-is.
+const SCENARIO_SOURCE = { live: 'live', fixture: 'cached', 'fixture-fallback': 'cached (fallback)' };
+const GRADE_SOURCE = {
+  live: 'Claude',
+  mock: 'keyword grader',
+  'mock-fallback': 'keyword grader (fallback)',
+  'local-fallback': 'offline grader (fallback)'
+};
+
 // ---------- setup ----------
 
 async function init() {
@@ -56,6 +66,7 @@ async function startJob() {
     game.voice = $('voice-toggle').checked;
     $('job-title').textContent = scenario.title;
     $('job-setting').textContent = scenario.setting;
+    showSource('job-source', $('job-title'), 'Scenario', SCENARIO_SOURCE, scenario.source);
     $('transcript').innerHTML = '';
     updateScore();
     show('play-screen');
@@ -173,12 +184,15 @@ function showFeedback(result, points, mistake) {
   game.phase = 'feedback';
   $('feedback-verdict').textContent = VERDICT_LABEL[result.verdict] ?? result.verdict;
   $('feedback-verdict').className = `verdict ${result.verdict}`;
-  const fix = mistake && result.verdict !== 'correct' ? ` ${mistake.correctAction}` : '';
-  $('feedback-text').textContent = result.feedback + fix;
+  // Build the text once so what's spoken matches what's shown.
+  const fix = mistake && result.verdict !== 'correct' ? ` Here's the right way: ${mistake.correctAction}` : '';
+  const text = result.feedback + fix;
+  $('feedback-text').textContent = text;
+  showSource('feedback-source', $('feedback-text'), 'Graded by', GRADE_SOURCE, result.source);
   $('feedback-points').textContent = `${points >= 0 ? '+' : ''}${points} points`;
   $('feedback-panel').hidden = false;
   $('continue-btn').focus();
-  speak(result.feedback, { enabled: game.voice });
+  speak(text, { enabled: game.voice });
 }
 
 function resumeJob() {
@@ -221,6 +235,20 @@ function show(screenId) {
   $('explain-panel').hidden = true;
   $('feedback-panel').hidden = true;
   $('stop-btn').disabled = false;
+}
+
+// Small muted line placed after `anchor`; created on first use.
+function showSource(id, anchor, label, names, source) {
+  let el = $(id);
+  if (!el) {
+    el = document.createElement('p');
+    el.id = id;
+    anchor.after(el);
+  }
+  const name = Object.hasOwn(names, source) ? names[source] : source;
+  el.hidden = !source;
+  el.textContent = `${label}: ${name}`;
+  el.className = `source muted${String(name).includes('fallback') ? ' fallback' : ''}`;
 }
 
 function markLine(stepId, cls) {
