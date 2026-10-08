@@ -1,0 +1,40 @@
+{
+  "id": "product-interview-01",
+  "trade": "product",
+  "title": "A discovery interview that turns into a pitch",
+  "setting": "A B2B scheduling software company. A junior product manager runs a discovery call with a clinic office manager about missed appointments.",
+  "apprentice": "Sam",
+  "steps": [
+    { "id": 1, "line": "Customer call with Rosa, a clinic office manager, in ten minutes. My goal is to learn how they handle patients who don't show up today.", "error": null },
+    { "id": 2, "line": "Rosa joined. I asked if it's ok to record and she said yes. I told her there are no wrong answers and I'm not selling anything.", "error": null },
+    { "id": 3, "line": "First question: walk me through the last time a patient didn't show up, start to finish.", "error": null },
+    { "id": 4, "line": "She said they call people the day before. I'm just gonna let the silence hang for a bit and see what else comes out.", "error": null },
+    { "id": 5, "line": "Next question: wouldn't it be way easier if the system just texted patients automatically?", "error": {
+      "severity": "minor",
+      "summary": "Asked a leading question",
+      "why": "The question suggests the answer and the solution, so people tend to agree to be polite. It tells you about your idea, not about her problem.",
+      "correctAction": "Ask an open question about her current process, like what happens after a reminder call goes unanswered.",
+      "consequence": "Rosa said sure, that sounds nice. It sounded like interest, but the team later learned it told them nothing about what the clinic actually needed.",
+      "keywords": ["leading", "bias", "suggest", "yes or no", "open ended", "open question", "polite", "solution", "put words", "her problem"]
+    } },
+    { "id": 6, "line": "She mentioned the front desk tracks no-shows in a paper binder. I asked how often they look at it and what they do with it.", "error": null },
+    { "id": 7, "line": "I pulled up our mockup of automatic text reminders and asked if she'd use it. She said definitely, so that's validated.", "error": {
+      "severity": "major",
+      "summary": "Treated a polite yes as validation",
+      "why": "Asking someone if they would use something in the future gets polite, hopeful answers. Real evidence is past behavior or a commitment like time, money or an introduction, and pitching the mockup ends the discovery.",
+      "correctAction": "Keep the conversation on her past behavior and what it costs her, and save solution testing for later, looking for a real commitment rather than a compliment.",
+      "consequence": "The team counted the call as proof. Months later they found most clinics already got text reminders free from their phone system, and the real pain was rebooking the empty slot.",
+      "keywords": ["hypothetical", "future", "would you", "compliment", "commitment", "evidence", "behavior", "pitch", "bias", "not validat", "one person", "assum"]
+    } },
+    { "id": 8, "line": "I wrapped up, thanked her, and asked if she could introduce me to another office manager she knows.", "error": null },
+    { "id": 9, "line": "Pinging the sales lead: text reminders are confirmed for Q3, go ahead and tell prospects it's coming.", "error": {
+      "severity": "critical",
+      "summary": "Made a roadmap commitment from one interview",
+      "why": "One interview isn't enough evidence to commit, and telling sales to promise a date turns a guess into an outside commitment. If it changes, deals and trust go with it.",
+      "correctAction": "Synthesize this with more interviews, share it as a hypothesis with the confidence level, and only commit dates through the normal roadmap process.",
+      "consequence": "Sales closed two deals on the promise. The team later found the idea solved the wrong problem, cut it, and both customers asked for refunds.",
+      "keywords": ["one interview", "sample", "evidence", "commit", "promise", "date", "roadmap", "hypothes", "too early", "outcome", "more research", "synthes"]
+    } },
+    { "id": 10, "line": "Writing up my notes in our research repository and tagging the quotes by theme.", "error": null }
+  ]
+}

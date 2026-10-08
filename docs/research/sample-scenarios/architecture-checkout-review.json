@@ -1,0 +1,40 @@
+{
+  "id": "architecture-checkout-01",
+  "trade": "architecture",
+  "title": "Splitting checkout out of the monolith",
+  "setting": "Design review at an online store ahead of the holiday peak. A mid-level engineer presents the plan to move checkout into its own service.",
+  "apprentice": "Kai",
+  "steps": [
+    { "id": 1, "line": "Design review for pulling checkout out of the monolith into its own service, so we can deploy it independently during the holiday rush.", "error": null },
+    { "id": 2, "line": "Requirements: about fifty orders a second at peak, the payment provider is external, and we can never lose or double up an order.", "error": null },
+    { "id": 3, "line": "Checkout gets its own Postgres database. It's boring, well understood, and the team already knows it.", "error": null },
+    { "id": 4, "line": "For stock levels, checkout will read the inventory team's tables straight from their database. It saves us building an API.", "error": {
+      "severity": "major",
+      "summary": "New service reads another team's database directly",
+      "why": "Sharing a database couples the two services through the schema, so the inventory team can't change their tables without breaking checkout. You lose the independent deployment that was the whole goal.",
+      "correctAction": "Get stock levels through an inventory API or from inventory events kept in checkout's own store, so each service owns its own data.",
+      "consequence": "The inventory team renamed a column in a routine migration. Checkout started failing every order and nobody knew why for forty minutes.",
+      "keywords": ["shared", "coupl", "schema", "own data", "contract", "interface", "boundar", "encapsulat", "independen", "migration", "break"]
+    } },
+    { "id": 5, "line": "Order confirmed events go onto a queue, so email and analytics can consume them at their own pace.", "error": null },
+    { "id": 6, "line": "If the payment provider times out, checkout retries the charge up to three times with exponential backoff and jitter.", "error": {
+      "severity": "critical",
+      "summary": "Retrying payments without an idempotency key",
+      "why": "A timeout doesn't mean the charge failed. It may have gone through and only the response was lost, so retrying without an idempotency key can charge the customer two or three times.",
+      "correctAction": "Send a unique idempotency key with every charge and reuse it on each retry, so the provider processes the payment once, and reconcile anything left uncertain.",
+      "consequence": "On the first peak night the provider slowed down and thousands of customers were charged more than once. Support was flooded, refunds took days, and the card network flagged the store.",
+      "keywords": ["idempoten", "duplicate", "double", "twice", "charged again", "unique key", "dedup", "exactly once", "same request", "already went through", "reconcil"]
+    } },
+    { "id": 7, "line": "Every outbound call gets a timeout and a circuit breaker, so a slow provider can't tie up all our threads.", "error": null },
+    { "id": 8, "line": "We picked this over full event sourcing. Everyone in the room agrees, so no need to write it up, we'll remember why.", "error": {
+      "severity": "minor",
+      "summary": "Didn't record the decision in an ADR",
+      "why": "Without a short architecture decision record, the context, the options considered and the trade-offs get lost. The next team either repeats the debate or undoes the decision without knowing why it was made.",
+      "correctAction": "Write a one-page architecture decision record with the context, the options, the decision and its consequences, and link it from the service docs.",
+      "consequence": "A year later a new lead proposed event sourcing again, and the team spent a month on the same debate because nobody could find the reasons.",
+      "keywords": ["adr", "decision record", "document", "context", "trade off", "rationale", "option", "history", "memory", "record"]
+    } },
+    { "id": 9, "line": "Rollout is behind a feature flag, ten percent of traffic first, with dashboards on error rate and payment latency.", "error": null },
+    { "id": 10, "line": "The runbook covers how to flip the flag back and who's on call during the holiday freeze.", "error": null }
+  ]
+}

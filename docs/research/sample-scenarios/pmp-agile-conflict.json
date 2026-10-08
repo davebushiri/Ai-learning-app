@@ -1,0 +1,40 @@
+{
+  "id": "pmp-agile-conflict-01",
+  "trade": "pmp",
+  "title": "Two stakeholders, one sprint",
+  "setting": "Hybrid program at an online retailer. The checkout team works in two-week sprints with a product owner, and payment code must pass a security review to stay compliant with card industry rules.",
+  "apprentice": "Priya",
+  "steps": [
+    { "id": 1, "line": "Sprint four of the checkout redesign, two days in. I'm the team lead and I facilitate our ceremonies. Leo is our product owner.", "error": null },
+    { "id": 2, "line": "Marcus, the sales VP, says his biggest client needs saved carts by month end. Dana, the compliance lead, says the fraud rule update has to come first.", "error": null },
+    { "id": 3, "line": "Their email thread is getting heated. I'm not replying tonight. I'll grab each of them for fifteen minutes tomorrow and just listen.", "error": null },
+    { "id": 4, "line": "Talked to both. Marcus has a renewal at stake, Dana has an audit finding with a deadline. Both concerns are real.", "error": null },
+    { "id": 5, "line": "Marcus is more senior, so I go into the backlog tool and move saved carts above the fraud rules myself.", "error": {
+      "severity": "major",
+      "summary": "Team lead reprioritized the backlog by seniority",
+      "why": "Ordering the backlog is the product owner's call, based on value and risk, not on who is more senior. A servant leader facilitates the decision instead of making it, and picking a side by rank makes the conflict worse.",
+      "correctAction": "Bring both concerns to Leo, the product owner, with the facts, and facilitate a conversation where he decides based on value, risk and the audit deadline.",
+      "consequence": "Dana found out from the board, escalated to the CIO, and Leo had to undo the change in front of the whole team. Priya lost credibility with both stakeholders.",
+      "keywords": ["product owner", "owner", "prioritiz", "decide", "decision", "rank", "servant", "facilitat", "value", "not her call", "authority"]
+    } },
+    { "id": 6, "line": "I set up a session with Marcus, Dana and Leo, with the product goal and the audit date up on the screen.", "error": null },
+    { "id": 7, "line": "Leo decides fraud rules first and saved carts at the top of next sprint. The meeting ran long, so no written recap, everyone was in the room.", "error": {
+      "severity": "minor",
+      "summary": "No record of the decision or the reasons",
+      "why": "Without a short written summary and an updated backlog, people remember the decision differently, and the people who weren't there never hear the reasons.",
+      "correctAction": "Send a short recap of the decision and the reasoning to everyone involved, and update the backlog and roadmap so it's visible.",
+      "consequence": "Two weeks later Marcus told his client saved carts were already done, because he remembered the meeting differently.",
+      "keywords": ["document", "record", "summar", "notes", "write", "email", "follow up", "communicat", "transparen", "visible", "radiat"]
+    } },
+    { "id": 8, "line": "I let Marcus know I'll walk his account manager through the plan so the client hears a consistent message.", "error": null },
+    { "id": 9, "line": "To keep Marcus happy I add saved carts into this sprint too, and tell the team we'll skip the security review on it just this once.", "error": {
+      "severity": "critical",
+      "summary": "Added scope mid-sprint and dropped the security review",
+      "why": "It overrides the product owner's decision, puts the sprint goal at risk, and lowers the definition of done on payment code. Skipping the security review on card data puts compliance and customers at risk.",
+      "correctAction": "Protect the sprint goal and the definition of done, keep saved carts for next sprint as decided, and if Marcus pushes, escalate to the product owner and sponsor.",
+      "consequence": "Saved carts shipped with a flaw that exposed stored card tokens. It was found in the compliance audit, the retailer had to report it, and the fraud rule work missed its deadline anyway.",
+      "keywords": ["definition of done", "vulnerab", "complian", "sprint goal", "scope", "mid sprint", "quality", "card", "breach", "overtime", "burnout", "product owner"]
+    } },
+    { "id": 10, "line": "In Friday's retro I'll raise how we handle conflicting requests, so we have a working agreement for next time.", "error": null }
+  ]
+}

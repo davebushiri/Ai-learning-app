@@ -1,0 +1,40 @@
+{
+  "id": "pmp-scope-change-01",
+  "trade": "pmp",
+  "title": "A hallway scope change on a validated warehouse system",
+  "setting": "Predictive rollout of a warehouse management system for a pharmaceutical distributor, three weeks before go-live, in a regulated environment where every system change must be validated.",
+  "apprentice": "Jordan",
+  "steps": [
+    { "id": 1, "line": "Morning on the warehouse system rollout. We're in execution, the scope, schedule and cost baselines were signed off in March, and our sponsor is Elena from operations.", "error": null },
+    { "id": 2, "line": "The regional director, Raj, catches me in the hallway. He wants barcode scanning for customer returns added before go-live. He says it's tiny.", "error": null },
+    { "id": 3, "line": "I tell Raj no problem, consider it done, it'll be in the release.", "error": {
+      "severity": "minor",
+      "summary": "Promised a change before it was assessed or approved",
+      "why": "A project manager doesn't have the authority to accept a change to a signed-off baseline on the spot. Saying yes sets an expectation the change control board may not meet, and it damages trust when it slips.",
+      "correctAction": "Thank Raj, explain that the request will go through change control, and tell him when he can expect an answer.",
+      "consequence": "The board deferred the feature to phase two, and Raj told his managers he had been promised it. He stopped trusting Jordan's commitments for the rest of the project.",
+      "keywords": ["promis", "commit", "expectation", "authority", "approv", "change control", "board", "can't say yes", "overpromis", "trust"]
+    } },
+    { "id": 4, "line": "I log his request in the change log with his name, the date, and his reason, so it doesn't only live in a hallway conversation.", "error": null },
+    { "id": 5, "line": "Quick message to Sam, our dev lead, just asking for a rough guess on effort. I make it clear it's a question, not a go-ahead.", "error": null },
+    { "id": 6, "line": "On the change request form I write impact: minimal, about two days of development, based on Sam's guess, and send it to the change control board.", "error": {
+      "severity": "major",
+      "summary": "Submitted a change with no real impact analysis",
+      "why": "One developer's estimate is not an impact assessment. The board needs the effect on schedule, cost, quality, risk, validation testing, training and other stakeholders before it can make an informed decision.",
+      "correctAction": "Assess the change against every baseline with the team, including validation and retesting effort, list options and risks, and then submit it to the board.",
+      "consequence": "The board approved it on the strength of two days. Validation retesting alone took two weeks, and go-live slipped past the contract milestone.",
+      "keywords": ["downstream", "analy", "assess", "schedule", "cost", "risk", "quality", "test", "validat", "option", "baseline", "estimate"]
+    } },
+    { "id": 7, "line": "Go-live is three weeks out, so while the board reviews it I check the risk register and the test plan dates.", "error": null },
+    { "id": 8, "line": "The board meets Thursday, but Raj keeps pinging me, so I tell Sam to start building it now so we don't lose the days.", "error": {
+      "severity": "critical",
+      "summary": "Team started building an unapproved change",
+      "why": "Work on a change must wait for approval through integrated change control. In a validated, regulated system, unapproved and undocumented changes put the whole release and the company's compliance at risk.",
+      "correctAction": "Keep the team on the approved scope, tell Raj when the board meets, and escalate to the sponsor if the decision really can't wait.",
+      "consequence": "The returns code went into the validated build without a record of approval. The quality audit before go-live found it, the release was blocked, and the regulator's inspection logged a finding against the company.",
+      "keywords": ["unapproved", "approv", "wait", "change control", "ccb", "scope creep", "gold plat", "audit", "complian", "regulat", "escalat", "process"]
+    } },
+    { "id": 9, "line": "I add Raj to the stakeholder register as high interest in the returns process and plan to update him personally.", "error": null },
+    { "id": 10, "line": "Once the board decides, I'll update the baselines and plans, and tell Raj, Elena and the team what was decided.", "error": null }
+  ]
+}
