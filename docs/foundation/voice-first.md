@@ -54,7 +54,7 @@ stateDiagram-v2
 | Part | v1 (free, in the browser) | Later (better quality) | Notes |
 |---|---|---|---|
 | Speech out (TTS) | Browser `speechSynthesis` (already used) | Pre-rendered neural TTS per card, cached as audio files | Cards are generated before playback, so narration can be rendered **once** and cached, keeping cost per play near zero. Feedback stays live TTS. |
-| Speech in (STT) | Browser Web Speech API (already used) | Server-side STT for browsers without it | Web Speech works in Chrome and Edge. Safari support is limited and varies by version, so check on the devices you use. |
+| Speech in (STT) | Browser Web Speech API (already used), with **vad-web** (Silero) for end-of-speech | **On-device Whisper or Moonshine via Transformers.js** for Safari, offline or privacy mode | Web Speech works in Chrome and Edge. Safari support is limited and varies by version, so check on the devices you use. |
 | Hotword "stop" | Continuous recognition during narration, matching "stop" or "hold on" | On-device keyword spotting | Must fire within about 300 ms to feel instant; measured as `stopLatencyMs` |
 | Voice commands | Small fixed grammar: stop, done, change that, send, repeat, slower, faster, pause, resume, skip, continue, A–D, end session | — | Commands are matched before anything is treated as an explanation |
 

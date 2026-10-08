@@ -9,6 +9,7 @@
 | [`ai-flow.md`](ai-flow.md) | Every AI pipeline: inputs, outputs, quality gates, fallbacks, models |
 | [`data-and-evidence.md`](data-and-evidence.md) | Event model, data model, metrics, and how we prove learning happens |
 | [`voice-first.md`](voice-first.md) | Voice-first sessions, text mode, speech stack, privacy, and the voice vs. text A/B test |
+| [`open-source-landscape.md`](open-source-landscape.md) | What we reuse (ts-fsrs, vad-web, Transformers.js, Kokoro, promptfoo, Workbox…), what we study (OATutor, DeepTutor, Oppia), and what stays ours |
 | [`decisions.md`](decisions.md) | Architecture decisions already made, and the open questions |
 
 ## The one idea

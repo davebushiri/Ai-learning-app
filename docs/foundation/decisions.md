@@ -18,6 +18,7 @@
 | D12 | **Server owns cards; the client never sees answers before grading** | Integrity of the data and the evidence | Client-held scenarios (the hackathon shortcut) |
 | D13 | **The trades scenarios become `packs/demo-trades`,** used in onboarding | Keeps the hackathon work and teaches the mechanic in 30 s | Dropping them |
 | D14 | **Voice-first sessions, with full text mode as an option. A within-person A/B test (randomized per session) checks the choice** | Hands-free active listening suits focus; speaking the explanation is the self-explanation step. The test confirms it for you. | Text-first with voice optional |
+| D15 | **Assemble, don't rebuild.** Use permissive open-source libraries for everything except the differentiators. No GPL/AGPL code in our codebase. See [`open-source-landscape.md`](open-source-landscape.md). | The core loop exists nowhere; everything around it does | Building speech, scheduling and evals ourselves |
 
 ## Open questions
 

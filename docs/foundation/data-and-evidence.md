@@ -79,7 +79,7 @@ CREATE TABLE daily_plan (learner_id TEXT, date TEXT, plan_json TEXT, PRIMARY KEY
 - **Low-confidence grades** count at half weight.
 - **False alarms** feed calibration, not mastery.
 - **Difficulty targeting:** pick cards where P(catch) ≈ 0.7.
-- **Review queue:** Leitner boxes with intervals of 1, 3, 7, 16 and 35 days, later FSRS.
+- **Review queue:** FSRS via `ts-fsrs` (MIT). Each mistake type is an FSRS card, and outcomes map to ratings: missed → Again, wrong reason → Hard, caught late → Good, caught → Easy.
 
 ## 3. Metrics
 

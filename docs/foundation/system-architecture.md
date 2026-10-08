@@ -64,7 +64,7 @@ The current files map onto this layout directly:
 | Backend | Node 22+, plain `http`, small dispatcher | Already built and tested. No framework lock-in. | Multiple developers or many routes |
 | Storage | SQLite (`node:sqlite`, wrapped in `db.js` so `better-sqlite3` can replace it) | One file, zero ops, full-text search (FTS5), easy backup | Multi-device sync, then libSQL/Turso; other users, then Postgres |
 | AI | Claude via `@anthropic-ai/sdk`, structured outputs, routing per pipeline | Existing integration and hardening | — |
-| Spaced repetition | Leitner boxes, then FSRS via `ts-fsrs` | Leitner is about 20 lines. FSRS is open source and benchmarked best on recall prediction in its community benchmark (SuperMemo disputes the metric). | After about 4 weeks of review data |
+| Spaced repetition | **FSRS via `ts-fsrs` from day one** (MIT); see open-source-landscape.md | Leitner is about 20 lines. FSRS is open source and benchmarked best on recall prediction in its community benchmark (SuperMemo disputes the metric). | After about 4 weeks of review data |
 | Auth | None on localhost; an owner passphrase when deployed; passkeys later | Personal use first | A second user |
 | Hosting | Local first; Render for remote use (`render.yaml` exists) | — | — |
 
