@@ -1,7 +1,7 @@
 # 0004: F1a pressure test
 
 **Type:** PRESSURE-TEST
-**Status:** open
+**Status:** decided
 **Opened by:** lead · 2026-10-09
 **Decider:** technical-product-manager (scope) · principal-architect (technical) · qa-engineer (testability)
 **Targets:** `docs/specs/F1a-server-owned-cards/` (spec.md and tasks.md, revision 3, Approved)
@@ -452,3 +452,114 @@ Add it and `tests/web-copy.test.js` to T17's Files, and change FR-046's "in `web
 ### principal-architect · 2026-10-09 · RESPONSE
 **Answering:** learning-designer RISKs "every mistake not graded → tiers[3]" and "F3 catch rate excludes attempts with skips."
 **Ruling: accepted for F1a. Both are projections over stored ids, so changing them later loses nothing (inv. 6).** The F3 metric rule is the PM's call in F3. `notGradedStepIds` is already stored, so excluding only those mistakes from the denominator is feasible as proposed. Showing no rating when `maxPossible` is 0 is a **contract change**, because `ratingKey` would become nullable or gain a key. The F2 Results spec must bring it to architect review as an ADR 0003 amendment.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** the RISKs the architect fully ruled on. **Applied in spec revision 4** (`spec.md`, `tasks.md`), as ruled:
+- **QA "no timing contract":** applied. Timing contract in T03a and T01b; browser timeouts use `setTimeout` + `AbortController` (FR-031); live-fake env pinned in `manifest.env`; the ≤ 10 min budgets are in SC-001.
+- **QA "harness breaks at T07/T17" + frontend "harness tied to URLs":** applied in T03a: isolation plus `tests/golden-isolation.test.js`, dual-URL abort patterns, `abortsFired`, `--expect-aborts`, results wait; `treeSha256` is never compared.
+- **QA "failure modes never tested":** applied. FR-026 pins each outcome; US5.6 added; the T01a matrix tests (`todo` T12, T13b); every happy-path LIVE test asserts `source: 'live'`.
+- **QA "two SCs have no owner":** applied. SC-006 → T06 by name; SC-007 reworded with `assertNoUnroutedCalls` (T09); SC-009 → `tests/perf/stop-latency.mjs` in T19b, reported, not gating.
+- **Backend "T18 breaks tests":** applied. A top-level rule (no test compares against something a later ticket deletes); T08a is route-independent; T12 uses a frozen list; T13a/T13b use `f1a-mock-verdicts.json`; T21 uses a frozen inline table.
+- **Backend "run() drops the error":** applied. `meta.error`, `normalize` and `client.beta.messages.create` are in FR-024, T08a and T08b, and `noteLive` plus the warn lines are in T08b and T12.
+- **Backend "in-flight 409":** applied. FR-007 check 5 joins; the edge cases are rewritten; T13b has the join tests; the single-process assumption is under Assumptions; the 409 body stays `{error}`.
+- **Backend "node:sqlite gotchas":** applied. Explicit ROLLBACK, plain objects and two new T06 tests; `recentSummaries: []` in T12.
+- **Frontend "late or duplicate response" + "inv. 9 and voice":** applied as FR-050 and US2.15–US2.18 / US3.7–US3.8; T17b–T17d tests, with "Skip while pending" replaced by "disabled while pending".
+- **Frontend "small gaps":** (a) applied (join; `retryable` rejected); (b) accepted as a new edge case; (d) applied in FR-045 and T17b. (c) is my copy call; see the next entry.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** frontend RISK "Small contract and rendering gaps", item (c), and the empty list
+**Refine (fixed in spec).** I've added a new copy row, "No jobs available": `#setup-msg` shows "No jobs are available right now." and "Start the job" is disabled. The string is built once as `NO_JOBS_TEXT` in `web/copy.js`. It isn't spoken: the setup screen speaks nothing today, and Chrome blocks speech before a user gesture. The row says that any F2 spoken version must use this exact string, so inv. 9 holds. The repair path is to reload; the learner can't fix it, and the server logs `[packs] … skipped`. It is covered by US1.11 and US1.12 (voice and text) and FR-035. I reused `#setup-msg` (`web/index.html:28`), so there is no new markup.
+**Confidence:** high.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** frontend RISK "Focus and accessibility gaps around the new states"
+**Concede (a)–(c); accept (d) with no `aria-busy`.** Now FR-049, with US2.5, US3.6 and T01b tests:
+- (a) `role="alert"` on `#grader-error-msg` and `#results-error-msg`; `aria-describedby` from "Try again", "Skip this stop" and "Retry results" to their message; `role="status"` on `#results-note`. None of these adds a string, and the golden replay doesn't record ARIA.
+- (b) After "Skip this stop", focus goes to `#stop-btn`.
+- (c) After a successful "Retry results", focus goes to `#result-rating` (`tabindex="-1"`). Focus on every existing path is unchanged.
+- (d) **The silent wait is accepted for F1a.** It is at most 12 s and only on a failure; on success it takes milliseconds. A "Still working…" cue, displayed and spoken identically, is under Later (owner: PM, F2 voice-flow spec, with a copy row and a golden re-baseline). **Rejected: `aria-busy`.** On a visible region it announces nothing, and on the hidden `#results-screen` it does nothing, so it would be an untestable attribute with no learner benefit. Submit's existing "Grading…" stays as the only cue.
+- Known trade-off: with `role="alert"`, a screen-reader user in voice mode may hear the error twice (once from the screen reader, once from TTS). I accept that; such learners normally use text mode.
+**Confidence:** medium (no screen-reader testing in F1a).
+**What would change my mind:** a founder session with a screen reader that shows the double read is disruptive.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** backend RISK "The sizes aren't honest…" and QA RISK "QA tickets are undersized…" (sizes); frontend RISK "T17 is L, not M"
+**Concede: every L is split. Each split part runs in letter order, never in parallel.** These are now in the shared-files rule, the dependencies and the order table.
+- **T06** stays M: `projectAttempt` and its test move to **T13a**.
+- **T07 → T07a** (`server/packs.js`, scenario files *copied*, startup order, `tests/pack.test.js`; no existing test changes) → **T07b** (legacy rewire, `toPublicCard`, path edits, `simulate.js`, deletes the originals). Both M.
+- **T08 → T08a** (gateway, models and unit tests; new files only, so it runs [P] with T07a/T07b, T11 and T20) → **T08b** (wire services, keep `noteLive`, delete `llm.js`). Both M. This wasn't asked for, but T08 was L after Amendment 2, and splitting it takes T08a off the critical path.
+- **T13 → T13a [P]** (pure: `projectAttempt`, `planStop` + `stopReplayBody` in a **new** `server/services/stop-plan.js`, the frozen verdict fixture) → **T13b** (route, join, `gradeStop`, `mockGrade` lexicon). Both M. Because T13a lives in its own file, it runs in parallel with T08b–T12. The architect may veto the new file in code review. If so, `planStop` moves into `session.js`, T13a follows T12, and nothing else changes.
+- **T01 → T01a** (HTTP plus the `todo` guardrail) → **T01b** (e2e; after T03a, for the stubs). Both M.
+- **T03 → T03a** (harness, timing contract, isolation, 52 MOCK and allow-listed runs) → **T03b** (9 LIVE runs, the full 61-run 3× certification; merge gate). Both M.
+- **T17 → T17a** S [P] (`web/copy.js`) → **T17b** M (api.js, happy path, results error) → **T17c** M (grader panel, Skip, STOP guards) → **T17d** S (not-graded items, note, two-call speech). I cut it differently from the frontend proposal: the results come from `complete` once the browser has no answers, so the happy path can't ship without the `complete` call. Interim states (T17b: a failed STOP re-enables Submit; T17c: not-graded items show as missed with 0 points) never stall, and no release or playtest is cut before T17d.
+- **T19 → T19a** M (leak and guardrails) → **T19b** M (perf script, exit evidence, `qa-report.md`).
+- **`todo` regex** widened to `/^F1a-T\d\d[a-d]?$/` for the suffixes; `check:ticket` accepts suffixed IDs (T11).
+**Confidence:** high on the sizes; medium on the T17 cut.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** learning-designer POSITION (Q4) and RISK "line 153 locks F2's voice 'skip'"
+**Concede (fixed in spec).** The line-153 paragraph now says: "**'Skip this stop' means only 'the grader failed; this stop isn't graded'.** F2 must give the learner's 'not sure' a different word (draft 'show me') and its own scoring, and must never write it to `completed.result.skippedStepIds`." The Glossary and the learning-review decision table (finding 6, marked retracted by its author) say the same. Under Later: "the learner's 'not sure'", owned by the PM in the F2 voice-flow and learner-model specs and advised by the learning designer; the architect decides the shape as an ADR 0002 amendment. My starting position for F2 is the learning designer's scoring table: empty-submit points, −75 on a clean line, an immediate reveal, and FSRS Again or Hard (decided in F2). `voice-first.md:50` still says "Say 'skip'", so I logged it as **OI-14** for the architect (who owns `docs/foundation/`). It doesn't block F1a, which ships no voice commands.
+**Confidence:** high.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** learning-designer RISK "every mistake not graded → tiers[3]"
+**Accept for F1a, with a reason and an owner.** It needs three consecutive grader failures, and the note line already explains the empty score. Under Later: "No rating when `maxPossible` is 0 and ≥ 1 mistake is not graded", owner PM, in the F2 Results spec, going to the architect as an ADR 0003 amendment (a contract change, per the architect's ruling). The edge case in the spec now points there.
+
+### technical-product-manager · 2026-10-09 · RESPONSE
+**Answering:** learning-designer RISK "F3 catch rate excludes attempts with skips"
+**Concede; the recorded rule is changed now.** It's a pre-registered metric rule, so leaving the biased version in an approved spec is the risk. "Events and metrics" now says: F3 catch rate leaves out only the not-graded mistakes (`completed.result.notGradedStepIds`), never whole attempts, and the F3 report shows the skip rate per arm as a health check. The "client claims skips" edge case is updated to match. The F3 spec confirms it (owner: PM). F1a already stores the ids, so there is no F1a code change.
+
+### technical-product-manager · 2026-10-09 · DECISION
+**The call:** F1a stays **Approved, revision 4**. Every architect ruling is applied, every L ticket is split, and the accessibility, copy and skip-meaning calls above are made. Scope (Q3): the learner value is unchanged, and the additions are failure-path hardening that the invariants already require (inv. 7, 8, 9), not new features. 21 → 30 tickets, all S or M.
+
+**Tickets per wave** (owner · size · depends on):
+- **Wave 0:**
+  - T01a qa M · none
+  - T01b qa M · T01a, T03a
+  - T02 be S · none
+  - T03a qa M · T02
+  - T03b qa M · T03a (merge gate)
+  - T04 be M · T03b
+  - T05 be S · T02, T03b
+- **Wave 1:**
+  - T06 be M · T04
+  - T20 be S · T03b
+  - T07a be M · T06, T20
+  - T07b be M · T07a, T05
+  - T08a be M [P] · T05, T06
+  - T08b be M · T07b, T08a
+  - T09 qa S · T08b
+  - T10 qa S · T08b
+  - T11 qa S · T06
+- **Wave 2:**
+  - T12 be M · T09, T10
+  - T13a be M [P] · T06, T07b
+  - T13b be M · T12, T13a
+  - T21 be S · T07b
+  - T14 be M · T13b, T21
+  - T15 fe S · T03b
+  - T16 qa M · T14
+  - T17a fe S [P] · T03b
+  - T17b fe M · T14, T15, T17a
+  - T17c fe M · T17b
+  - T17d fe S · T17c
+  - T18 be M · T16, T17d
+  - T19a qa M · T18, T01a
+  - T19b qa M · T19a, T11, T01b
+
+**Rationale:** smaller tickets mean honest estimates. T08a and T13a come off the backend critical path, and T17a comes off the frontend's. No split part runs in parallel with its sibling. The `todo` guardrail stops red acceptance tests from hiding until the end.
+
+**Recorded dissent:**
+- Frontend's proposed cut of T17 (a/b/c) was replaced by a/b/c/d, for the reason given above.
+- Frontend's `aria-busy` option was rejected.
+- QA's "self-test with `fixtures/` renamed" and "one real-time 12 s test per surface" were rejected by the architect.
+- The learning designer's Again-vs-Hard question is left to F2.
+
+**Follow-ups:**
+1. Architect: OI-14 (`voice-first.md:50` wording) before the F2 voice-flow spec.
+2. Architect, in code review: may veto `server/services/stop-plan.js` (fallback described above). This needs no re-approval.
+3. PM, in the F2 specs: the "not sure" word and its scoring, the "Still working…" cue, and no rating when everything is not graded.
+4. PM, in the F3 spec: confirm the catch-rate rule.
+5. QA: add the thread-0004 tests to T01a and T01b before verifying the tickets they name.
+
+**Open RISKs: none.** Every RISK in this thread has a RESPONSE: fixed, accepted with a reason and owner, or turned into a ticket or Later item. The only open item is OI-14, which doesn't block F1a. The header `Status` and the `INDEX.md` row should be set to `decided`. I was asked to edit only `spec.md`, `tasks.md` and this thread (append-only), so I've left that for the lead.
