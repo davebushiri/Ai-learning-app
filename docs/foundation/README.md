@@ -10,6 +10,7 @@
 | [`data-and-evidence.md`](data-and-evidence.md) | Event model, data model, metrics, and how we prove learning happens |
 | [`voice-first.md`](voice-first.md) | Voice-first sessions, text mode, speech stack, privacy, and the voice vs. text A/B test |
 | [`open-source-landscape.md`](open-source-landscape.md) | What we reuse (ts-fsrs, vad-web, Transformers.js, Kokoro, promptfoo, Workbox…), what we study (OATutor, DeepTutor, Oppia), and what stays ours |
+| [`../../CLAUDE.md`](../../CLAUDE.md) + [`../../.claude/agents/`](../../.claude/agents/) | The agent team (PM, architect, backend, frontend, QA), the workflow, the invariants and the definition of done |
 | [`decisions.md`](decisions.md) | Architecture decisions already made, and the open questions |
 
 ## The one idea
