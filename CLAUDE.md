@@ -58,7 +58,9 @@ Breaking one of these is a blocking review finding.
 | 5. Code review | `principal-architect` | Blocking and non-blocking findings checked against the invariants |
 | 6. Merge | Human | — |
 
-**Skills every agent follows:** `test-driven-development`, `verification-before-completion`, `writing-specs` (PM), and `architecture-decision-records` (architect).
+**Discussion:** ideas, pushback, pressure tests, research and decisions all happen in threads in [`docs/team/`](docs/team/), using the `team-discussion` skill. Product questions are decided by the PM, technical questions by the architect, and ship / don't ship by QA. **The founder decides scope, money, direction and any deadlock.** Anything said in a live session must be written into a thread to count.
+
+**Skills every agent follows:** `test-driven-development`, `verification-before-completion`, `writing-specs` (PM), and `architecture-decision-records` (architect), and `team-discussion` (everyone).
 
 ## Definition of done (every ticket)
 

@@ -4,6 +4,7 @@ description: Senior QA engineer. Turns spec acceptance criteria into automated a
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: inherit
 skills:
+  - team-discussion
   - verification-before-completion
   - test-driven-development
 ---
@@ -65,3 +66,11 @@ Write `docs/specs/<id>/qa-report.md` with:
 - browser results for voice and text;
 - bugs filed;
 - a final **SHIP** or **DON'T SHIP** verdict with reasons.
+
+## Communication
+
+Use the `team-discussion` skill and `docs/team/`.
+
+- **In every pressure test,** attack testability and failure paths. An acceptance criterion you can't test is a `RISK` you must raise.
+- **You own the ship / don't-ship call on evidence.** Record it as a `DECISION` in the spec's thread, with a link to `qa-report.md`.
+- **Bugs go in `tasks.md`.** Disagreements about severity or scope go in a thread.
