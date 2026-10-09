@@ -1,7 +1,7 @@
 # 0003: F1 engine core: scope, slicing and open questions
 
 **Type:** PROPOSAL
-**Status:** open
+**Status:** decided (scope and technical). Founder questions F-0 to F-6 are pending.
 **Opened by:** technical-product-manager · 2026-10-09
 **Decider:** technical-product-manager (scope and slicing inside F1) · principal-architect (technical questions, as ADRs) · founder (anything that changes phase scope or costs money)
 **Targets:** future `docs/specs/F1-*/`; `docs/foundation/decisions.md` "Build phases" F1 row; thread 0002 founder follow-ups 1–4
@@ -413,3 +413,194 @@ With no key there can be no recording for any `VERSION`, so the staleness test e
 
 ### evals-engineer · 2026-10-09 · RISK
 `server-side-fallback` can serve a different model at a different price inside one run. · L: L · I: M · Mitigation: record `servedModel` on every call, cost each call at that model's price, and report fallback rate per version.
+
+### principal-architect · 2026-10-09 · DECISION
+**Scope of this decision:** technical questions only (A1–A5 and the eight points raised in round 1). The PM still decides slicing and scope, and the founder still holds F-1 to F-5. So the thread status stays `open` until the PM's DECISION.
+
+**A1: confirmed.**
+- Storage is `node:sqlite` behind `server/db.js`, with `engines >=22.13`.
+- Append-only is enforced by triggers.
+- Migrations live in `server/migrations/NNN-*.sql`, are forward-only, and track progress with `user_version`.
+- The server's default `DB_PATH` is `data/app.db`, which is gitignored. The test helper sets `DB_PATH=:memory:`. The server must not detect that it's under test.
+- Render is out of F1 (mock demo only, ephemeral data).
+
+**A2: amended. (1) Attempt identity.**
+- The name is **`attemptId`**, not `runId`. The foundation event model already uses `context.attemptId` (`data-and-evidence.md` §1). `sessionId` is reserved for the F2 multi-card sitting. One term everywhere.
+- **Start:** `POST /api/attempts {subject:"demo-trades", scenario:"electrical", source?:"fixture"}` returns `{attemptId, card:{id, subject, title, setting, apprentice, steps:[{id,line}]}, source}`. Before grading, nothing else may be sent.
+- **STOP:** `POST /api/attempts/:attemptId/stops {stepId, explanation}` returns `{verdict, reasoningScore, feedback, source, points, total, caught}`.
+  - `caught` is `null` (false alarm) or `{errorStepId, stepsLate, severity, correctAction}`.
+  - I'm adopting frontend's flat `caught` and dropping my `reveal` wrapper. It's one object instead of two, keeps W5 at M, and holds exactly what `app.js:160-195` uses.
+  - `stepId` must be in range and must not go backwards against earlier STOPs in the same attempt. Otherwise return 400.
+- **Complete:** `POST /api/attempts/:attemptId/complete {lastStepShown}` returns the `scoreRun` fields. `missed[]` is the only place `summary`, `consequence` and `correctAction` appear for missed mistakes. It also returns `ratingKey`, `ratingLabel` (from the pack) and the pack's clean-run line.
+  - It is idempotent: the `completed` event is written once and repeat calls return the same body.
+  - Frontend's "Retry results" state is accepted.
+- **Steps not shown:** no per-step `step-shown` request in F1.
+- **Old routes:** `/api/scenario` and `/api/grade` are removed inside F1a, after W5. `/api/trades` becomes `GET /api/scenarios?subject=demo-trades`.
+
+**A3: confirmed.**
+- No grading in the browser. `mockGrade` leaves `web/`.
+- When the server is unreachable or returns 5xx, the browser shows the visible and spoken panel "Couldn't reach the grader. Try again or skip." The explanation is kept.
+
+**A4: confirmed.**
+- `server/ai/{gateway,models}.js` only.
+- W11 is the first code ticket after the baseline (see 5).
+
+**A5: confirmed.**
+- Option (c) is rejected under inv. 5. Backend's caveat 2 independently confirms it.
+- The `trade` field rename and the fencing of `scenario.js:49-56` are F1b changes, each with a `VERSION` bump that goes through the gate.
+- Backend's suggestion to drop `trade` from `SCENARIO_SCHEMA` is accepted for F1b. It is still a request change, so it goes through the gate.
+
+**(2) Eval runner: a plain Node script in F1.** I concede my "decide at the first live run". The evidence doesn't depend on a key:
+- promptfoo is 31.7 MB with 76 dependencies and telemetry.
+- It requires Node ≥22.22.
+- Its provider would bypass the gateway (inv. 3).
+
+`scripts/eval-prompts.js` must call the gateway, never the SDK directly. It plus a pure `evals/metrics.js` covers the grader set only. This departs from `open-source-landscape.md` §5 item 5, so I'll write an ADR and update §5. **Revisit** at F3, when the verifier and safety sets exist, if promptfoo runs offline through a custom gateway provider as an optional dev install.
+
+**(3) Staleness: the pending ratchet is accepted, with a pin.**
+- Format: `evals/pending.json` entries are `{promptId, version, promptSha256, reason, decision}`.
+- A prompt passes if it has a recording with a matching `promptSha256`, **or** a pending entry with a matching `promptSha256`. Because the hash is pinned, a text change with no recording still fails, so inv. 4 holds with no key.
+- The initial `grade@1` and `scenario@1` entries pin today's text, which is unchanged, and need no founder decision.
+- Any **other** new entry must link a founder DECISION. That link is checked in review, because a test can't verify it.
+
+**(4) fake-claude routing: by prompt id.**
+- The gateway sends a request header `x-prompt-id: <promptId>@<VERSION>`. fake-claude already reads headers (`fake-claude.mjs:80`).
+- fake-claude stops sniffing for `verdict` (`:72`). A request without the header gets a 500 and a log line, so a misroute can't pass silently.
+- QA adds the `/__log` kind test.
+
+**(5) Determinism: yes, a separate behavior-neutral ticket T00 before W6.**
+- `scenarioUserPrompt` takes an optional `rng` that defaults to `Math.random`. Its rendered output for any given draw stays identical, so `VERSION` is not bumped, and a snapshot test proves it.
+- `Date.now()` ids are normalized in the capture harness, not in product code.
+- `page.clock` is test-only.
+- Order: T00, then W6 baseline committed with its SHA, then W11. Nothing else merges before the baseline.
+
+**(6) W10:** technically sound. It is a pure move behind `web/speech/`, landing **before** W5 by the same engineer, and proven by an empty golden diff. If the founder places it in F1 (F-5), it goes in F1a, not F1b.
+
+**(7) Deny-list ratchet:**
+- Words live in `tests/fixtures/deny-list.json`. Violations live in `tests/fixtures/deny-list-allow.json` as `[{file, word, count}]`.
+- Scan scope: `server/ shared/ web/ scripts/`, excluding `packs/`, `fixtures/` and `tests/`. Matching is case-insensitive on word boundaries.
+- The test fails on any unlisted hit, and fails if an actual count is below the listed count, which forces the list to shrink. Counts may only go down.
+- F1b exits when the list is empty.
+
+**(8) File ownership: QA's split is decided.**
+- `npm test` maps every `git ls-files` path to exactly one owner, parsed from the CLAUDE.md table so there is one source of truth. If the parse fails, the test fails.
+- The per-ticket diff check is `npm run check:ticket <id>`, which QA runs at verify.
+
+**Dissent recorded:**
+- Backend and frontend preferred `runId`.
+- Evals' F1 runner choice overrides a foundation recommendation.
+
+**Follow-ups (ADRs, architect; written once the PM's slicing DECISION lands):**
+1. Storage on `node:sqlite`, with migrations and a trigger-enforced append-only log
+2. Event schema v1
+3. Server-owned card and attempt API
+4. No grading in the browser and offline behavior (amends `system-architecture.md` §5)
+5. AI gateway, prompt registry, the `x-prompt-id` header, and what counts as a prompt text change
+6. Pack format v1, trust and fencing of pack text, and rating keys
+7. Plain Node eval runner for F1 (amends `open-source-landscape.md` §5.5), with the pending ratchet
+
+The PM folds T00, the order T00 → W6 → W11, and these contracts into the specs.
+
+### technical-product-manager · 2026-10-09 · DECISION
+**Deciding:** F1 scope and slicing. A1–A5 are the architect's decisions and I take them as given. Anything below that touches phase scope or money waits for the founder (see the end of this entry).
+
+**1. Slicing: two specs. F1a is built in the architect's three waves.**
+
+**`F1a-server-owned-cards`**
+- **Wave 0 (merge prerequisite for everything after):**
+  - W6 golden capture, from the current `main` SHA, into `tests/fixtures/golden/`;
+  - a behavior-neutral ticket that makes runs reproducible (injectable RNG at `scenario.js:38`, normalised `Date.now()` ids);
+  - W11 route split, with zero test changes;
+  - `VERSION` exports, with no prompt text change.
+- **Wave 1, in parallel:**
+  - W1 db, migrations, trigger-enforced `event` table, `shared/events.js`;
+  - W2 pack v1 and `packs/demo-trades`. `scoring.js` returns rating keys and the pack maps them to labels. The clean-run line moves out of `app.js:228` into the pack;
+  - W3 gateway, registry and `llm_call`. Mock and fallback paths also log;
+  - fake-Claude routes on `promptId` instead of sniffing for `verdict` (QA-owned ticket).
+- **Wave 2, in sequence:**
+  - W4a: attempts and card persistence. Live scenarios are written as `card` rows before they are served;
+  - W4b: the STOP and complete routes;
+  - W10 `web/speech/` facade, with zero behavior change. It goes before W5 so the two `app.js` edits are sequential;
+  - W5 web switch-over: no grading in the browser, and a "Couldn't reach the grader" panel;
+  - removal of `/api/scenario` and `/api/grade`, plus the answer-leak test.
+- **W8 tests that land in F1a:** append-only, deadlines, `VERSION`, no answer before grading, and the deny-list ratchet (QA's exact `{file, word, count}` allow-list).
+- **Events:** `started`, `stopped`, `explained`, `graded`, `completed`. `step-shown` is written server-side from `lastStepShown`, with no per-line request. `mode-assigned` waits for F2.
+
+**`F1b-agnostic-prompts-and-evals`**
+- **W9 scaffold:**
+  - recording format (E4) and replay in `npm test`;
+  - staleness test, plus a `pending` ratchet that only a founder DECISION can add to;
+  - pure `evals/metrics.js`, checked against synthetic recordings;
+  - `eval:live` refuses to run without a key and a cap, and aborts at the cap;
+  - fake-Claude scripted response queue;
+  - `labels.json` schema (E2).
+- **Plain Node runner vs. promptfoo:** this is the architect's call (it departs from `open-source-landscape.md` §5 item 5). I scope the plain-script scaffold either way.
+- **W7 prompt rewrite:** pack slots, fencing pack text (inv. 5), dropping or renaming `trade` in `SCENARIO_SCHEMA`, one `VERSION` bump. It is specced and ticketed in F1b, but it **cannot merge until it passes the live gate.**
+
+**In and out of F1**
+- **In:**
+  - W10, because `voice-first.md` §7 already lists it in F1 and frontend sizes it S with zero behavior change.
+  - Playwright in F1a. It's installed, and an HTTP check can't hear spoken text.
+- **Out:**
+  - W12 `ts-fsrs`, to F2. Nothing in F1 uses it.
+  - Render persistence. Persistent hosting is a money call for the founder.
+
+**2. F1 exit criteria.** F1 exits when F1a is done and the F1b scaffold is done, with no wait for a key. Concretely:
+- **(a) Golden replay.** It runs 3× to prove the output is deterministic. The learner-visible and outbound-prompt layers show an empty diff, except two allow-listed failure-state diffs: the grader-unreachable panel and "Retry results". Spoken and displayed copy for both goes in F1a's copy table.
+- **(b) Old routes gone.** The leak test is green.
+- **(c) Deny-list allow-list holds only prompt and schema entries.** That means `server/prompts/*` and `SCENARIO_SCHEMA.trade`. Every entry in `web/`, `shared/` and other `server/` code is gone.
+- **(d) Pending list.** The staleness `pending` list holds only founder-approved entries.
+- **(e) Full suite green.** `npm test` passes, and any test whose assertion changed is named in its ticket.
+- **Hard rule into F2:** no non-trades pack ships until W7 has passed the gate and the deny-list allow-list is empty.
+
+**3. κ in F1: no threshold.** The 32-case κ is not the SC κ≥0.6, which is an F3 pilot criterion based on fairness ratings of real grades. Once labels exist, F1b reports κ without the false-alarm cases, with a 95% CI, labelled "regression baseline".
+- **The gate rule is pre-registered in the F1b spec before any live run:**
+  - against the founder's gold labels on the 27 non-false-alarm cases, the new version agrees on at least as many cases as the old one, minus 2;
+  - the new version grades no injection or "request-only" case `correct` or `partial`.
+- **Existing `expectedVerdict` labels** count as author labels only.
+
+**4. Risks raised in round 1 and how each is handled**
+
+| Risk | Handling |
+|---|---|
+| Arch: big-bang contract swap | **Fixed in spec:** new routes are added alongside the old ones, the web switches in one ticket, the old routes are deleted last, and the golden replay runs after every wave |
+| Arch: founder-blocked F1 never closes | **Fixed in spec:** exit criteria in section 2 plus the F2 hard rule |
+| Arch: F3 creep through the evals scaffold | **Fixed in spec:** scaffold-only scope; the runner choice comes with the first live run |
+| Arch: chatty `step-shown` | **Fixed in spec:** `lastStepShown` on STOP and complete; no per-line request |
+| Arch: hidden coupling between files | **Fixed in spec:** rating keys mapped to pack labels; schema unchanged in F1a; `shared/contract.js` owned by exactly one ticket per wave |
+| Backend: unfenced pack text in the scenario prompt | **Accepted until W7:** it sits on the ratchet allow-list; the fix is gated W7 |
+| Backend and frontend: no run identity | **Fixed:** A2 `attemptId`. The STOP response must carry enough for `markLine` and points (`reveal.stepId`, `points`, `total`). Field names are settled in the architect's ADR |
+| Backend: `node:sqlite` experimental, Render ephemeral | **Accepted:** narrow `db.js`, `engines >=22.13`, Render out of F1 |
+| Frontend: results screen now needs the network | **Fixed in spec:** running total plus "Retry results", copy table entry, and the golden allow-list names these 2 diffs only |
+| Frontend: flaky golden runs | **Fixed in spec:** `page.clock`, async `onend` stub, 3× determinism run before capture |
+| QA: baseline captured too late or with nondeterministic prompts | **Ticket:** wave 0 reproducibility ticket, and W6 as a merge prerequisite |
+| QA: fake-Claude misroutes after W3 | **Ticket:** route on `promptId`, plus a `/__log` kind test (wave 1) |
+| Evals: F1 κ misread as the SC | **Fixed in spec:** section 3 |
+| Evals: author-written labels | **Fixed in spec:** blind founder labels (F-1); existing labels tagged "author" |
+| Evals: staleness test red or quietly skipped | **Fixed in spec:** `pending` ratchet; adding an entry needs a founder DECISION (F-6) |
+| Evals: fallback model priced wrongly | **Fixed in spec:** `servedModel` recorded and costed per call; fallback rate reported per version |
+| Also, from my own check | This checkout reports "not a git repo". So QA's `git ls-files` ownership test must not fail and must not skip silently without git. QA and the architect pick the approach in the F1a spec review |
+
+**Dissent recorded**
+- **QA:** F1b's exit should be an empty deny-list. I hold prompt entries until the gate can run, because merging W7 without the gate would break inv. 4.
+- **Evals vs. `open-source-landscape.md`:** promptfoo vs. a plain script. The architect decides.
+- **Frontend's proposed response shape vs. A2:** the architect's ADR decides. Frontend has said W5 becomes L if the response lacks catch data and points.
+
+**Founder questions still open**
+- **F-0 (phase scope).** Do you accept that F1 exits with the prompt-text half of "subject-agnostic prompts" written but held at the gate? It would be guaranteed only before the first non-trades pack in F2. This changes what the `decisions.md` F1 row promises.
+- **F-1.** Blind-label the 32 cases in the E2 format (about 1–1.5 h). When can you do it? Separately: do you know who wrote the existing `expectedVerdict` labels?
+- **F-2.** Approve the eval cost cap. The proposal is **$6 per run as a hard abort, and $25 per month.** Estimated runs cost $1.80–5.20 with 3 repeats.
+- **F-3.** Where and when will an Anthropic API key be available? There is none in the cloud environment, so every live path is tested only through fake Claude.
+- **F-4 (updated).** Option (c), byte-identical prompts, is rejected by the architect under inv. 5. That leaves:
+  - (a) hold W7 at the gate until there is a key and labels (my recommendation);
+  - (b) a waiver DECISION that accepts replay-only evidence.
+- **F-5 (updated, confirm only).** W10 is in F1 and W12 FSRS moves to F2. Render persistence is out of F1, and turning it on later costs money.
+- **F-6 (new).** Approve the initial staleness `pending` entries for `grade@<v1>` and `scenario@<v1>`. Without a key no recording can exist for them.
+
+**Follow-ups**
+- **Architect:** the 6 ADRs listed in the architect's entry, plus the eval-runner choice. Foundation doc fixes:
+  - `decisions.md` F1 row (speech interface and exit criteria);
+  - `decisions.md` F2 row ("Leitner" should be FSRS);
+  - `system-architecture.md` §5 (offline grading).
+- **PM:** write `docs/specs/F1a-server-owned-cards/` now. It has no founder dependency. Write `F1b-agnostic-prompts-and-evals/` after F-0 and F-4 are answered.
+- **Lead:** set Status to `decided` (scope part; F-0 to F-6 pending with the founder) and update the INDEX row.
