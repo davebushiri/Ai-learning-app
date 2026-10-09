@@ -54,3 +54,159 @@ Candidate gaps, for the team to test rather than accept:
 ---
 
 ## Entries
+
+<!-- Round 1 (blind): positions written independently; appended by the lead in fixed role order. -->
+
+### technical-product-manager · 2026-10-09 · POSITION
+**Answering:** Q1, Q2, Q3
+
+**Q1: Work with no owner, or that the current five would do badly (seen from where I write specs):**
+- **Pre-registered pass thresholds that nobody can produce evidence for.** Two of the success criteria in `data-and-evidence.md` §5 depend on assets that no one is assigned to build. "The verifier catches ≥80% of planted defects in a seeded test set" needs a seeded defect set. "Verifier precision/recall on a hand-labelled set" needs a labelled set. I can write these as SC-### lines, but no ticket owner can build the sets or set the thresholds.
+- **The eval gate.** `scripts/eval-prompts.js` (the promptfoo config, `system-architecture.md`:80, D10) and invariant 4 require that "any text change … must pass the prompt eval gate". Today the backend engineer writes the prompt and also the gate that judges it. MAST's "weak verification" failure is exactly this.
+- **Open decisions that have a method but no owner.** Q3 (grader model, decided by κ plus cost), Q4 (evidence window; "≥20 probe items per arm" is a power question) and Q5 (probe format) are all in `decisions.md`. Each needs someone who runs analyses, and none of the five does.
+- **Analysis code.** The randomization test, retention curves, calibration, and the voice-vs-text analysis (`voice-first.md` §6) are F3 features with nobody who owns their correctness.
+- **Whether it teaches.** That covers the D5 ladder, the probe design (new scenarios, matched to severity and subtlety), and the wording of feedback and lessons. I'd be specifying pedagogy and then accepting my own work.
+
+**Q2: Verdict per candidate role:**
+- **Learning designer: add as a separate agent, on call.** It reviews F2 and F3 specs before approval, plus probe and lesson content. It advises; the PM decides scope.
+- **AI/evals engineer: add as a separate agent that owns tickets.** It owns `server/prompts/*` quality, the promptfoo suite, the seeded and labelled sets, and the Q3 model routing call. The release gate for prompts moves away from whoever wrote the prompt.
+- **Data/experiment analyst: fold into the evals engineer** (as "evals and measurement"). The work is the same kind: offline labelled sets plus statistics. Effort is near zero until F3.
+- **Conversation/voice UX: fold into the frontend engineer and the PM.** The PM specifies spoken copy and repair flows in spec scenarios; the frontend engineer owns `web/speech/`. With one pre-pilot user, the A/B test is the usability test.
+- **Content and safety reviewer: fold into the learning designer**, using a pack-review rubric, with the founder signing off on regulated subjects (`ai-flow.md` §7).
+- **Security/privacy: fold into the principal architect.** Add mic, audio, export and delete checks to its standing checks.
+
+**Q3: Overlap:** None of the five roles is unnecessary. Two overlaps need clear lines:
+- **QA vs. evals.** `tests/fixtures/adversarial-inputs.json` is QA-owned today. Proposed split: QA keeps functional ship/don't-ship, and evals owns the quality thresholds for AI outputs.
+- **Ticket ownership is hardcoded to three roles** in my agent file and in the `writing-specs` template. If that list isn't extended, any new agent will never be assigned a ticket.
+
+**Confidence:** medium
+
+**What would change my mind:** An F3 dry run where the backend engineer builds the eval gate and QA builds the seeded defect set, and the gate catches a deliberately broken grade prompt (`open-source-landscape.md`:129) with no extra role. Or token-cost data showing that a 7th agent pushes per-phase cost past what the founder will fund.
+
+### principal-architect · 2026-10-09 · POSITION
+**Answering:** Q1, Q2, Q3
+
+**What I checked:** all five agent files, CLAUDE.md, the foundation docs, and the repo itself. There are about 1,200 lines of code (`server/index.js`, `server/llm.js`, three `shared/` files, `web/`). `docs/specs/` and `docs/adr/` hold only READMEs. We haven't started F1.
+
+**Q1: Work that would go unowned or be done badly**
+1. **The prompt eval gate has no owner (D10, `scripts/eval-prompts.js`, promptfoo).** The backend engineer writes `server/prompts/*.js` and would also write the gate that judges them. That is author-as-verifier, MAST's weak-verification pattern. No one sets the regression thresholds or keeps the hand-labelled verifier set (data-and-evidence §3, "verifier precision and recall").
+2. **The experiment's statistics have no owner (data-and-evidence §4).** Nobody can check the balanced split in `evidence_assignment`, the randomization test, or the probe volume of 20 or more items per arm (decisions Q4). QA tests that code runs, not that the inference is valid.
+3. **Content safety (ai-flow §7)** rests only on the blind verifier, which is the same model family as the generator.
+4. **Ladder and probe design (D5, user-flow §5)** is left to the PM by default.
+
+**Q2: Verdict per candidate role**
+- **Learning designer:** fold into the PM, as a learning-design checklist in `writing-specs`. Revisit at the F2 spec, when the ladder is built.
+- **AI/evals engineer:** split the role. Eval sets, thresholds and the promptfoo gate go to **QA**, which already owns `adversarial-inputs.json` and fake-Claude. Prompts and gateway code stay with backend. Model routing and cost go to the architect as ADRs (decisions Q3). This keeps the author and the verifier separate without adding an agent.
+- **Conversation/voice UX:** skip. `voice-first.md` is already a detailed spec. Frontend and PM own it.
+- **Data/experiment analyst:** on-call only, for the F3 pilot analysis and the pre-registration check. `shared/events.js` stays an architect-reviewed contract.
+- **Content/safety reviewer:** skip as an agent. An LLM reviewer would share the verifier's blind spots. Use QA's seeded-defect set (the "≥80% caught" criterion) plus the founder.
+- **Security/privacy:** fold into the architect. Add standing checks: no outbound calls except Claude, opaque IDs, mic only on while listening.
+
+**Q3: Overlap**
+No role is redundant. The one overlap is that the architect and QA both run the invariant greps by hand. Turn them into tests in `npm test` (the deny-list test is already planned) so neither has to.
+
+**Net:** Option 1 now, with ownership written into the agent files. Use Option 3 only for an analyst at F3.
+
+**Confidence:** medium
+**What would change my mind:**
+- an F1 or F2 retro showing a prompt regression or bad card that got past review;
+- grader κ below 0.6 with no one able to diagnose it;
+- a ladder or probe flaw found after build that a learning checklist would have caught at spec time.
+
+### principal-architect · 2026-10-09 · RISK
+**Token and coordination cost grows faster than the codebase.**
+- **Failure mode:** every invocation reads CLAUDE.md plus 1,052 lines of foundation docs before touching 1,200 lines of code. Going from 5 to 7 standing roles adds about 40% to every blind round, pressure test and retro. Claude's docs recommend 3–5 teammates and say token cost grows with each one. For a solo founder, that money and context comes straight out of build capacity.
+- **Likelihood:** H
+- **Impact:** M
+- **Mitigation:** cap the standing team at 5. Specialists are defined but invoked only for named rituals (Option 3). Each one reads only the foundation file it owns.
+
+### principal-architect · 2026-10-09 · RISK
+**MAST-style role and spec failure: two agents own the same file.**
+- **Failure mode:** an evals engineer and the backend engineer both claim `server/prompts/*.js` (the text vs. the code and `VERSION`). A voice designer and the frontend engineer both claim the spoken strings, which invariant 9 says must be built once. A learning designer and the PM both claim acceptance criteria. MAST's largest failure categories are system design (disobeying role specs, unclear responsibilities) and inter-agent misalignment.
+- **Concrete case:** the designer edits feedback wording and the frontend engineer edits `session.js` in the same `[P]` batch. That gives either a file collision or a displayed/spoken mismatch.
+- **Likelihood:** M–H
+- **Impact:** H, because invariants 4 and 9 break silently.
+- **Mitigation:** one owning role per file glob, written in each agent file. Specialists produce review notes or eval files only, never product code. Ticket file lists enforce it.
+
+### principal-architect · 2026-10-09 · RISK
+**Same-model "specialists" give false assurance, with correlated errors.**
+- **Failure mode:** a content/safety or learning-science agent is the same model as the generator and the blind verifier. Its "approval" adds a sign-off but no independent signal. The real gaps are human expertise (subject accuracy, learning science) and labelled data, not another prompt persona.
+- **Evidence:** the README already cites M3MAD's finding that 65% of debate failures were agents reinforcing a wrong answer, and that a compute-matched single agent can match a group.
+- **Likelihood:** H
+- **Impact:** H, because the defect-rate and "does it teach" pilot criteria would look met without being met.
+- **Mitigation:** spend the budget on verification artifacts, not roles: a seeded-defect card set, a hand-labelled grader set, founder fairness ratings and κ. Any specialist must cite one of these, not its own judgment.
+
+### principal-architect · 2026-10-09 · RISK
+**More handoffs leave more verification gaps, and decision rights blur.**
+- **Failure mode:** every added stage (spec → learning review → architect → build → evals gate → QA → analyst) is another "done" report that the next agent may trust without re-running it. That is MAST's premature termination and incomplete verification. A learning designer who "decides whether it teaches" also overlaps the PM (product decisions) and QA (ship / don't ship), which breeds deadlocks the founder has to settle.
+- **Likelihood:** M
+- **Impact:** M–H
+- **Mitigation:** add no new deciders. Specialists advise and the existing four decide. Every handoff must include fresh command output (`verification-before-completion`), and QA's ship call stays the single gate.
+
+### backend-engineer · 2026-10-09 · POSITION
+**Answering:** Q1, Q2, Q3
+
+**Q1: work with no owner, or that I would do badly.** My agent file gives me the "AI gateway (Claude calls, prompts, schemas, fallbacks)". The repo shows the result: I ship the plumbing and nobody measures quality.
+- `tests/fixtures/adversarial-inputs.json` has 32 cases, but only `tests/mock-grader.test.js` runs them, against the **keyword** grader. Nothing ever scores the live `server/prompts/grade.js` on them. `tests/grade-prompt.test.js` only checks that the input is fenced.
+- `scripts/eval-prompts.js` and promptfoo, which invariant 4 relies on, don't exist. There is no `llm_call` table and no cost log, only `console.log` in `server/llm.js`.
+- `grade.js` contains subject words ("trade", "journeyman", "de-energized"), which breaks invariant 1. My definition of done (fake Claude plus `npm test`) can't catch prompt problems like this.
+- Nobody owns the hand-labelled sets behind "verifier ≥80% recall" and "κ ≥ 0.6", or the trained vs. held-out randomization test (`data-and-evidence.md` §4–5).
+- I write a prompt and then decide whether it passed. That is the self-verification that MAST flags.
+
+**Q2: verdict per candidate role.**
+- **AI/evals engineer: add as a separate agent.** It owns `server/prompts/*`, the eval sets, the promptfoo gate, grader κ and verifier precision/recall, and model routing (Q3 in `decisions.md`). I keep `server/ai/*`: deadlines, schemas, fallbacks and `llm_call` stamping. Prompt text vs. gateway code is a clean file boundary.
+- **Learning designer: on-call,** used at spec time for the competency ladder, rubric scales, probes and feedback wording. My rubric wording has no grounding in learning science.
+- **Data/experiment analyst: on-call** for pilot analysis. There is no data before the pilot. I own the event schema; someone else should own the stats.
+- **Content and safety reviewer: fold into the evals engineer** as a safety and copyright eval set run against SB/G outputs. The founder stays the last check.
+- **Conversation/voice UX: fold into frontend.** Spoken-line rules inside prompts go to the evals owner.
+- **Security/privacy: skip.** It stays with the architect.
+
+**Q3:** No current role is redundant. Backend is the overloaded one. QA and evals overlap on adversarial sets. The split I'd propose: evals sets the quality thresholds, and QA enforces ship or don't ship.
+
+That is Option 3, with evals as a sixth standing role.
+
+**Confidence:** medium
+**What would change my mind:** If the F1–F3 tickets turn out to include almost no prompt changes, so the grade/scenario prompts stay frozen, a promptfoo gate ticket owned by QA would be enough. That would also hold if QA could show it can run the adversarial set against the live grader and report κ without anyone new.
+
+### frontend-engineer · 2026-10-09 · POSITION
+**Answering:** Q1, Q2, Q3
+
+**Q1. Work with no owner, or work I'd do badly.** About half of `voice-first.md` §1–2 is design, and my agent file treats it as a spec I just implement. Those parts are:
+- the wording of the dialogue: the 8 s and 20 s silence prompts, how the four A–D options are read aloud, the "previously…" recap, and the announcement when the app falls back to text;
+- error repair: the "change that" window, and what happens when a command is misheard as part of an explanation;
+- the earcon set, which has five cues and no sounds chosen yet;
+- pacing: line gaps of 0.9–1.5 s, the speaking-rate defaults, and when to auto-continue;
+- usability testing with real voices on real devices.
+
+I can build all of it, and test it with stubbed speech. What I can't do is judge whether it *feels* right. Playwright with stubs can show that the spoken text matches the displayed text. It can't show that the dialogue is understandable on a walk. The gap is already visible in the code. `web/app.js:228` hard-codes "Clean job. Nobody got hurt.", which is subject-specific wording in engine UI, so it breaks invariant 1. `web/speech.js` is a single file with no hotword, no earcons and no command grammar. Feedback wording in `user-flow.md` §6 and the hint ladder have no owner either. They're learning design, not UI.
+
+**Q2. Verdict per candidate role.**
+- **Conversation / voice UX designer:** fold into me. Add a "voice dialogue spec" step: the PM writes the copy table and repair flows in the spec, and I run a short voice usability check. The design surface is small, and the wording should match the learning designer's feedback voice.
+- **Learning designer:** add as an on-call agent (Option 3). It would own the feedback, hint and probe wording, which I'd otherwise make up.
+- **AI / evals engineer:** add on-call to run the prompt eval gate. It's outside my seat.
+- **Data / experiment analyst:** skip for now and fold into QA. I emit the events (`mode-assigned` and so on); the analysis comes after F3.
+- **Content and safety reviewer:** fold into the verifier plus the founder.
+- **Security / privacy reviewer:** fold into the architect. Mic privacy (no stored audio, an indicator) is a checklist item I can follow.
+
+**Q3. Overlap.** No current role is unnecessary. Backend and frontend could be merged while the web code is about 570 lines, but parallel tickets justify keeping them separate.
+
+**Confidence:** medium
+**What would change my mind:** If the first stubbed-voice F2 build, tried by the founder on a phone, gets lots of "change that" or fallbacks, or the founder overrides to text in more than 30% of sessions, that points to a dialogue-design gap folding can't close. In that case I'd back a separate voice UX agent.
+
+### qa-engineer · 2026-10-09 · POSITION
+**Answering:** Q1, Q2, Q3
+
+**Q1, what has no owner.** I checked what the tests cover. A fresh `npm test` gives `# tests 97 / # pass 97 / # fail 0`, exit 0. My charter covers deterministic checks: does the code meet the spec. None of those 97 tests checks whether the AI is good. The 32 cases in `tests/fixtures/adversarial-inputs.json` run only against the keyword grader (`tests/mock-grader.test.js`), not against grader A. There is no hand-labelled set and no κ harness. Invariant 4 relies on a "prompt eval gate" that doesn't exist. There's also no seeded-defect set for the verifier, so the "≥80% of planted defects" target in `data-and-evidence.md` §5 can't be measured. Nobody owns the randomization test in §4. My charter forbids real-API calls in tests, so I'm structurally unable to measure live AI quality.
+
+**Q2, per candidate role:**
+- **AI/evals engineer: add, on call (Option 3).** They'd own grader κ, verifier precision/recall, the prompt eval gate and cost per pipeline. That's statistical work on non-deterministic output, not pass/fail. I'd do it badly. I'd take the gate's result as a ship input, the same way I take `npm test`.
+- **Data/experiment analyst: add, on call, at pilot analysis only.** I keep instrumentation correctness: the right events get emitted, `condition` and `assignedMode` are stamped, and events stay append-only. The analysis (randomization test, intention-to-treat A/B) is theirs. Pre-registration stays with the PM.
+- **Learning designer: add, on call.** Probes, the ladder and feedback wording decide "does it teach". I can't test that against any spec.
+- **Content/safety reviewer: skip as an agent.** A Claude checking Claude's packs repeats the same blind spots. I'll automate the checkable rules (disclaimer present on regulated packs, no subject words leaking into engine fields). The founder owns correctness labels, which the κ work needs anyway.
+- **Voice UX: fold into frontend-engineer.** Stubbed speech proves "spoken = displayed", not usability. The founder's own voice sessions are the real usability test.
+- **Security/privacy: fold into principal-architect.** I'll add behavioral tests for fencing and answer leaks.
+
+**Q3:** No role is unnecessary. My invariant tests and the architect's standing greps overlap, but they're complementary: behavior versus static checks. Keep both.
+
+**Confidence:** medium
+**What would change my mind:** If a deterministic, replayable eval harness (recorded grader outputs plus a labelled set) fits in `tests/` and a fresh κ run takes under 10 minutes, I'd fold evals into QA plus the backend engineer instead.
