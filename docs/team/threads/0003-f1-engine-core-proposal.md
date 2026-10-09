@@ -125,3 +125,291 @@ A DECISION states the call, its rationale, the dissent recorded, and follow-ups.
 - The architect shows that W7's prompt changes are prerequisites for the card contract (for example, the scenario schema's `trade` field can't change without rewriting the prompt). Then F1a and F1b merge into one spec.
 - The founder provides a key and labels within the F1a build window. Then the split buys nothing and Option 1 is simpler.
 - Backend sizes W4 at more than two M tickets even after the split. Then I'd take Option 3 to keep each spec reviewable.
+
+<!-- Round 1 (blind): positions written independently; appended by the lead in fixed role order. -->
+
+### principal-architect · 2026-10-09 · POSITION
+**Answering:** A1, A2, A3, A4, A5, slicing
+
+Checked today: Node v22.22.0. `require('node:sqlite')` works without a flag but prints an `ExperimentalWarning` to stderr. SQLite is 3.50.4. `RAISE(ABORT)` triggers block both UPDATE and DELETE on `event`, and `PRAGMA user_version` works. `npm test` gives 97 pass, 0 fail.
+
+**A1 (decided).**
+- Use `node:sqlite` behind `server/db.js`, and set `engines` to `>=22.13`. No new dependency. If the API shifts, `better-sqlite3` can drop in behind the same wrapper.
+- Append-only is enforced by triggers. Code-only enforcement doesn't count. A test runs UPDATE and DELETE and expects both to throw.
+- Migrations live in `server/migrations/NNN-name.sql`. They run forward only, each in a transaction, and set `user_version` when done.
+- The DB path comes from `DB_PATH`, defaulting to `data/app.db`, which is gitignored. Tests use `DB_PATH=:memory:`, so every spawned server gets its own DB. `tests/helpers/server.mjs` passes env already, so this needs no rework.
+- Render stays out of F1. The free plan has no disk, so it's a mock demo with ephemeral data. Persistent hosting costs money and needs the founder.
+
+**A2 (decided in outline; the ADR fixes the details).** The card holds the content. An attempt holds the run state, and its caught set is rebuilt from events.
+- `POST /api/attempts {scenario, source?}` returns `{attemptId, card:{id, subject, title, setting, apprentice, steps:[{id,line}]}, source}`.
+- `POST /api/attempts/:id/stops {stepId, explanation}` returns `{verdict, reasoningScore, feedback, source, points, total, reveal}`. `reveal` is `{stepId, severity, summary, correctAction}` only for the credited mistake, and only after grading. A false alarm gets `reveal: null` and must not hint at nearby mistakes.
+- `POST /api/attempts/:id/complete` returns the `scoreRun` result. It includes `missed[]` with the answers, and the rating label comes from the pack.
+- A live-generated scenario is written as a `card` row before its steps are returned.
+- The old `/api/scenario` and `/api/grade` stay only until the web switches over, inside the same spec. F1a can't close while either one exists.
+
+**A3 (decided).** Option (a) plus (b). The server keeps the keyword fallback. If the server can't be reached, the browser shows "Couldn't reach the grader. Try again or skip," keeps the explanation, and lets the learner continue. No grading happens in the browser. `system-architecture.md` §5 says offline grading uses keywords. I'm amending that: offline explanations are queued and graded on reconnect, which comes in F2 with the offline queue.
+
+**A4 (decided).**
+- Create `server/ai/gateway.js` now, plus `models.js` holding only `MODEL` and the effort constants. No `gates.js` or `fallbacks.js` until something uses them.
+- W11 is **required, as the first ticket**: a mechanical split into `server/routes/*` with zero test changes. W1, W2, W3 and W4 all edit `index.js` today.
+
+**A5 (decided).**
+- A refactor that renders byte-identical prompts for *every* input (for example, adding `VERSION`) is not a text change.
+- Moving subject words into the pack can't be byte-identical *and* fenced. Today those words sit unfenced in `GRADE_SYSTEM` (`grade.js:4,11,23`), and D2 makes pack text untrusted. So option (c) from F-4 is an inv. 5 shortcut, and I reject it.
+- W7's prompt work is a real text change. It needs a `VERSION` bump and the live gate.
+- `SCENARIO_SCHEMA.trade` (`contract.js:43`) is part of what Claude sees, so the rename to `subject` moves to F1b too.
+
+**Slicing.** Two specs, but F1a is built in waves:
+- **Wave 0:** W6 golden capture, W11, `VERSION` exports.
+- **Wave 1 (parallel):** W1, W2, W3. These change no contract.
+- **Wave 2:** W4, then W5, then removal of the old routes plus the leak test.
+
+**ADRs F1 needs:**
+- Storage on `node:sqlite`, with migrations and an append-only event log enforced by triggers
+- Event schema v1 (`shared/events.js`, the F1 verb subset)
+- The server-owned card and attempt API, with rules for when answers are revealed
+- No grading in the browser; offline behavior (amends `system-architecture.md` §5)
+- AI gateway and prompt registry, including what counts as a prompt text change
+- Pack format v1, trust of pack text and fencing, rating keys mapped to pack labels
+
+**Confidence:** high on A1, A3, A4 and A5. Medium on the A2 field names.
+**What would change my mind:** `node:sqlite` failing under the test runner's concurrency. A frontend estimate that W5 is L. A founder waiver that explicitly accepts unfenced, trusted-provenance pack text.
+
+### principal-architect · 2026-10-09 · RISK
+**Big-bang contract swap on a working game.** W4 and W5 change every request and response at once, and 14 server tests post a full scenario. **Failure mode:** F1a sits half-migrated, with the game broken on the branch for days, and the golden replay fails in ways nobody can diagnose. **Likelihood:** M. **Impact:** H. **Mitigation:** new routes are added alongside the old ones. The web switches in one ticket. The old routes are deleted last. The W6 golden runs are captured before wave 1 and replayed after every wave.
+
+### principal-architect · 2026-10-09 · RISK
+**Founder-blocked work turns F1 into a phase that never closes.** W7's prompts and W9's live run can't finish without a key and labels, and F-4 option (c) breaks inv. 5. **Failure mode:** F1 stays "in progress" with no end date, or someone takes the byte-identical shortcut and ships unfenced pack text into the system prompt. **Likelihood:** H. **Impact:** M. **Mitigation:** F1 exits on F1a plus the F1b scaffold. The W7 prompt rewrite gets a hard dependency: no non-trades pack can ship in F2 until it has passed the gate. That makes the deadline real without stalling F1a.
+
+### principal-architect · 2026-10-09 · RISK
+**Scope creep from pulling F3 work forward.** W9's eval runner, the replay helper and the stale-recording test are code we can't exercise without a key or labels. **Failure mode:** we build scaffolding that never ran for real, picking promptfoo or a script by guess, and F3 rewrites it. **Likelihood:** M. **Impact:** M. **Mitigation:** F1b ships only the recording format, the replay in `npm test` and a `eval:live` that refuses to run without a key and a cap. The runner choice comes with the first live run.
+
+### principal-architect · 2026-10-09 · RISK
+**Chatty events add new ways to stall.** `step-shown` sent per narrated line means one POST per line during voice playback. Its only consumer is projections that don't exist yet. **Failure mode:** a slow or failed POST mid-narration needs its own handling under inv. 7, which is new failure surface for no F1 benefit. **Likelihood:** M. **Impact:** M. **Mitigation:** no per-step request in F1. The STOP and complete bodies carry `lastStepShown`, and the server writes the event from that. `step-shown` becomes a separate request only when a consumer needs it.
+
+### principal-architect · 2026-10-09 · RISK
+**Hidden coupling between files.** `shared/scoring.js:74-79` holds the rating labels, `contract.js` has `trade` in both the schema and the validator, `fake-claude.mjs:72` detects requests by sniffing the schema, and `app.js` runs `resolveStop` and `scoreRun` on the client. **Failure mode:** tickets marked `[P]` collide on the same files, or a quiet schema rename changes what the model outputs without an eval. **Likelihood:** M. **Impact:** M. **Mitigation:** `scoring.js` returns rating *keys* and the pack maps keys to labels. The schema stays unchanged in F1a. The spec's ownership table lists `shared/contract.js` under exactly one ticket per wave.
+
+### backend-engineer · 2026-10-09 · POSITION
+**Answering:** B1, B2
+
+**Checked facts.** Node is `v22.22.0`. `node:sqlite` works (`DatabaseSync(':memory:')`, SQLite 3.50.4, so triggers and `RAISE` are available), but it prints an `ExperimentalWarning` to stderr. `render.yaml` pins `NODE_VERSION: "22"` and has no disk.
+
+**B1: sizes (ordered), with the hidden work**
+- **W11 route split: S, and I want it first.** It's a pure refactor with the current tests as the safety net. W3, W4a and W4b all edit `server/index.js` (the `grade()` function at `:87-108` and the routes at `:157-173`). Without the split, those tickets collide.
+- **W1 db + migrations + events: M.**
+  - `tests/helpers/server.mjs:12` passes the env straight through, so the server needs a `DB_PATH` that defaults to `:memory:` under tests.
+  - `engines` goes from `>=20.12` to `>=22.13`.
+  - Each test child prints the ExperimentalWarning. That's harmless, because the helper only matches stdout (`server.mjs:30`).
+- **W2 pack + validator + demo-trades: M.**
+  - `tests/contract.test.js:6` and `tests/validator.test.js:8-9,232-240` import `TRADES` from `server/prompts/trades.js`.
+  - All 3 fixtures carry `"trade"`.
+  - `validateScenario(opts.trade)` (`contract.js:95-112`) changes too.
+- **W3 registry/gateway: M.**
+  - The gateway needs a DB handle injected so it can write `llm_call`.
+  - `tests/llm-deadline.test.js:8` imports from `server/llm.js`.
+  - The mock and fallback paths in `index.js:93,106` never touch `llm.js` today, so they'd log nothing unless we add that.
+- **W4a card persistence + public card: M.**
+  - Live scenarios need a card row stamped with `prompt_version`. Today the server only patches `trade` and `id` on them (`index.js:73-74`).
+  - **The spec also needs a `runId` alongside `cardId`.** Replaying the same card must not share `caught` state.
+- **W4b STOP/complete routes: M+.**
+  - `resolveStop` needs the step index and the caught set (`app.js:117`). The server has to rebuild both from events, and it has to trust a client-claimed step index (validated against range and order).
+  - `isCatch` and points (`app.js:160-170`) move to the server.
+  - The 9 server tests that post a `scenario` get rewritten.
+  - Two M tickets is my honest upper bound.
+- **W7 server side: M.** See B2.
+- **W8 parts: S each.**
+  - Deadline, `VERSION` and deny-list (as a ratchet) can land early.
+  - "No answer to client" waits for W4b; "append-only" waits for W1.
+  - `fake-claude.mjs:72` sniffing `verdict` is fine as long as `GRADE_SCHEMA` keeps that field.
+
+**Sequence:** W6 (QA) and W11, then W1, then W2 and W3 in parallel, then W4a, then W4b, then W7.
+
+**B2: byte-identical rendered prompts?**
+Yes, with three caveats.
+- **How it works:** turn the subject words into pack-supplied slots: "trade job", "journeyman", "NEC, OSHA, EPA", "trade knowledge", and the example clauses (`grade.js:11,21`; `scenario.js:16-29` "juice, nitro, fire bottle", "filter drier"). For demo-trades, the rendered text then stays byte-identical.
+- **Snapshot test:** compare `{system, user}` against a frozen copy. That copy needs an injectable RNG, because `scenario.js:38` uses `Math.random`.
+- **Caveat 1: the schema still changes.** Renaming `trade` to `subject` in `SCENARIO_SCHEMA` (`contract.js:41,44`) changes the request even though the text doesn't. So the snapshot must cover the full request (system + user + schema), and the rename counts as a change for the gate. I suggest dropping the field from the model schema, since the server sets it anyway (`index.js:73`).
+- **Caveat 2: inv. 5.** Pack text in `scenarioUserPrompt` (`scenario.js:49-56`: brief, hazards, twists) is not fenced today. Fencing it necessarily changes the bytes, so "byte-identical" and "inv. 5 compliant" can't both be true for the scenario prompt.
+- **Caveat 3: engine wording.** The templated engine text still has to read sensibly for a non-trade pack. That's a judgment for the evals engineer, not something a snapshot can prove.
+
+**Confidence:** medium-high
+**What would change my mind:** The architect rules (A5) that a schema field rename is outside inv. 4. Or the founder accepts fencing as a gated F1b change.
+
+### backend-engineer · 2026-10-09 · RISK
+The pack text in the scenario user prompt is unfenced (`server/prompts/scenario.js:49-56`), which breaks inv. 5 today. Keeping it byte-identical keeps the violation.
+- **Likelihood:** H
+- **Impact:** M
+- **Mitigation:** Put fencing in F1b as a deliberate `VERSION` bump that goes through the gate. Allow-list it in the W8 ratchet until then.
+
+### backend-engineer · 2026-10-09 · RISK
+The W4 contract has `cardId` but no run identity. Without one, a second play of the same card inherits caught or graded state, and events can't be grouped per attempt.
+- **Likelihood:** H
+- **Impact:** H
+- **Mitigation:** The architect adds `runId` (returned by a start call or the scenario call) to the A2 contract before W4a is specced.
+
+### backend-engineer · 2026-10-09 · RISK
+`node:sqlite` is still experimental on 22.22 (it prints a warning), and Render has no persistent disk, so the event log is wiped on every deploy.
+- **Likelihood:** M
+- **Impact:** M
+- **Mitigation:** Pin `engines >=22.13` and put `db.js` behind a narrow API so we can swap to `better-sqlite3` if the API shifts. Decide in A1 whether Render is in F1 scope at all.
+
+### frontend-engineer · 2026-10-09 · POSITION
+**Answering:** F1, F2, F3
+
+**F1: what changes in `web/app.js` and `web/api.js`. Size M, if the server returns the shape below.**
+- **STOP resolution.** `onStop` (`app.js:117`) stops calling `resolveStop`. It records only `stepId = steps[stepIndex].id`. Resolution moves into the grade request, so there's no extra round trip and STOP latency stays the same. Today the explain panel already reveals nothing before grading.
+- **Grade request.** `submitExplanation` (`app.js:148-174`) sends `{runId, stepId, explanation}`.
+- **Grade response.** The server returns `{verdict, reasoningScore, feedback, source, points, caught: {errorStepId, stepsLate} | null, correctAction?}`.
+  - `isCatch` becomes `Boolean(caught)`.
+  - `markLine` uses `caught.errorStepId`.
+  - `correctAction` is allowed under inv. 2 because it arrives after grading.
+  - `scoreStop` and `game.caught` leave the browser.
+  - The "Here's the right way" concatenation stays client copy, so spoken text still equals displayed text (`app.js:188-195`).
+- **Results.** `finish` (`app.js:211`) can't run `scoreRun` without errors. It becomes async: `POST /api/runs/:id/complete` returns the `scoreRun` output plus the pack's clean-run line, which replaces "Clean job. Nobody got hurt." at `app.js:228`.
+- **Browser fallback (`api.js:36`).** I'm against every form of client-side answer grading. Hashed or obfuscated keywords still leak answers. Proposal for A3:
+  - The server already answers within `GRADE_DEADLINE_MS=8000` with `mock-fallback` (`llm.js:16`), which is under the client's 12 s timeout. So the browser fallback only runs when the server is unreachable or returns 5xx.
+  - Replace it with a visible, spoken panel: "Couldn't reach the grader. Try again or skip." The explanation text is kept. Inv. 7 holds: no stall, and the fallback is shown.
+  - The `/shared/mock-grader.js` import leaves `web/`.
+- **Size.** About 60 changed lines in `app.js`, a rewrite of `api.js`, and one new failure-state panel. It's L if the server returns only `verdict` and the client has to rebuild scoring.
+
+**F2: the `web/speech/` interface. It can land with zero behavior change (S).**
+- **Layout.** `web/speech/index.js` is the facade; `web/speech/web-speech.js` is the provider.
+- **Signatures:**
+  - `speak(text, {rate, enabled}) → Promise<void>` resolves when speech ends or is cancelled. `enabled:false` keeps today's reading-time wait.
+  - `listen({onInterim}) → {result: Promise<string>, stop()}`
+  - `onHotword(phrases, handler) → unsubscribe`. In F1 it's a no-op stub, and `capabilities.hotword === false`.
+  - `cancel()` stops speech **and** pending waits. It is today's `stopSpeaking` (`speech.js:36`); keep that pairing or STOP stops feeling instant.
+  - `wait(ms)`
+  - `capabilities: {canSpeak, canListen, hotword}`
+- **Landing.** It's a move plus a rename, and one import line changes in `app.js`. Land it **before** W5 so both touches to `app.js` are sequential and done by the same engineer.
+
+**F3: proving the learner sees and hears the same thing (Playwright, `MOCK=1`).**
+- **Stubs at the browser API level, not at `web/speech/`,** so the same harness covers W10 and W5:
+  - `speechSynthesis.speak` logs `u.text` and fires `onend` asynchronously.
+  - A `SpeechRecognition` stub lets the test inject interim and final transcripts.
+- **Clock.** `page.clock` drives `STEP_GAP_MS` and the reading-time waits, so STOPs land on exact steps.
+- **What each run records:**
+  - spoken strings, in order;
+  - displayed text: transcript, verdict, feedback, points, source, score, and the results fields;
+  - `document.activeElement` after each panel change.
+- **Matrix.** 3 fixtures × {voice, text} × scripts:
+  - clean run;
+  - all missed;
+  - false alarm;
+  - late catch (`stepsLate` 1);
+  - wrong explanation;
+  - STOPs on two mistakes back to back.
+- **Comparison.** Golden JSON is captured on the current code before W4, and the replay diff after W5 must be empty.
+- **Extra checks:**
+  - Every `/api/*` response before grading is scanned for `error`, `why`, `correctAction`, `consequence`, `keywords` and `severity`; `localStorage` is scanned too.
+  - Zero console errors.
+  - `page.route` aborts the grade call to show the failure panel.
+  - Screenshots at 390 px and 1280 px.
+
+**Confidence:** medium-high
+**What would change my mind:**
+- The architect's A2 contract returns less than `caught` + `points`. Then F1 becomes L.
+- The founder wants grading offline in F1. Then we'd need a different design, such as grading queued until sync.
+
+### frontend-engineer · 2026-10-09 · RISK
+**Failure mode:** The contract keys STOP state on `cardId`. A card is replayable, so two runs or two tabs share one caught-set, and catches and scores come out wrong.
+**Likelihood:** M · **Impact:** H
+**Mitigation:** The start call returns `runId` (the `started` event). The STOP and complete calls take `runId`.
+
+### frontend-engineer · 2026-10-09 · RISK
+**Failure mode:** The results screen now needs the network (`finish` becomes async). A lost connection at the end of a run stalls the screen, and the "local-fallback" grading path disappears. Both are learner-visible changes, though only when something fails.
+**Likelihood:** M · **Impact:** M
+**Mitigation:**
+- Show the running total from the points already received, with a "Retry results" button.
+- The spoken copy for both failure states goes in the spec's copy table.
+- The golden-run allow-list names exactly these two diffs and nothing else.
+
+### frontend-engineer · 2026-10-09 · RISK
+**Failure mode:** With real timers, golden runs are flaky, because STOP lands on the wrong step around the 900 ms gap. A diff that's really just noise then gets waved through.
+**Likelihood:** H without a fake clock · **Impact:** M
+**Mitigation:** Use `page.clock` plus the async `onend` stub, and run each golden run 3 times in CI to prove the output is deterministic before capture.
+
+### qa-engineer · 2026-10-09 · POSITION
+**Answering:** Q1, Q2, Q3
+
+**Q1: golden runs are needed but not enough as proposed.** Fresh baseline: `npm test` gives `# tests 97 / # pass 97 / # fail 0`, exit 0, 6.1 s. Capture four layers per fixture (electrical, brazing, brakes) × script (perfect, one step late, false alarm, missed critical, empty explanation), in both MOCK and LIVE-against-fake-Claude:
+1. **Learner-visible:** displayed transcript lines, every `speak()` argument in order, feedback text, points, rating label, and the outcome line (`app.js:228`). Assert spoken equals displayed.
+2. **Outbound prompts:** the system and user text fake-Claude logged at `/__log`. Without this layer, W3 and W7 can drift prompts and nothing notices.
+3. **Grading outcomes:** verdict, `source` (live, mock or fallback), and fallback label. Include one hang run and one 429 run.
+4. **Screenshots** at 390 and 1280 px, used as a human diff aid and not as an assertion.
+
+Raw API JSON should **not** be golden, because W4 changes it on purpose. Determinism gaps:
+- `scenario.js:38` uses `Math.random` to pick the apprentice, so the rendered prompt isn't stable. We need an injectable seed or RNG before capture.
+- `Date.now()` ids (`index.js:74`) must be normalised.
+- `speak`/`wait` pacing needs Playwright `page.clock`, or golden runs take minutes and flake.
+
+Baseline must be committed under `tests/fixtures/golden/` **before any F1 ticket merges**, made from the current `main` SHA, which goes in the file.
+
+**Q2: what changes.**
+- **Expected to change:**
+  - `server.test.js`: all 12 tests share `catchBody`/`falseAlarmBody`, which post a full `scenario` (`server.test.js:12-13`).
+  - `contract.test.js`: trade → fixture mapping and the `trade` field.
+  - `validator.test.js`: `J` trade mismatch and the per-trade fixture loops.
+  - `llm-deadline.test.js`: imports move to the gateway. Its assertions (deadlines, ≤1 retry, fallback-block parsing) must **not** loosen.
+- **Untouched regression net:**
+  - `scoring.test.js` (9) and `mock-grader.test.js` (10);
+  - `grade-prompt.test.js` (7) and the scenario-prompt tests in `validator.test.js:231-263` (no prompt text changes in F1a);
+  - `game-balance.test.js`. Its "Someone got hurt" assertion may switch to the pack's rating label but must keep the same value for demo-trades.
+
+  Rule: any test whose assertion changes needs a line in the ticket naming the old and new assertion. Count: about 35 change, about 62 stay.
+
+- **Deny-list as a ratchet: yes.** Commit `tests/fixtures/deny-list-allow.json` with an exact `{file, word, count}` list. The test fails if a violation is not listed, **or** if a listed one is gone (forces the list to shrink). F1b's exit criterion is that the list is empty.
+
+**Q3: Playwright yes, in F1a.** It is installed (`/opt/node22/bin/playwright`, Chromium 1194). W5 rewrites STOP and results in `app.js`, and an HTTP check can't see what is spoken. W6 needs a browser anyway.
+
+**File ownership:** in `npm test`, use only a deterministic check: `git ls-files` maps every path to exactly one owner from CLAUDE.md's table. Checking each ticket's diff (`git diff --name-only <base>...HEAD` against the ticket's `Files:` list) depends on the base ref, a shallow clone and the branch. So it should be a separate `npm run check:ticket F1-T03` that QA runs at verify, not part of `npm test`.
+
+**Confidence:** high on Q2 and Q3; medium on Q1 (depends on how A2 reveals answers).
+**What would change my mind:** frontend showing an equivalent spoken/displayed capture without a browser, or the architect making the git base ref reliable in CI.
+
+### qa-engineer · 2026-10-09 · RISK
+**Golden baseline is captured after W1–W3 land, or with nondeterministic prompts.** If so, "nothing changed" is unprovable. · Likelihood M · Impact H · **Mitigation:** make W6 the first ticket and a merge prerequisite. Seed the RNG and inject the clock first, as a separate behavior-neutral ticket.
+
+### qa-engineer · 2026-10-09 · RISK
+**`fake-claude.mjs:72` tells grade calls from scenario calls by looking for `verdict` in the schema.** A schema move in W3 silently misroutes stubs, and the failure-path tests could pass for the wrong reason. · Likelihood M · Impact M · **Mitigation:** route on `promptId` metadata. Add a test that fake-Claude's `/__log` records the expected prompt kind for each call.
+
+### evals-engineer · 2026-10-09 · POSITION
+**Answering:** E1, E2, E3, E4
+
+**E1: start with a plain Node script, not promptfoo.** I checked `npm view promptfoo@0.124.1`: it is 31.7 MB unpacked with 76 direct deps (express, socket.io, opentelemetry, `posthog-node` telemetry, `python-shell`, drizzle/libsql) and needs Node ≥22.22.0. Our only dependency is `@anthropic-ai/sdk`. Its Anthropic provider would also bypass our gateway, which sets `output_config.effort`, the json_schema format, `server-side-fallback` and the deadline (`llm.js:31-47`). So we would end up writing a custom provider that calls our code anyway. Instead, `scripts/eval-prompts.js` (about 200 lines) would call the gateway, write recordings and compute metrics in a pure `evals/metrics.js`. The recording format below can feed a promptfoo provider later, at F3, when we have verifier and safety sets. This departs from `open-source-landscape.md` §5 item 5, so the architect needs to rule on it.
+- **Proven without a key:**
+  - The metric code: κ, confusion matrix, per-verdict κ and bootstrap CI, checked against hand-computed synthetic recordings.
+  - Replay determinism: the same recording gives a byte-identical metrics JSON.
+  - The staleness test.
+  - Runner refusal when there is no key or no cap.
+  - Cap abort: fake-claude returns a fixed `usage` of 1234/321, so the cost tally is deterministic.
+- **Hidden work for QA:** fake-claude needs a scripted response queue (it serves only one grade today), and its `verdict` sniffing at `fake-claude.mjs:72` will need updating.
+- **Needs a key:** the "catches a deliberately broken prompt" spike, and any κ figure.
+
+**E2: label format.** One row per case in `evals/sets/grader/labels.json`: `{id, goldVerdict, alsoAcceptable[], reasoningBand: "0"|"0.2–0.4"|"0.7"|"1.0", feedbackMustNot?, unsure: bool, labeller, date}`. The founder sees the stopped line, the credited mistake and the explanation, but **not** the existing `expectedVerdict`, so the labels are blind. We report the founder-vs-existing disagreement separately. Time: about 10 min to read the 3 scripts, then about 2 min per case, so **1 to 1.5 hours**. Confirming the existing labels would take about 30 min, but the answers would be anchored.
+
+**E3: cost.** I measured the rendered prompts: the system prompt is 2,816 chars and the user prompt averages 1,829 (max 2,416). With the schema that is about 1.6K input tokens. Output tokens are the big unknown: Opus 5.5 can't disable thinking, so I assume 150–1,000 at low effort. At $4/$20 per MTok, a call costs **$0.009–0.027**. One pass (32 cases × old + new = 64 calls) costs **$0.60–1.75**. I recommend 3 repeats so we can measure verdict flip rate: **$1.80–5.20**. **Proposed cap: $6 per run as a hard abort** (stop when spent plus the worst-case next call would exceed it), **and $25 per month.** The founder decides (F-2).
+
+**E4: recording format.** `tests/fixtures/recorded/grade@<VERSION>.json` holds:
+- `{promptId, promptVersion, promptSha256 (system text + schema), model, effort, sdkVersion, runDate, setSha256, labelsSha256, priceTable}`;
+- `calls[]`: `{caseId, repeat, userSha256, raw content blocks, stop_reason, usage, servedModel, ms, error?, fallback}`.
+
+We keep the raw blocks so the replay goes through `responseText` and `JSON.parse`. `userSha256` also checks that W7's rendered prompts are byte-identical (A5/B2).
+
+**Staleness rule:** the test fails if any prompt's `VERSION` has no matching recording, or if the recording's `promptSha256` differs from the current text. That second check catches a text change without a version bump, so it doubles as an inv. 4 test.
+
+**Confidence:** medium (low on output tokens).
+**What would change my mind:** promptfoo with a custom gateway provider running offline in under a day as an optional, non-default install; or the first live run measuring output tokens above 1.5K per call.
+
+### evals-engineer · 2026-10-09 · RISK
+The F1 κ gets misread as the SC κ≥0.6 (`data-and-evidence.md` §5). That line means fairness ratings on *real* grades. Ours would be 32 adversarial cases, where the 5 false_alarm verdicts follow almost directly from the input and inflate κ, and the 95% CI is roughly ±0.2. · L: H · I: M · Mitigation: report κ without the false_alarm cases, with CIs, and label it a regression gate. The PM decides whether F1 has a κ threshold at all.
+
+### evals-engineer · 2026-10-09 · RISK
+Nobody recorded who wrote the existing `expectedVerdict` labels. If the prompt's author wrote them, using them as ground truth breaks the separation between measurer and author (0002). · L: M · I: H · Mitigation: blind founder labels (E2). Treat the existing labels as "author labels" only.
+
+### evals-engineer · 2026-10-09 · RISK
+With no key there can be no recording for any `VERSION`, so the staleness test either keeps `npm test` red or gets quietly skipped. · L: H · I: M · Mitigation: an explicit `pending` list, shrunk like the deny-list ratchet, where only a founder `DECISION` can add an entry. Ties to F-4.
+
+### evals-engineer · 2026-10-09 · RISK
+`server-side-fallback` can serve a different model at a different price inside one run. · L: L · I: M · Mitigation: record `servedModel` on every call, cost each call at that model's price, and report fallback rate per version.
