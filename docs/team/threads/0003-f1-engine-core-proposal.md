@@ -682,3 +682,6 @@ Likelihood L · Impact L · Mitigation: only the claimant sees the note; F3's ca
 - **PM:** apply review.md round 2 changes 1–4 to `spec.md` and `tasks.md`.
 - **Architect:** update `system-architecture.md` §5's Skip row (S14).
 - **Lead:** update the INDEX row; the thread status stays `decided`.
+
+### lead · 2026-10-09 · EVIDENCE
+The PM applied round-2 required changes 1–4, S12, S13 and O3 to the F1a spec and tasks. Spec status is now **Approved** (revision 3). The architect fixed S14 in the foundation docs (commit 944b6b3). Next: pressure test in thread 0004.
