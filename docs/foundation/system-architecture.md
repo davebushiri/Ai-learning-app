@@ -67,7 +67,7 @@ The current files map onto this layout directly:
 | AI | Claude via `@anthropic-ai/sdk`, structured outputs, routing per pipeline | Existing integration and hardening | — |
 | Spaced repetition | **FSRS via `ts-fsrs` from day one** (MIT); see open-source-landscape.md | Leitner is about 20 lines. FSRS is open source and benchmarked best on recall prediction in its community benchmark (SuperMemo disputes the metric). | After about 4 weeks of review data |
 | Auth | None on localhost; an owner passphrase when deployed; passkeys later | Personal use first | A second user |
-| Hosting | Local first; Render for remote use (`render.yaml` exists). In F1 Render is a mock demo with ephemeral data (free plan, no disk) | — | Persistent hosting: pending founder F-5 (costs money) |
+| Hosting | Local first; Render for remote use (`render.yaml` exists). In F1 Render is a mock demo with ephemeral data (free plan, no disk). **One server process per database file** ([ADR 0003](../adr/0003-server-owned-card-and-attempt-api.md) Amendment 3: the STOP in-flight mark is in memory) | — | Persistent hosting: pending founder F-5 (costs money). A second instance or writer on one DB file: a new ADR first |
 
 ## 4. Governance: how quality is kept
 

@@ -319,3 +319,136 @@ F1a keeps all of this ("Empty explanation → graded as today"). It also records
 **Failure mode:** The pre-registered F3 rule "catch rate excludes attempts with skips" (spec "Events and metrics") throws away whole attempts. Grader timeouts are more likely with long explanations (voice transcripts are longer) or on mobile networks, so the drop-out isn't random. It could bias the voice vs text comparison (`voice-first.md` §6). This is an inference, not measured.
 **Likelihood:** L–M · **Impact:** M (it skews a primary metric of a pre-registered experiment)
 **Mitigation:** For F3, not F1a (this is a metric rule, not behaviour): exclude only the not-graded mistakes from the denominator, using the stored `notGradedStepIds`, and report the skip rate per arm as a health check. F1a already stores everything this needs.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** qa-engineer RISK "The golden replay and the e2e suite have no timing contract…"
+**Ruling: fixed (concede).** I checked the claim: a never-answering route under a paused clock hangs, and `AbortSignal.timeout` isn't faked (QA EVIDENCE). The fix is in the browser timer, not a slow real-time test.
+- **T17 / `web/api.js`:** every request timeout (12 s STOP and complete, 50 s live start) uses `setTimeout` plus `AbortController`, cleared when the request settles. This isn't an AI call, so inv. 3's `AbortSignal.timeout` rule doesn't apply ([ADR 0005](../../adr/0005-ai-gateway-and-prompt-registry.md) Amendment 2, last bullet). **Rejected:** a real-time 12 s test per surface (it adds minutes to every run, and timing in real time is what makes tests flaky).
+- **T03 and T01 timing contract** (add to both):
+  1. `page.clock.install()` before `page.goto`.
+  2. `browser-stubs.js` holds each `speechSynthesis.speak` utterance until the harness releases it. `cancel()` ends held utterances with the same events Chromium fires.
+  3. Script actions are keyed on DOM state ("line N appended", panel visible), never on elapsed time.
+  4. Time moves only through `page.clock.runFor`, and only while no `/api/*` request is pending. The harness tracks `request`, `requestfinished` and `requestfailed`. The only exception is the client-timeout tests, which hold the route and run the clock 12 000 ms.
+  5. Live-fake runs pin `GRADE_DEADLINE_MS=1500` and `SCENARIO_DEADLINE_MS=2000`, recorded in `manifest.json` as `env`.
+  6. Budget: one `--replay` of 61 runs ≤ 10 min, and the e2e suite ≤ 10 min, both quoted in the PR.
+- The baseline is unaffected: the old `api.js` timeout never fires, because the harness never advances the clock while a request is pending. The US2.1, FR-031 and FR-032 timeout e2e tests are `todo: 'F1a-T17'` until T17 lands.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** qa-engineer RISK "The golden harness breaks at T07 or T17…" and frontend-engineer RISK "The golden harness is tied to URLs…"
+**Ruling: fixed (concede both).** A harness that reads product files, or matches only one URL shape, turns a mid-wave refactor into a red merge gate. T03's acceptance must say:
+- **Isolation.** At replay the harness reads only `tests/golden/**` and `tests/fixtures/golden/**`. Explanations, line indices and the three masking lists are inline in `scripts.mjs`. The server is spawned only through `tests/helpers/server.mjs`. Enforced in `npm test` by a new `tests/golden-isolation.test.js` (add to T03's Files): no file in `tests/golden/` contains a path string under `fixtures/`, `packs/`, `server/` or `shared/`. **Rejected:** a self-test that renames `fixtures/`, because a crash mid-test leaves the working tree broken. `manifest.treeSha256` is capture-time metadata and is never compared at replay.
+- **Dual URLs.** `grade-aborted` aborts the first request matching `**/api/grade` or `**/api/attempts/*/stops`. `complete-aborted` aborts the first matching `**/api/attempts/*/complete`.
+- **Abort must fire.** Each run file records `abortsFired`. A `grade-aborted` run with 0 fails at all times. With the new flag `--expect-aborts`, used for T17's and T19's evidence, a `complete-aborted` run with 0 fails too. Before T17 there is no `complete` request, which is why that check needs the flag.
+- **Results wait:** `#results-screen:not([hidden])` or a visible `#results-error`.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** qa-engineer RISK "Most fake-Claude failure modes are never tested on the new routes."
+**Ruling: fixed (concede). FR-026 is pinned by [ADR 0005](../../adr/0005-ai-gateway-and-prompt-registry.md) Amendment 2's outcome table.** I verified on SDK 0.132.0 against `fake-claude.mjs` with a 1500 ms signal and `maxRetries: 1`:
+- 429 with `retry-after: 60` throws `APIUserAbortError` at 1502 ms after 1 request;
+- hang throws `APIUserAbortError` at 1503 ms;
+- 500 throws `InternalServerError` at 399 ms after 2 requests;
+- 529 throws `InternalServerError` at 443 ms after 2 requests;
+- `max_tokens` resolves.
+
+So the outcomes are: hang → `timeout`; **429 ra=60 → `timeout`** (the SDK honours `retry-after`, and the deadline aborts the sleep); 500 and 529 → `fallback`; refusal → `refusal`; **`max_tokens` → `fallback`** even if the text parses; non-JSON → `fallback`; wrong-schema → `fallback`; fallback block → `ok`.
+- **Placement:** T01 declares "edge: fake-Claude failure matrix (start)" as `todo: 'F1a-T12'` and "(stops)" as `todo: 'F1a-T13'`, one table-driven test per route over QA's 9 modes. Each row asserts:
+  - 200;
+  - `source` is `fixture-fallback` or `mock-fallback` (`live` for the fallback block);
+  - `ms ≤ deadline + 1000`;
+  - exactly one new `llm_call` row with the table's `outcome`;
+  - `started` with `promptVersions {scenario:'scenario@1'}`, or exactly one triplet with `graded.context.promptVersions {grade:'grade@1'}`.
+- **Wrong-schema rows must be `{}`** (no `feedback`). `{verdict:'bogus', feedback:'x'}` is clamped to `wrong` and is correctly `ok` (normalize, then accept).
+- **Every happy-path LIVE test asserts `source: 'live'`** (T08, T12, T13, T16). That is what turns US5.5 from "falls back" into "fails loudly".
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** qa-engineer RISK "QA tickets are undersized, and QA sits on the critical path."
+**Ruling: sizes are the PM's call. The `todo` guardrail is fixed (concede).** `node --test` reports a failing `todo` as passing, so an unmapped `todo` hides a red acceptance test until T19. T01 adds a test, "every todo reason in tests/acceptance and tests/e2e matches /^F1a-T\d\d$/", which reads the source. SC-004 already requires `# todo 0` at close. The scenario-to-ticket table is then a grep of those reasons, so it needs no second document to keep in sync.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** qa-engineer RISK "Two success criteria have no owner or can't be measured as written."
+**Ruling: fixed (concede).**
+- **SC-007 →** "Every test that triggers `run()` asserts exactly one new `llm_call` row with non-empty `pipeline`, `prompt_version`, `model`, integer `ms` and an `outcome` in the five values. `tests/gateway.test.js` proves one `logCall` on every exit path of `run()` (each row of ADR 0005 Amendment 2's table, plus a throwing `logCall`). Every test file that starts fake Claude asserts in `after` that its `/__log` has zero `kind: null` entries (from T09)." That's provable, and it doesn't need a cross-suite counter.
+- **SC-009 →** T19 runs it as a scripted measurement, `tests/perf/stop-latency.mjs`: MOCK, 10 warm-up requests excluded, 100 measured, p95 reported in `qa-report.md`. It is not in `npm test`. A miss is a bug ticket, not a flaky assertion.
+- **SC-006 →** T06, by name ("UPDATE on event throws append-only", "DELETE on event throws append-only").
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** backend-engineer RISK "T18 will break tests that T08, T12 and T13 add…"
+**Ruling: fixed (concede).** No new test may compare against something a later ticket deletes.
+- **T08:** its tests are route-independent. They use `createGateway` in-process with a real SDK client pointed at fake Claude (`new Anthropic({apiKey:'sk-fake', baseURL: stub.url})`) and `logCall` into `openDb(':memory:')`. Hang, 500, ok-row and `[claude]`-line tests run there, with the line captured from `console`. "MOCK grade on the legacy route writes one llm_call row" moves to T13 as "MOCK STOP writes one llm_call row grade@1 outcome mock". The legacy routes' HTTP fallback timing stays covered by `tests/llm-deadline.test.js`, which T16 ports.
+- **T12:** "scenarios list equals the frozen list" uses the three `{id, label}` pairs inline, in today's order.
+- **T13:** "MOCK verdicts equal the frozen table" compares with `tests/fixtures/f1a-mock-verdicts.json` (add to T13's Files): 3 cards × every step × 4 explanations, `{cardId, stepId, explanation, verdict, reasoningScore, feedback}`. It is generated once from the pre-T13 3-argument `mockGrade` before that ticket edits it.
+- **T21:** `tests/rating-keys.test.js` compares with an inline frozen `{fixture, player, label}` table, never `r.rating`.
+- **Rule for every ticket:** any test that has to use a legacy route is listed in T18's Files with `old → new`. With the above, I expect none.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** backend-engineer RISK "T08's run() return value drops the error…"
+**Ruling: fixed (concede all three). Recorded in [ADR 0005](../../adr/0005-ai-gateway-and-prompt-registry.md) Amendment 2.**
+- **`meta.error: string | null`.** For an abort it is exactly `Claude <promptId> timed out after <deadlineMs> ms`; for an SDK error it is `err.message` unchanged. `content` and `assessment` call `noteLive` and keep the `[grade] …` and `[scenario] …` warn lines, so BRAIN-08 `/401/` and llm-deadline `/timed out after 1500 ms/` hold with no assertion change. `meta.error` never goes into a body, an event or `llm_call`.
+- **`clampGrade` goes in a gateway hook, not the caller.** `run()` gains optional `normalize(data) → data`, run on live data before `accept` and never on fallback data. Grade passes `normalize: clampGrade` and `accept`: non-empty feedback. Scenario passes `normalize` for the id stamp. **Rejected:** "run returns raw and assessment clamps", which builds a second fallback path outside the gateway.
+- **The call is `client.beta.messages.create`.** T08 and FR-024 must say so. Injected fakes are `{beta: {messages: {create}}}`. The `messages.create` grep guardrail still matches.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** backend-engineer RISK "The sizes aren't honest…"
+**Ruling: sizes and splits are the PM's call. I have no technical objection, with two conditions.** Moving `projectAttempt`'s build from T06 to T13 is fine: its home stays `shared/events.js` and ADR 0002 is unaffected, so T06's test list moves with it. If T07 or T13 is split, the halves edit the same files (`server/services/content.js`, `server/services/session.js`, `server/routes/attempts.js`), so they are **sequential, never [P]**. They must be added to the "Shared files are edited in sequence" rule.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** backend-engineer RISK "The in-flight 409 design is sound in one process, but it gives a spurious error on the most common retry." Also frontend-engineer RISK "Small contract and rendering gaps", item (a).
+**Ruling: fixed (concede). Recorded in [ADR 0003](../../adr/0003-server-owned-card-and-attempt-api.md) Amendment 3.**
+- **A same-`stepId` STOP that is in flight joins it.** Use `inFlight: Map<attemptId, {stepId, promise}>`. A same-step request awaits the pending promise and returns its body, or the same 500. It writes no events and makes no second grade call, and its explanation is ignored. This extends the replay rule to a STOP that hasn't finished; it is not the queue Amendment 1 rejected. A different `stepId`, or `complete`, while a STOP is in flight → 409.
+  - **FR-007 check 5 →** "a STOP in flight for this attempt: same `stepId` → await it; otherwise 409".
+  - **Spec edge case at line 158** is reworded to match.
+  - **T13 test →** "same STOP twice in flight: both 200, identical body, one triplet, one grade call" plus "different stepId while one is in flight: 409, no events" (replacing "one 200, one 409").
+  - **T01 edge test** is renamed to match.
+- **Single-instance assumption:** written into ADR 0003 Amendment 3 and `system-architecture.md` §3. One server process per DB file; any scale-out needs a new ADR with a DB-level guard first.
+- **409 body stays `{error}`.** Rejected: `code: 'completed'|'in_flight'` and frontend's `retryable`. After joining, the remaining 409s need a second tab or a client bug, and the browser handles every 409 the same way. Either field can be added later (additive) if a client needs it.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** backend-engineer RISK "Smaller node:sqlite gotchas the T06 interface doesn't cover."
+**Ruling: fixed (concede).** The ROLLBACK is the important one. Without it, one failed `appendEvents` leaves the connection inside `BEGIN`, so every later `BEGIN` throws and every write answers 500 until the process restarts. That is a stall (inv. 7).
+- **T06 `appendEvents` and each migration:** `exec('BEGIN')` … `exec('COMMIT')`, then `catch (e) { try { exec('ROLLBACK') } catch {} throw e }`. Don't branch on `isTransaction`. It exists on 22.22.0 (I checked) but nothing needs it. New test: "after a failed appendEvents, the next appendEvents succeeds".
+- **Every `Db` reader returns plain objects:** copy the row into an object literal and `JSON.parse` the JSON columns. New test: "Db returns plain objects" (`Object.getPrototypeOf(x) === Object.prototype` for an event, its `result` and a card row).
+- **`ExperimentalWarning`:** accepted (already in the spec's Assumptions).
+- **T12:** `input: {key, entry, recentSummaries: []}`. Today's call passes none, and the default is `[]`.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** frontend-engineer RISK "A late or duplicate response corrupts the game state…" and, for its concurrency half, RISK "Inv. 9 and voice…"
+**Ruling: no contract change needed; T17's interface is fixed as proposed, with one test replaced.** The server already makes duplicates harmless:
+- the same-step STOP returns the identical body whether it is graded (replay) or in flight (join, Amendment 3);
+- `complete` is idempotent;
+- the server's record wins at `complete` (US2.14).
+
+So client tokens are purely presentational: dropping a stale response never loses data. T17 adds:
+- `stopToken` and `resultsToken`, checked after every `await`, including between the two `speak()` calls of the results chain;
+- "Try again", "Skip this stop", Submit and the mic disabled while a STOP or `complete` request is pending;
+- Submit and Enter in the error state run Try-again;
+- `toggleMic` calls `cancel()` before `listen()`.
+
+Because Skip is disabled while pending, "Skip while Try again is pending" can't happen. Replace that test with "Skip, Submit and mic are disabled while a STOP request is pending". Keep "a double press on Try again sends one request" and "Run another job during a pending complete: results never appear over setup", and add "no `speechSynthesis.speak` after `#again-btn`".
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** frontend-engineer RISK "T17 is L, not M, and the file list blocks unit tests (TDD)."
+**Ruling: the split is the PM's call. `web/copy.js` is accepted (concede).** Pure copy builders belong in a module that `node --test` can import. Conditions:
+- `web/copy.js` exports `graderErrorText`, `resultsNote`, `runEndLine` and `feedbackText`;
+- it has no DOM access and imports nothing (not `app.js`, not `/shared/*`);
+- it is scanned by the deny-list;
+- it returns byte-identical copy.
+
+Add it and `tests/web-copy.test.js` to T17's Files, and change FR-046's "in `web/app.js`" to "in `web/copy.js`". If T17 is split, every part edits `web/app.js`, so the parts are sequential.
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** frontend-engineer RISK "Small contract and rendering gaps (FR-008, FR-007, FR-035, FR-045)."
+- **(a) Fixed** by Amendment 3: the join removes the in-flight 409 on the same step, and `retryable` is rejected. On the inference: with one process and one connection, `busy_timeout` never waits on our own writes, so 8 s + 5 s doesn't happen in F1.
+- **(b) Accepted.** The server's record wins, and `explained.result.text` stores what was actually graded. The PM adds an edge case: "an edited answer re-sent for a STOP that is graded or in flight is ignored".
+- **(c) Fixed.** The server may start with zero valid packs (degrade, inv. 7), and `/api/subjects` then answers 200 `[]`. T17 treats `[]` from `/api/subjects` or `/api/scenarios` as a state, not an exception: "Start the job" is disabled and the PM's copy row is shown. The e2e test fulfils `/api/subjects` with `[]` and asserts the copy and 0 console errors.
+- **(d) Fixed.** T17 builds `missed[]` items with `createElement` and `textContent` and no `innerHTML`. `li.classList` gets the severity only when it is one of `critical`, `major` or `minor`, plus `not-graded`. Replace "rendered with escapeHtml" in T17. `validateScenario` already enforces the severity enum (`shared/contract.js:147`), but the browser must not rely on that (FR-045).
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** learning-designer POSITION (Q4) and RISK "Spec rev 3 line 153 locks F2's voice 'skip' to 'not graded'."
+**Ruling: F2 (ticket for the F2 spec). F1a needs no contract change.** The line-153 rewording is the PM's text edit, and I have no technical objection. The technical constraint for F2: a learner's "not sure" **must never be written to `completed.result.skippedStepIds`**. That field means "the grader failed", and the two must stay separable in the log forever (inv. 6).
+- **Shape:** the architect decides it at F2 spec review, as an additive ADR 0002 amendment (for example a new `graded.result.outcome` value `unexplained` and a STOP-body flag). I won't pre-decide it here.
+- **Scoring and the FSRS mapping:** decided by the PM, advised by the learning designer.
+- F1a already stores what F2 needs to find past empty submits (`explained.result.chars = 0`).
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Answering:** learning-designer RISKs "every mistake not graded → tiers[3]" and "F3 catch rate excludes attempts with skips."
+**Ruling: accepted for F1a. Both are projections over stored ids, so changing them later loses nothing (inv. 6).** The F3 metric rule is the PM's call in F3. `notGradedStepIds` is already stored, so excluding only those mistakes from the denominator is feasible as proposed. Showing no rating when `maxPossible` is 0 is a **contract change**, because `ratingKey` would become nullable or gain a key. The F2 Results spec must bring it to architect review as an ADR 0003 amendment.

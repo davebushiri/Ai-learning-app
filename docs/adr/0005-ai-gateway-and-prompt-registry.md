@@ -1,6 +1,6 @@
 # 0005. AI gateway, prompt registry, `x-prompt-id` header, and what counts as a prompt text change
 
-**Status:** Accepted. Founder F-4 = (a): W7's prompt rewrite is held at the gate until a key and labels exist. Amended 2026-10-09 (below).
+**Status:** Accepted. Founder F-4 = (a): W7's prompt rewrite is held at the gate until a key and labels exist. Amended 2026-10-09 (Amendments 1 and 2, below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A4, A5, follow-up 4)
 
@@ -76,3 +76,24 @@ Clarifications only. Reasons are in [`docs/specs/F1a-server-owned-cards/review.m
   An F1a test freezes both fingerprints, so the F-6 `pending` entries in F1b pin exactly those values. The staleness test itself is F1b.
 - **`server/ai/models.js`** holds `MODEL`, the effort constants and the deadline constants (env-overridable, defaults 40000 / 8000).
 - **Console lines.** Today's `[claude] …` console lines stay byte-compatible (`tests/server.test.js` BRAIN-08).
+
+## Amendment 2 (2026-10-09, F1a pressure test, thread 0004)
+Additive changes to `run()` and clarifications. Reasons are in [thread 0004](../team/threads/0004-f1a-pressure-test.md) (backend RISK "run() drops the error", QA RISKs "failure matrix" and "timing contract").
+- **`run()` result `meta` gains `error: string | null`.** It is `null` for `ok` and `mock`. For `timeout` it is exactly `Claude <promptId> timed out after <deadlineMs> ms`, which is today's `llm.js:53` text. For an SDK error it is `err.message` unchanged, so `/api/health.lastLiveError` keeps matching `/401/`. For other failures it is a short reason: `Claude declined: <category>`, `Claude response was cut off (max_tokens)`, `Claude returned no text`, the JSON parse message, or the `accept` problems joined with `"; "`. `meta.error` goes to server logs and `/api/health` only. It is never put in an HTTP body, an event or an `llm_call` row (no new column).
+- **Services keep their side effects.** `content` and `assessment` call `noteLive(what)` on `ok` and `noteLive(what, {message: meta.error})` on `timeout`, `refusal` or `fallback`. They also keep today's `[grade] live grading failed, using keyword grader: <meta.error>` and `[scenario] live generation failed, using fixture: <meta.error>` warn lines. MOCK calls neither, as today. The gateway owns only the `[claude] …` lines.
+- **`run()` gains `normalize(data) → data`** (optional, default identity). Order on the live path: `responseText` → `JSON.parse` → `normalize` → `accept(normalized)` → problems mean fallback. `normalize` never runs on `fallback()` output, and a throw inside it counts as outcome `fallback`. Grade uses `normalize: clampGrade` and `accept: g => g.feedback.trim() ? [] : ['Claude returned empty feedback']`. Scenario uses `normalize` for today's id stamping and `accept: validateScenario`. The decision's "accept … for example clampGrade" was imprecise, because `clampGrade` is a transform. Rejected: clamping inside `accept` (a validator with side effects), and clamping in the caller after `run()` (a second fallback path outside the gateway, with its own logging gap). The server-decides-false-alarm rule (FR-006) stays in the caller.
+- **The call is `client.beta.messages.create(body, {signal: AbortSignal.timeout(deadlineMs), maxRetries: 1, headers: {'x-prompt-id': …}})`.** `betas` and `fallbacks` need the beta resource. Injected test clients have the shape `{beta: {messages: {create}}}`. The grep guardrail for `messages.create` matches `beta.messages.create`, so "one call site" still holds.
+- **Outcome by what ended the call**, using typed SDK classes (never message text):
+
+  | What happened | `outcome` | `source` |
+  |---|---|---|
+  | Valid data, including text after a `fallback` block | `ok` | `live` |
+  | `Anthropic.APIUserAbortError`: a hang, or a `retry-after` the SDK would sleep past the deadline (verified on SDK 0.132.0: 429 with `retry-after: 60` at 1500 ms throws this at 1502 ms after 1 request) | `timeout` | `fallback` |
+  | `stop_reason === 'refusal'` | `refusal` | `fallback` |
+  | Any other SDK error after the one retry (400, 401, 429 with a short `retry-after`, 500, 529, connection error) | `fallback` | `fallback` |
+  | `stop_reason === 'max_tokens'` (even if the text parses), empty text, non-JSON, a throw in `normalize`, `accept` problems (wrong-schema JSON) | `fallback` | `fallback` |
+  | `live: false` | `mock` | `mock` |
+
+  Every row writes exactly one `llm_call` row and answers within `deadlineMs + 1 s`.
+- **Scope of the `AbortSignal.timeout` rule.** Inv. 3's deadline rule covers model calls in the gateway. Browser request timeouts in `web/api.js` are not AI calls. They use `setTimeout` plus `AbortController`, cleared when the request settles, so Playwright's `page.clock` can drive them (`page.clock` does not fake `AbortSignal.timeout`; QA EVIDENCE in thread 0004).
+- **Verification:** unit tests in `tests/gateway.test.js` with an injected client cover every row of the table, plus "timeout meta.error is 'Claude grade timed out after 1500 ms'" and "normalize runs before accept and never on fallback data". The fake-Claude failure matrix test drives each row through `POST /api/attempts` and `POST …/stops`.
