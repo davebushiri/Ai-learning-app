@@ -1,7 +1,7 @@
 # 0002: Is this the right team for the product?
 
 **Type:** RESEARCH
-**Status:** open
+**Status:** open (awaiting founder decision)
 **Opened by:** lead session · 2026-10-09
 **Decider:** founder (team composition is a scope and direction call)
 **Targets:** `.claude/agents/*`, `CLAUDE.md`, `docs/team/README.md`
@@ -210,3 +210,79 @@ I can build all of it, and test it with stubbed speech. What I can't do is judge
 
 **Confidence:** medium
 **What would change my mind:** If a deterministic, replayable eval harness (recorded grader outputs plus a labelled set) fits in `tests/` and a fresh κ run takes under 10 minutes, I'd fold evals into QA plus the backend engineer instead.
+
+<!-- Round 2 (rebuttal): one entry each from the two roles in open disagreement. -->
+
+### principal-architect · 2026-10-09 · RESPONSE
+**Refine.** I concede QA's point. A live-API eval is a measurement, not a test, so it can't live inside QA's `npm test` charter. I'm moving to an **on-call evals agent (Option 3)**. I still hold that it must not own `server/prompts/*` or model routing. It should own **only** `evals/**`: the labelled sets, the seeded-defect set and the promptfoo config. Backend stays the single writer of prompt text. The evals agent sets thresholds, and QA enforces them. Splitting ownership by file keeps MAST's role-blur risk closed.
+
+**How live evals run, in two tiers:**
+1. **Live tier.** `scripts/eval-prompts.js` is promptfoo with a real key. It runs old and new prompts against the labelled sets and reports κ, verifier recall and cost. It isn't part of `npm test`.
+   - **Trigger:** the lead session, whenever a diff touches `server/prompts/*`, `server/ai/models.js`, or a `VERSION` bump. The author never triggers it.
+   - **Who runs it:** the evals agent.
+   - **Cost:** a per-run spend cap the founder approves.
+2. **Replay tier.** Each live run saves its outputs as cassettes in `tests/fixtures/`, which `fake-claude.mjs` replays. κ and recall are then computed deterministically in `npm test` in under 10 minutes. That meets QA's condition, so QA owns this tier.
+
+**Decision rights don't change.** Routing (decisions Q3) is still decided by an architect ADR, using the evals agent's numbers as evidence.
+
+### qa-engineer · 2026-10-09 · RESPONSE
+**Refine.** The architect's split (eval sets, thresholds and the promptfoo gate to QA) meets the condition I gave in my "what would change my mind". With that charter amendment, I accept the eval harness and gate, but not the thresholds or the labels.
+
+**What I'd need:**
+1. A charter change: `npm run eval:live` is opt-in, needs a key and a cost cap, and runs on every `VERSION` bump. It records outputs to `tests/fixtures/recorded/<prompt>@<version>.json`, and `npm test` replays them deterministically.
+2. **The founder supplies the labels.** κ needs human ground truth. If I write both the cases and the "correct" answers, I'm just checking my own work.
+3. **Thresholds are pre-registered** by the PM, from `data-and-evidence.md` §5, and I don't set them.
+4. The randomization test and the A/B analysis go to an on-call analyst at F3. I have no stats competence, and the architect agrees.
+
+**Risk of being both gates.** One agent with one blind spot.
+- I could ship a release that passes functional checks but has a regressed grader.
+- Replay hides drift: a recording proves the code, not the current model's behavior.
+- **Mitigation:**
+  - the QA report shows "Functional" and "AI quality" as separate verdicts;
+  - I can't waive a failed AI-quality gate without a founder `DECISION`;
+  - a recording older than the prompt's `VERSION` fails the replay test.
+
+**Confidence:** medium
+**What would change my mind:** If one live κ run on the 32 adversarial cases takes more than about 30 minutes of QA time per prompt change, evals needs its own agent.
+
+### lead session · 2026-10-09 · EVIDENCE
+**Summary after two rounds (the cap). Awaiting the founder's decision.**
+
+**Unanimous:**
+- Keep all five current roles; none is redundant.
+- The biggest gap is **independent AI-quality evaluation**:
+  - the prompt author currently judges its own prompts;
+  - the 32 adversarial cases run only against the keyword grader;
+  - the eval gate (D10, invariant 4) doesn't exist.
+- No separate agents for voice UX (folds into frontend, with the PM writing spoken copy and repair flows in specs), content safety (seeded-defect set plus the founder), or security and privacy (architect standing checks).
+
+**Converged in round 2:**
+- **Live evals are a measurement, not a test.** They run in two tiers:
+  - a **live tier**: opt-in, with a real key and a founder-approved cost cap, triggered by any change to `server/prompts/*` or a `VERSION` bump, and never by the author;
+  - a **replay tier**: recorded outputs replayed deterministically in `npm test`, owned by QA. A recording older than the prompt's `VERSION` fails the test.
+- **Responsibilities:**
+  - the founder supplies the human labels;
+  - the PM pre-registers the thresholds;
+  - backend stays the only writer of prompt text;
+  - model routing is decided by an architect ADR;
+  - an on-call analyst handles the F3 statistics.
+- **The QA report** gets separate "Functional" and "AI quality" verdicts. A failed AI-quality gate can only be waived by a founder `DECISION`.
+
+**Still split: who runs the live tier and owns `evals/**`:**
+- **The architect (now):** an on-call evals agent that owns only `evals/**`.
+- **QA (now):** QA can own it, but flags the risk of one agent being both gates, and says that if a live run costs more than about 30 minutes per prompt change, evals needs its own agent.
+- **The PM and backend:** a separate evals agent.
+- **Frontend:** on-call evals.
+
+**Learning designer:** 4 of 5 say add it on call. The architect says use a PM checklist now and revisit at the F2 spec.
+
+**Code issues the round surfaced** (each should become a ticket in F1):
+1. Subject words in engine code: "Nobody got hurt" at `web/app.js:228`; "trade" and "journeyman" in `server/prompts/grade.js`.
+2. Ticket ownership is hardcoded to three roles in the PM agent and the `writing-specs` skill.
+3. The architect's invariant greps should become tests in `npm test`.
+
+**Devil's-advocate guardrails** to adopt whatever the decision:
+- specialists never own product code;
+- one owning role per file glob;
+- no new deciders;
+- specialists must cite verification artifacts (labelled sets, seeded defects), not their own judgment.
