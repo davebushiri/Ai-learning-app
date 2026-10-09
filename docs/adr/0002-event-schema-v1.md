@@ -1,6 +1,6 @@
 # 0002. Event schema v1 (`shared/events.js`) and the F1 verb subset
 
-**Status:** Accepted. Amended 2026-10-09 (below).
+**Status:** Accepted. Amended 2026-10-09 (Amendments 1 and 2, below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A2, risk "chatty events")
 
@@ -71,3 +71,10 @@ Additive only, under the change rule above. Reasons are in [`docs/specs/F1a-serv
 - **Ids.** `evt_` ULIDs are unique, but not ordered within one millisecond. Order is always `seq`.
 - **Repeat `complete`.** The repeat body is recomputed from the card, the events and the pack, all of which are immutable. It is not stored in `completed.result`.
 - `projectAttempt(events)` stays in `shared/events.js` (pure), and returns the names above: `{cardId, caughtStepIds, lastStopStepId, stopsByStepId, completed}`.
+
+## Amendment 2 (2026-10-09, F1a re-review, spec OI-13 (b))
+Additive. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../specs/F1a-server-owned-cards/review.md) "Re-review (round 2)". The PM chose Skip Option B ("not graded") in [thread 0003](../team/threads/0003-f1-engine-core-proposal.md).
+- **`completed.result` gains `notGradedStepIds: int[]`.** F1a always writes it (possibly empty). Readers treat a missing field as `[]`. It lists the mistakes that a skipped stop would have credited and that were still uncaught at complete (`notGradedStepIdsFor` in `shared/scoring.js`).
+- **`completed.result.missedStepIds` excludes not-graded mistakes.** For every `completed` event, the caught set (from `projectAttempt`), `missedStepIds` and `notGradedStepIds` are disjoint, and together they cover every mistake on the card. A projection that reads `missedStepIds` as "true misses" stays correct without knowing about skips.
+- **The stored ids are the record. Never recompute them.** `notGradedStepIds` depends on `RULES.graceSteps` at the time, and that is engine code, not immutable data. A repeat `complete` and every later projection (F2 mastery and FSRS, F3 catch rate) read `skippedStepIds` and `notGradedStepIds` from the stored `completed` event. They never call `notGradedStepIdsFor` again. This narrows Amendment 1's "repeat body is recomputed": text fields still come from the card and pack, and the skip and not-graded sets come from the log.
+- Rejected: leaving `notGradedStepIds` out, so it would be re-derived from `skippedStepIds`. That re-derivation silently changes historic attempts when the grace rule changes.

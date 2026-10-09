@@ -305,3 +305,150 @@ T11's test asserts that every listed file has exactly one owner. Today 39 of the
 16. **Live-run masking (OI-10):** in T03's normalization, mask the values only, with the membership check.
 17. **Should-fix items:** apply S1–S10 (db names and index use; the id test; the leak scan's `error` rule; the `cardForAttempt` rename; the T05 fingerprint freeze; the fix-line condition; README in T18; orphan attempts in the edge cases; releasing the in-flight mark).
 18. **Order:** add T11 to T19's `Depends on`. Mark OI-1 to OI-7, OI-9, OI-10 and OI-12 as resolved, citing this review. Leave OI-8 open for the founder, with the recommendation above.
+
+---
+
+## Re-review (round 2)
+
+**Reviewer:** principal-architect · **Date:** 2026-10-09 · **Reviewed:** `spec.md` and `tasks.md` revision 2 (commit `9dc25c5`, 21 tickets, with T20 and T21 split out), and the PM DECISION at the end of [thread 0003](../../team/threads/0003-f1-engine-core-proposal.md) (Skip = Option B).
+
+### Verdict: APPROVED WITH CHANGES
+
+All of B1–B12 and S1–S10 are applied, and the OI resolutions are written into the spec. No ticket now has to break an invariant to be completed. Four changes remain (listed below). They are local to T12, T13, T14 and T17, and one of them fixes a correctness bug this round found.
+
+- **Can start now:** Waves 0 and 1 (T01–T11, T20) and T15, unchanged.
+- **Before T12, T13, T14 and T17 start:** the PM applies changes 1–4 to the spec and tickets.
+- **No round 3:** I'll verify the four changes in code review against the tests they name.
+
+**Evidence (2026-10-09, this round):**
+- `npm test`: `# tests 97`, `# pass 97`, `# fail 0`, `# skipped 0`, `# todo 0`.
+- `tasks.md` has 21 ticket headings, F1a-T01 to F1a-T21.
+
+**ADR changes made in this round** (additive; no earlier decision text changed):
+- [0002 Amendment 2](../../adr/0002-event-schema-v1.md): `completed.result.notGradedStepIds`; `missedStepIds` excludes not-graded mistakes; the caught, missed and not-graded sets partition the card's mistakes; stored ids are read back, never recomputed.
+- [0003 Amendment 2](../../adr/0003-server-owned-card-and-attempt-api.md): `notGraded: true` on `missed[]` items, present only when true; the `skippedStepIds` echo; `complete` while a STOP is in flight → 409; repeat `complete` reads the stored ids.
+- [0004 Amendment 1](../../adr/0004-no-grading-in-the-browser.md): Skip is "not graded" (PM Option B). This replaces "scored as missed".
+- `docs/foundation/decisions.md`: D18, D19 and D20 rows updated. The stale OI-8 "Pending founder" row is closed, citing the founder DECISION.
+
+### OI-13 ruling (Option B contract)
+
+| Part | Ruling | Rule |
+|---|---|---|
+| (a) `notGraded: true` on `missed[]` items | **Accepted, narrowed** | Present **only** on not-graded items and never `false`, with `points: 0`. Ordinary items keep exactly six keys, so T14's test "three missed items with exactly the six keys" and the 48 MOCK golden runs are unaffected. Card order. A separate `notGraded[]` array is rejected: it duplicates the item shape, and a client that ignored it would lose the reveal. |
+| (b) `completed.result.notGradedStepIds` | **Accepted, extended** | Always written; readers treat a missing field as `[]`. `missedStepIds` excludes not-graded ids. Caught, missed and not-graded are disjoint and cover every mistake. **Stored ids are the record:** a repeat `complete` and every later projection read `skippedStepIds` and `notGradedStepIds` from the stored event and never call `notGradedStepIdsFor` again, because the set depends on `RULES.graceSteps`, which is code and isn't immutable. |
+| (c) `skippedStepIds` echo in the `complete` response | **Accepted** | Always present: the **effective** ids (body minus ids with a graded STOP), equal to `completed.result.skippedStepIds`. The browser's note uses `result.skippedStepIds.length`, so delete T17's "if declined" fallback. `notGradedStepIds` itself isn't on the wire; the flag carries it. |
+
+### Interface choices (item 2 of the PM's follow-ups)
+
+- **`run({prompt})` takes the prompt module namespace: confirmed.** `VERSION` stays a top-level export (inv. 4's single source), and the eval runner (ADR 0007) passes modules the same way. A plain object `{PROMPT, VERSION}` also satisfies it, which keeps unit tests simple. Should-fix S12 below adds a guard.
+- **`session.js` exports `createSession({db, packs, gateway, mock})` and a pure `planStop(...)`: confirmed, with one correction (change 4).**
+  - `planStop` stays in `server/services/session.js`, not `shared/`. It returns HTTP statuses, and it calls `resolveStop`, which ADR 0004 bans from `web/`. Putting it in `shared/` would invite browser use.
+  - Injection must reach the code that calls the gateway. As written, `content.cardForAttempt` and `assessment.gradeStop` would use the module-level gateway from `ai-client.js`. In that case T13's tests with a stub gateway that "resolves after 100 ms" or "rejects" would never reach the stub.
+
+### Bug found this round
+
+**R2-B1. `complete` during an in-flight STOP writes `completed` before that STOP's triplet** (T13 and T14 as written; FR-007, FR-009).
+- **Concrete input:** LIVE mode, fake Claude delays the grade by 5 s. `POST …/stops {stepId:3}`, then 1 s later `POST …/complete {lastStepShown:10}` from a second tab, or from a client whose STOP request it treats as failed.
+- **What happens:** `completeAttempt` doesn't check the in-flight mark. It writes `step-shown` and `completed` (total 0, line 3 missed). Four seconds later `submitStop` appends `stopped`, `explained` and `graded` for line 3 and returns 200.
+- **Result:** the log has a STOP after complete (FR-009 says that's a 409), and `completed.result.total` disagrees with the graded STOPs. Because events are permanent (inv. 6), F2 and F3 would each have to special-case the mismatch.
+- **Fix:** change 3.
+
+### B1–B12 and S1–S10: applied?
+
+| Item | Status | Where |
+|---|---|---|
+| B1 gateway | Applied | FR-024–FR-029; T05 (`VERSION`, `PROMPT`, no `PROMPT_ID`); T08 (`createGateway`, required `fallback`, `mock` outcome, deadline constants in `models.js`, depends on T07, owns `content.js` and `assessment.js`) |
+| B2 write after grading | Applied | FR-016; T06 `appendEvents`; T13 single transaction, and the test "an aborted grade writes no STOP events" |
+| B3 event shapes | Applied | Events table, example (`fx_…` id), US4.1, FR-017, FR-018; `projectAttempt` in `shared/events.js`; `VERBS`, `OUTCOMES`; repeat body recomputed |
+| B4 pack format and keys | Applied | FR-019–FR-021; T20 (`pack.json`, `validatePack`, `ratingLabel`, `RATING_KEYS`); T07 (`putPack` conflict, refusal tests); T21 `RULES.ratingTiers`; T18 changed tests; US6.1 |
+| B5 stamps and ids | Applied | FR-015 (tightened CHECK); T06 tests; T07 `fx_<packId>_<version>_<scenarioId>` with NULL stamps |
+| B6 startup | Applied | FR-013; T07 `index.js` (`initDb` and `loadPacks` before `listen`, exit 1); `DEFAULT_DB_PATH` under `ROOT`; the "never listens" test |
+| B7 untrusted labels | Applied | FR-045; T17 `createElement`/`textContent`, and the `<b>x</b>` test |
+| B8 409 | Applied | Edge cases, FR-007, T13 (one 200 and one 409) |
+| B9 missing tests | Applied | All 11 rows appear under the named tickets (T06, T07, T08, T12, T13, T14, T19, T20, T01/e2e) |
+| B10 skip | Applied, Option B | US2.5–US2.14, FR-042–FR-047, T14, T17, T21; contract settled by OI-13 above |
+| B11 golden prompts | Applied | T03 owns `fake-claude.mjs` (`system`, `schemaSha256`); FR-040 |
+| B12 positions | Applied | Glossary "Position", FR-007, T13 `planStop`, the non-ascending-ids test, T14 validation by position |
+| S1 db names | Applied | FR-013, T06 (`openDb`/`initDb`/`getDb`; exact method list; `json_extract` query plus the EXPLAIN test) |
+| S2 id test | Applied | T06 "10-char time prefix never decreases" |
+| S3 leak scan `error` | Applied | FR-011, T01 `leakScan` and its test |
+| S4 `cardForAttempt` | Applied | T12 |
+| S5 fingerprint freeze | Applied | T05 algorithm, `trades.js` exclusion removed in T07; T08 reproduces it |
+| S6 fix-line condition | Applied | Copy table, T17 |
+| S7 README | Applied | T18 |
+| S8 orphan attempts | Applied | Edge cases; metric rule in "Events and metrics" |
+| S9 in-flight release | Applied | T13 `finally` + `delete`, and its test |
+| S10 helper exceptions | Applied | Rules header; T09 acknowledges them |
+| Changes 13–16, 18 | Applied | FR-035/T12 (no `health.js`); FR-039/T11/T03 manifest; FR-046 `runEndLine` and Later; T03 masking; T19 depends on T11 |
+
+**The Option B numbers check out** against `shared/scoring.js` and the electrical card (critical 3, major 5, minor 7):
+- **US2.5:** −75 − 25 = −100; max 200 + 100 = 300; −0.33 < 0.3 → `tier3`; run-end line uses the major item.
+- **US2.9:** no item truly missed and one not graded → `runEndLine` returns `null`.
+- **Two adjacent skips (3, 4):** the second resolves to `null`, because 3 is already in `notGradedSoFar`.
+
+### [P] collisions and dependencies after the T20/T21 split
+
+- **No collisions.**
+  - T20 (`packs/demo-trades/pack.json`, `shared/pack.js`, `tests/pack-format.test.js`) shares no file with T04, T05 or T06. Its only later editor is T07, which depends on it.
+  - T21 (`shared/scoring.js` and two new tests) shares no file with T12, T13 or T15. T13 only consumes `resolveStop` and `scoreStop`, both unchanged.
+  - T11 could also run in parallel with T07 and T08. It touches only its own two files.
+- **Dependencies are sound.**
+  - T21 → T07 is needed (its tests read fixtures from `packs/` and the pack's labels).
+  - T14 → T13 and T21; T18 → T16 and T17 (and T21 transitively), so `scoring.js` is edited T21 → T18.
+  - Every [P] group's shared paths are sequenced through `Depends on`.
+- **Documentation gap (optional O3):** the "Shared files are edited in sequence" rule leaves out six paths that are already sequenced by dependencies. Adding them stops a later re-plan from parallelising them by mistake:
+  - `tests/mock-grader.test.js` T07 → T13;
+  - `server/routes/scenarios.js` T04 → T07 → T12 → T18;
+  - `scripts/simulate.js` T07 → T18;
+  - `tests/scoring.test.js` T07 → T18;
+  - `tests/game-balance.test.js` T07 → T18;
+  - `tests/pack-format.test.js` T20 → T07.
+
+### Remaining required changes (PM; before T12, T13, T14 and T17 start)
+
+1. **Apply the OI-13 ruling.**
+   - **OI-13 row:** mark it resolved, citing this section, ADR 0002 Amendment 2 and ADR 0003 Amendment 2.
+   - **FR-008:** the response shape gains `missed[].notGraded?` (present only when true) and `skippedStepIds: int[]` (always present, the effective ids).
+   - **FR-043:** `completed.result` gains `notGradedStepIds` (always present), and `missedStepIds` excludes those ids.
+   - **"Events and metrics" `completed` row:** replace "(+ OI-13 proposal …)" with the field.
+   - **T14:**
+     - remove the "Merge blocked on spec OI-13" note and the decline paths in Notes;
+     - add the tests "a never-stop run's missed items have exactly six keys and no `notGraded` key" and "caught, `missedStepIds` and `notGradedStepIds` are disjoint and cover every mistake (all fixtures × the skip scripts)".
+   - **T17:**
+     - remove the OI-13 merge block;
+     - remove the `game.skippedStepIds.length` fallback in `resultsNote`.
+2. **A repeat `complete` reads the stored ids** (ADR 0002 Amendment 2).
+   - **Change:** in T14 "Already completed", the body takes `skippedStepIds` and `notGradedStepIds` from the stored `completed.result` and passes the stored `notGradedStepIds` to `scoreRun`. It doesn't call `notGradedStepIdsFor`.
+   - **Test:** "repeat complete uses the stored notGradedStepIds". Build it with `createSession({db: fakeDb})`, where `fakeDb.eventsForAttempt` returns a `completed` event whose `notGradedStepIds` differs from what recomputation would give. The body must follow the stored value.
+3. **`complete` while a STOP is in flight → 409** (R2-B1; ADR 0003 Amendment 2).
+   - **Spec:**
+     - add an edge case "`complete` while a STOP is in flight for the same attempt → 409, no events";
+     - add it to FR-009.
+   - **T13:** the in-flight `Map` belongs to the `Session` instance (created in `createSession`), not to the module, so both handlers share it and test sessions don't leak marks into each other.
+   - **T13 and T14:** state that `submitStop` doesn't `await` between `eventsForAttempt` and setting the mark, and that `completeAttempt` doesn't `await` between `eventsForAttempt` and `appendEvents`.
+   - **T14 test:** "complete while a STOP is in flight gets 409 and writes nothing; after the STOP returns, complete succeeds and counts it" (gateway stub that resolves after 100 ms).
+   - **T17:** no change needed. A 409 on `complete` is a non-2xx, so the existing results-error state and "Retry results" handle it. Add one e2e assertion that a 409 on `complete` (via `page.route`) shows `#results-error`.
+4. **Make the dependency injection exact** (T12, T13).
+   - **`packs`:** in `createSession({db, packs, gateway, mock})`, `packs` is `{getPack, getScenarioEntry}`. The `server/packs.js` namespace satisfies it.
+   - **Signatures:** the session passes its dependencies down:
+     - `content.cardForAttempt({db, packs, gateway, mock}, subjectId, scenarioId, source)`;
+     - `assessment.gradeStop({gateway, mock}, {card, stepId, errorStepId, explanation, pack})`.
+   - **Legacy routes:** they pass the `ai-client.js` defaults.
+   - **Rule:** no function that `Session` calls may import `gateway` or `getDb()` itself. Without this, T13's stub-gateway tests can't exercise the paths they name.
+
+### Should fix (non-blocking)
+
+- **S12. Guard the `prompt` argument** (T08): `run` rejects with `TypeError` when `prompt.PROMPT?.id` isn't a non-empty string or `prompt.VERSION` isn't an integer ≥ 1, the same treatment as a missing `fallback`. Add the test "run with a prompt lacking VERSION rejects with TypeError".
+- **S13. FR-010 says a storage failure is "the only 500".**
+  - **The conflict:** T13's "gateway stub that rejects" test needs a defined status, and the gateway never rejects except on a programming error (for example, a `fallback` that throws).
+  - **Fix:** reword FR-010 to "a storage failure or an unexpected internal error answers 500 `{error:"server error"}`; never a crash; no events". The T13 test then asserts 500.
+- **S14. Foundation follow-up (mine):** `system-architecture.md` §5 "Server unreachable (F1)" still says "Skip resumes without recording the STOP" and quotes the old copy. I'll update it to point at ADR 0004 Amendment 1 and the spec's copy table in my next foundation edit. This round was limited to ADRs and `decisions.md`.
+
+### Risks (devil's advocate on Option B's contract)
+
+| # | Failure mode | Likelihood | Impact | Mitigation |
+|---|---|---|---|---|
+| R6 | **`missed[]` is overloaded.** A list called "missed" now holds items that weren't missed. Any consumer that counts `missed.length` (the F2 Results screen, a dashboard, a second client) over-counts. | M | M | The flag is present only when true; `missedStepIds` in the log excludes these items; change 1 adds the partition test; the F2 Results spec must filter on `notGraded`. |
+| R7 | **Stored derived ids drift from the code.** `notGradedStepIds` freezes a judgement made under the current `graceSteps`. A later rule change makes old and new attempts disagree, and a projection that recomputes would contradict the log. | L | M | ADR 0002 Amendment 2: the log is the record, and projections and repeat `complete` read the stored ids (change 2). Changing a scoring rule is a migration with a comparison (`system-architecture.md` §4). |
+| R8 | **A complete/STOP race corrupts the permanent log** (R2-B1). | L | H | Change 3: a shared in-flight mark, no `await` inside the read-then-write sections, and a test. |
+| R9 | **The echo reflects client claims.** The note can say "3 stops weren't graded" for skips the client invented (R4). | L | L | Only the claimant sees the note; F3 excludes attempts with skips; the ids are logged. |

@@ -1,6 +1,6 @@
 # 0003. Server-owned card and attempt API, and when answers are revealed
 
-**Status:** Accepted. Amended 2026-10-09 (below).
+**Status:** Accepted. Amended 2026-10-09 (Amendments 1 and 2, below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A2). Dissent recorded there: backend and frontend preferred the name `runId`.
 
@@ -91,3 +91,11 @@ Additive. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../spec
 - **Concurrency stays 409.** A second STOP while one is in flight for the same attempt returns 409. The spec's per-attempt queue is rejected: it adds waiting work, and idempotent replay already makes a retry safe. The in-flight mark is released in `finally`.
 - **Fixture card stamps are NULL.** `prompt_version` and `model` stay NULL for `source = 'fixture'`, as in the CHECK above. Placeholder strings such as `"none"` are rejected, because they look like a real version in per-version queries.
 - **Leak test.** The key `error` is flagged only when its value is not a string. HTTP error bodies are `{error: "<message>"}`.
+
+## Amendment 2 (2026-10-09, F1a re-review, spec OI-13 (a) and (c))
+Additive. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../specs/F1a-server-owned-cards/review.md) "Re-review (round 2)". The PM chose Skip Option B ("not graded").
+- **`missed[]` items may carry `notGraded: true`.** The key is present **only** on not-graded items, and it is never `false`. Such an item has `points: 0`. It still carries `stepId`, `severity`, `summary`, `consequence` and `correctAction`, because the reveal is the point of the results screen. Ordinary missed items keep exactly the six keys. Items are in card order. Rejected: a separate `notGraded[]` array. It would duplicate the item shape, and a client that ignored it would lose the reveal.
+- **The `complete` response gains `skippedStepIds: int[]`.** It is always present and may be empty. It holds the **effective** skips: the body's ids minus the ids that have a graded STOP. That is the same value stored in `completed.result.skippedStepIds`. The browser counts its results note from it, so a stop that the server did grade (its response was lost) is never counted as "not graded". Rejected: counting the browser's local skips, which over-counts in exactly that lost-response case.
+- **`notGradedStepIds` is not in the response.** The `notGraded` flag carries it, and one representation is enough.
+- **`complete` while a STOP is in flight for the same attempt → 409**, with no events. Otherwise a `completed` event could be written before that STOP's triplet, giving a STOP after complete in the log and a stored `total` that disagrees with the graded STOPs. The STOP and complete handlers share one in-flight mark per attempt. Neither handler may `await` between reading the attempt's events and setting the mark (STOP) or appending (complete).
+- **A repeat `complete`** reads `skippedStepIds` and `notGradedStepIds` from the stored `completed` event ([0002](0002-event-schema-v1.md) Amendment 2). It doesn't recompute them.

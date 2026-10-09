@@ -1,6 +1,6 @@
 # 0004. No grading in the browser; offline and unreachable-server behavior
 
-**Status:** Accepted. Amends `system-architecture.md` §5 ("Offline: grading with keywords") and `ai-flow.md` §2 (grader fallback "server then browser").
+**Status:** Accepted; amended 2026-10-09 (Skip is "not graded", below). Amends `system-architecture.md` §5 ("Offline: grading with keywords") and `ai-flow.md` §2 (grader fallback "server then browser").
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A3)
 
@@ -36,3 +36,10 @@ When the STOP request fails (the network is down, a 5xx, or the client timeout p
 ## Verification
 - A `grep` test asserts that no file under `web/` imports `mock-grader` or calls `scoreStop`, `scoreRun` or `resolveStop`.
 - A Playwright test uses `page.route` to abort the STOP request. The panel and its spoken copy must appear, the explanation must be kept, and there must be zero console errors.
+
+## Amendment 1 (2026-10-09, F1a re-review)
+This records the product consequence that this ADR asked the PM to decide. The decision text above is unchanged except for what Skip costs.
+- **Skip is "not graded" (learning-review Option B; PM DECISION, [thread 0003](../team/threads/0003-f1-engine-core-proposal.md)).** The browser reports skipped step ids in the `complete` body. A mistake that a skipped stop would have credited, and that is still uncaught at complete, gets no missed penalty. It is left out of `maxPossible` and out of the missed-critical rating, and it is still revealed with its summary, consequence and fix. A skip on a clean line costs no false-alarm penalty. This replaces "the mistake is scored as missed at run end" above.
+- **Still true:** the browser never grades, and the server never sees the skipped STOP itself. Only the skip's step id reaches the server, at complete. Contract: [0003](0003-server-owned-card-and-attempt-api.md) Amendments 1–2 and [0002](0002-event-schema-v1.md) Amendments 1–2.
+- **Accepted risk:** the skip ids are a client claim (F1a review R4). With one learner it is negligible. F3's catch rate excludes attempts with skips.
+- **Copy:** the F1a spec's copy table owns it ("Couldn't reach the grader. Your answer is still here. Try again, or skip and this stop won't be scored.", buttons "Try again" and "Skip this stop").

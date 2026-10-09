@@ -647,3 +647,38 @@ Likelihood L · Impact H on that run (false feedback, demotivation), M on data (
 **Follow-ups:**
 - **principal-architect:** rule on spec OI-13 [ARCH DECISION NEEDED], the contract beyond ADR 0003 Amendment 1. It covers (a) `notGraded: true` on `missed[]` items, (b) `completed.result.notGradedStepIds`, and (c) the `skippedStepIds` echo in the `complete` response. This blocks the merge of F1a-T14 and F1a-T17 only. Please also re-review the revised `spec.md` and `tasks.md`.
 - **Lead:** update the INDEX row; the thread status stays `decided`.
+
+### principal-architect · 2026-10-09 · RISK
+OI-13 (a): "missed" now holds items that weren't missed. Any consumer that counts `missed.length` (F2 Results, a dashboard, a second client) over-counts, and nothing in the type system stops it.
+Likelihood M · Impact M · Mitigation: the `notGraded` key is present only when true; `completed.result.missedStepIds` excludes these items; a partition test (caught, missed and not-graded are disjoint and cover every mistake); the F2 Results spec must filter on the flag.
+
+### principal-architect · 2026-10-09 · RISK
+OI-13 (b): `notGradedStepIds` is a derived value that depends on `RULES.graceSteps`, which is code, not data. If the grace rule changes, re-deriving it rewrites history, and the stored value and a recomputation disagree.
+Likelihood L · Impact M · Mitigation: the stored ids are the record. A repeat `complete` and all projections read them back and never recompute (ADR 0002 Amendment 2). A scoring-rule change is a migration with a comparison.
+
+### principal-architect · 2026-10-09 · RISK
+Found in re-review: as ticketed, `complete` doesn't check the STOP in-flight mark. A `complete` during a 5 s live grade writes `completed` first, then the STOP's triplet lands after it. The result is a STOP after complete in a permanent log, and a stored total that disagrees with the graded STOPs.
+Likelihood L · Impact H (inv. 6 makes it permanent) · Mitigation: `complete` returns 409 while a STOP is in flight. Both handlers share one per-Session mark, with no `await` inside the read-then-write sections, plus a test (ADR 0003 Amendment 2; review.md round 2, change 3).
+
+### principal-architect · 2026-10-09 · RISK
+OI-13 (c): the echo is still a client claim. The note can report skips the client invented (R4).
+Likelihood L · Impact L · Mitigation: only the claimant sees the note; F3's catch rate excludes attempts with skips; the ids are logged.
+
+### principal-architect · 2026-10-09 · DECISION
+**The call (spec OI-13, the Option B contract, plus the F1a re-review):**
+1. **(a) Accepted, narrowed.** `missed[]` items carry `notGraded: true` only when true, never `false`, with `points: 0`. They keep the reveal fields, and ordinary items keep exactly six keys. A separate `notGraded[]` array is rejected.
+2. **(b) Accepted, extended.** `completed.result.notGradedStepIds` is always written. `missedStepIds` excludes not-graded ids, and caught, missed and not-graded partition the card's mistakes. Stored skip and not-graded ids are read back and never recomputed, including by a repeat `complete`.
+3. **(c) Accepted.** The `complete` response always carries `skippedStepIds`, the effective ids (body minus graded), equal to the stored value. The browser counts its note from it. `notGradedStepIds` isn't on the wire.
+4. **New rule:** `complete` while a STOP is in flight for the same attempt → 409, with no events.
+5. **Interfaces confirmed:** `run({prompt})` takes the prompt module namespace, or any `{PROMPT, VERSION}` object. `createSession({db, packs, gateway, mock})` and the pure `planStop` stay in `server/services/session.js`. The session's dependencies must be passed down to `content.cardForAttempt` and `assessment.gradeStop`.
+6. **Verdict on revision 2: APPROVED WITH CHANGES.** B1–B12 and S1–S10 are all applied, and there are no [P] collisions after the T20/T21 split. Four ticket-local changes remain (review.md "Re-review (round 2)" 1–4). Waves 0–1 and T15 may start now. T12, T13, T14 and T17 start after the PM applies the changes. There is no round 3; I verify them in code review.
+
+**Rationale:** Option B's data has to stay true in a log that can't be corrected. That means one representation per fact (a flag on the wire, ids in the log), stored judgements instead of re-derived ones, and no write order the server can't defend.
+
+**Dissent recorded:** none from the PM; the proposal was accepted in substance. R4, R6 and R9 are accepted risks with one learner.
+
+**Follow-ups:**
+- **Done:** ADR 0002 Amendment 2, ADR 0003 Amendment 2, ADR 0004 Amendment 1, and the `decisions.md` D18, D19 and D20 rows (the stale OI-8 "Pending founder" row is closed).
+- **PM:** apply review.md round 2 changes 1–4 to `spec.md` and `tasks.md`.
+- **Architect:** update `system-architecture.md` §5's Skip row (S14).
+- **Lead:** update the INDEX row; the thread status stays `decided`.
