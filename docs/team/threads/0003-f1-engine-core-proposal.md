@@ -614,3 +614,7 @@ The PM folds T00, the order T00 → W6 → W11, and these contracts into the spe
 - **F-4: option (a).** Hold W7 at the gate until a key and labels exist. No waiver.
 - **F-5: confirmed.** W10 `web/speech/` is in F1, FSRS moves to F2, and Render persistence is out.
 - **F-6: approved.** `grade@1` and `scenario@1` are the initial `pending` entries.
+
+### founder · 2026-10-09 · DECISION
+*Recorded by the lead session from the founder's own answer in the chat on 2026-10-09.*
+**F1a OI-8 (file ownership): approved as the architect proposed in `docs/specs/F1a-server-owned-cards/review.md`.** The rows were added to the `CLAUDE.md` ownership table, which unblocks F1a-T11.

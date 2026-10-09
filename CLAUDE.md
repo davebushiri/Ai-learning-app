@@ -76,6 +76,11 @@ Breaking one of these is a blocking review finding.
 | `docs/specs/<id>/learning-review.md` | `learning-designer` |
 | `docs/adr/`, `docs/foundation/`, `docs/specs/<id>/review.md` | `principal-architect` |
 | `docs/team/threads/*` | Everyone, append-only |
+| `package*.json`, `.gitignore`, `.env.example`, `render.yaml`, `packs/**`, `README.md`, `fixtures/**` (until F1a removes it) | `backend-engineer`. A ticket may grant a named one-line exception (e.g. an `eval:live` script line for `evals-engineer`). |
+| `docs/specs/<id>/qa-report.md` | `qa-engineer` |
+| `docs/specs/README.md` | `technical-product-manager` |
+| `docs/team/INDEX.md`, `.claude/THIRD_PARTY.md` | Everyone, append-only |
+| `CLAUDE.md`, `.claude/agents/**`, `.claude/skills/**`, `docs/team/README.md`, `docs/team/templates/**`, `DEMO.md`, `PITCH.md`, `docs/research/**`, `docs/brain-backlog.md` | Founder |
 
 Specialists (`evals-engineer`, `learning-designer`) never edit product code. They advise, and the existing deciders decide.
 
