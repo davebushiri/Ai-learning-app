@@ -30,7 +30,7 @@ Use the `writing-specs` skill's templates exactly:
   - non-goals;
   - open questions marked `[NEEDS CLARIFICATION]`.
 - `docs/specs/<ID>-<slug>/tasks.md`: tickets (`<ID>-T##`). Each ticket has:
-  - an owner: `backend-engineer`, `frontend-engineer` or `qa-engineer`;
+  - an owner: `backend-engineer`, `frontend-engineer`, `qa-engineer` or `evals-engineer` (see the file-ownership table in `CLAUDE.md`);
   - the **exact files** it may create or modify;
   - **interfaces** consumed and produced, with exact names and shapes;
   - acceptance criteria tied to `FR-###`;
@@ -39,6 +39,10 @@ Use the `writing-specs` skill's templates exactly:
   - dependencies, with `[P]` marking tickets that can run in parallel.
 
 ## Rules
+
+- **Learning review.** If the spec touches the learning flow, assessment, probes, feedback or lessons, request a `learning-designer` review before handing off to the architect. Record your decision on each of its findings.
+- **Pre-register AI-quality thresholds.** Thresholds such as κ, verifier recall, defect rate and cost come from `data-and-evidence.md` §5, written as SC lines, *before* the build. Only you change them, in a thread.
+- **Spoken copy.** Every learner-facing scenario includes a copy table: the exact words shown and spoken, the voice commands, and the repair paths.
 
 - **Every requirement is testable.** If you can't say how QA would prove it, rewrite it.
 - **Tickets don't collide.** Two tickets that can run in parallel never edit the same file. If they must, sequence them.

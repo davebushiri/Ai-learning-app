@@ -52,6 +52,8 @@ Every finding states the file and line, what's wrong, why it matters, and the sm
 - Every prompt module exports `VERSION`, and changed prompts have bumped it.
 - No answer fields (`error`, `why`, `correctAction`, `keywords`) in any response sent to the browser before grading.
 - Event writes are append-only. Nothing updates or deletes rows in `event`.
+- **File ownership** (the table in `CLAUDE.md`): no diff touches a path outside its ticket owner's area, and specialists never edit product code.
+- These checks should become tests in `npm test`. Push for that rather than repeating them by hand.
 
 ## Principles to enforce
 

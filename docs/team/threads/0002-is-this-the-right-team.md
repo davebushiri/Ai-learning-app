@@ -1,7 +1,7 @@
 # 0002: Is this the right team for the product?
 
 **Type:** RESEARCH
-**Status:** open (awaiting founder decision)
+**Status:** decided
 **Opened by:** lead session · 2026-10-09
 **Decider:** founder (team composition is a scope and direction call)
 **Targets:** `.claude/agents/*`, `CLAUDE.md`, `docs/team/README.md`
@@ -286,3 +286,43 @@ I can build all of it, and test it with stubbed speech. What I can't do is judge
 - one owning role per file glob;
 - no new deciders;
 - specialists must cite verification artifacts (labelled sets, seeded defects), not their own judgment.
+
+### founder · 2026-10-09 · DECISION
+*(The founder chose these options when asked; the lead recorded them.)*
+
+**Decision:** keep the five core roles and add two **on-call** specialists.
+1. **`evals-engineer` (on call).**
+   - **Owns only** `evals/**`, `scripts/eval-prompts.js` and `tests/fixtures/recorded/`.
+   - **Runs** the live, opt-in, cost-capped eval tier. It's triggered by the lead whenever `server/prompts/*`, a `VERSION` or model routing changes, and never by the prompt's author.
+   - **Never edits** product code or prompt text.
+2. **`learning-designer` (on call).** Reviews specs and content at spec time for whether the product teaches, citing evidence. It writes `learning-review.md` only, and advises; it doesn't decide.
+
+**Adopted from the debate:**
+- **Ownership and process:**
+  - backend stays the only writer of prompt text;
+  - the founder supplies the human labels;
+  - the PM pre-registers the thresholds;
+  - QA owns the replay tier and gives separate Functional and AI-quality verdicts. A failed AI-quality verdict can only be waived by a founder `DECISION`.
+- **Specialist analysis:**
+  - model routing is decided by an architect ADR;
+  - the analyst stays on call for F3 and isn't defined yet.
+- **Guardrails:**
+  - one owning role per path (the table in `CLAUDE.md`);
+  - specialists never edit product code;
+  - no new deciders.
+- **Not added:** a voice UX agent (that work folds into frontend, with the PM writing spoken-copy tables), a content/safety agent (seeded defects plus the founder), and a security agent (architect standing checks).
+
+**Dissent recorded:**
+- The architect preferred a PM checklist over a learning-designer agent until F2.
+- QA was willing to own evals itself.
+
+**Revisit if:**
+- you override voice to text in more than 30% of sessions (consider a voice UX agent);
+- per-phase token cost is too high;
+- a prompt regression or teaching flaw slips through anyway.
+
+**Follow-ups, to fold into the F1 spec as tickets:**
+1. Remove subject words from engine code: `web/app.js:228` "Nobody got hurt", and "trade"/"journeyman" in `server/prompts/grade.js`.
+2. Turn the architect's invariant greps (subject words, gateway deadlines, prompt `VERSION`, no answers sent to the client, append-only events, file ownership) into tests in `npm test`.
+3. Scaffold `evals/`, `scripts/eval-prompts.js`, `npm run eval:live` and the replay helper. The founder labels the first grader set (the 32 adversarial cases).
+4. The founder approves a per-run eval cost cap.

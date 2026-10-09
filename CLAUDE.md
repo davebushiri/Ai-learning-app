@@ -40,7 +40,7 @@ Breaking one of these is a blocking review finding.
    - a hard deadline (`AbortSignal.timeout`, `maxRetries: 1`);
    - a non-AI fallback;
    - a logged `{promptId, promptVersion, model, ms, tokens}`.
-4. **Prompts export a `VERSION`.** Any text change bumps it and must pass the prompt eval gate.
+4. **Prompts export a `VERSION`.** Any text change bumps it and must pass the prompt eval gate. The gate is run by `evals-engineer` and triggered by the lead, never by the prompt's author. The live run is opt-in, with a cost cap; recordings are replayed in `npm test`.
 5. **Untrusted text is fenced.** Learner text, uploads and pack text inside prompts are wrapped in tags and treated as data, never as instructions.
 6. **Events are append-only.** Mastery, schedules and dashboards are projections that can always be rebuilt.
 7. **Degrade, never stall or crash.** Bad input returns 400 or 413. Slow AI falls back, and the fallback is visible to the user.
@@ -51,16 +51,33 @@ Breaking one of these is a blocking review finding.
 
 | Step | Who | Output |
 |---|---|---|
-| 1. Spec | `technical-product-manager` | `docs/specs/<id>/spec.md` and `tasks.md` (tickets) |
+| 1. Spec | `technical-product-manager` | `docs/specs/<id>/spec.md` and `tasks.md` (tickets), with pre-registered thresholds and spoken-copy tables |
+| 1b. Learning review | `learning-designer` (on call, when the spec touches learning flow, assessment or feedback) | `learning-review.md`. It advises; the PM decides. |
 | 2. Design review | `principal-architect` | Spec approved or changes requested; an ADR if a new decision is made |
 | 3. Build | `backend-engineer`, `frontend-engineer` (in parallel; each ticket lists the files it may touch) | Code plus tests, using test-driven development |
-| 4. Verify | `qa-engineer` | Acceptance tests, a full run and an evidence report. Bugs are filed as new tickets. |
+| 3b. Eval gate | `evals-engineer` (on call, when a diff touches `server/prompts/*`, a `VERSION` or model routing) | Live eval report and recordings for replay |
+| 4. Verify | `qa-engineer` | Acceptance tests, a full run and an evidence report with **separate Functional and AI-quality verdicts**. Bugs are filed as new tickets. |
 | 5. Code review | `principal-architect` | Blocking and non-blocking findings checked against the invariants |
 | 6. Merge | Human | — |
 
 **Discussion:** ideas, pushback, pressure tests, research and decisions all happen in threads in [`docs/team/`](docs/team/), using the `team-discussion` skill. Product questions are decided by the PM, technical questions by the architect, and ship / don't ship by QA. **The founder decides scope, money, direction and any deadlock.** Anything said in a live session must be written into a thread to count.
 
 **Skills every agent follows:** `test-driven-development`, `verification-before-completion`, `writing-specs` (PM), and `architecture-decision-records` (architect), and `team-discussion` (everyone).
+
+## File ownership (one owning role per path)
+
+| Path | Owner (the only writer) |
+|---|---|
+| `server/**` including `server/prompts/*` (prompt text), `shared/**`, `scripts/` (except `eval-prompts.js`) | `backend-engineer` |
+| `web/**` | `frontend-engineer` |
+| `tests/**` (except `tests/fixtures/recorded/`) | `qa-engineer`, plus the ticket's engineer for that ticket's unit tests |
+| `evals/**`, `scripts/eval-prompts.js`, `tests/fixtures/recorded/` | `evals-engineer` |
+| `docs/specs/<id>/spec.md`, `tasks.md` | `technical-product-manager` (QA appends bugs) |
+| `docs/specs/<id>/learning-review.md` | `learning-designer` |
+| `docs/adr/`, `docs/foundation/`, `docs/specs/<id>/review.md` | `principal-architect` |
+| `docs/team/threads/*` | Everyone, append-only |
+
+Specialists (`evals-engineer`, `learning-designer`) never edit product code. They advise, and the existing deciders decide.
 
 ## Definition of done (every ticket)
 

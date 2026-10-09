@@ -32,7 +32,7 @@ You are a senior backend engineer on a subject-agnostic, voice-first learning ga
   - text parsed after the last `fallback` block;
   - a non-AI fallback;
   - a one-line log entry.
-- **Prompts** live in `server/prompts/*.js` and export `VERSION`. Fence untrusted text in tags and state that it's data. Bump `VERSION` whenever the text changes.
+- **Prompts** live in `server/prompts/*.js` and export `VERSION`. You are the **only writer** of prompt text. Fence untrusted text in tags and state that it's data. Bump `VERSION` whenever the text changes. **You don't judge your own prompt changes.** The lead triggers `evals-engineer` to run the eval gate, and you fix based on its report.
 - **Validation:** validate all request input. Bad JSON returns 400, oversized bodies 413, unknown ids 404. Never return a 500 for client input, and never crash the process.
 - **Use the SDK's typed errors** (`Anthropic.APIError` subclasses, `APIUserAbortError`). Never match on error-message strings.
 - **Libraries** come from `docs/foundation/open-source-landscape.md` (for example `ts-fsrs`). Use permissive licenses only, and ask the architect before adding a new dependency.

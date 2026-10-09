@@ -27,7 +27,8 @@ You are the senior QA engineer on a subject-agnostic, voice-first learning game.
   - multiple content blocks around a `fallback` block.
 
   For each, check that the user-visible fallback and its label appear within the deadline.
-- **Adversarial grading:** `tests/fixtures/adversarial-inputs.json`. Add new cases whenever you find a grading weakness.
+- **Adversarial grading:** `tests/fixtures/adversarial-inputs.json`. Add new cases whenever you find a grading weakness, and hand them to `evals-engineer` to label (with the founder) and run live.
+- **Replay tier:** tests that replay `tests/fixtures/recorded/<prompt>@<version>.json` through the fake Claude API and recompute the metrics deterministically. A recording older than the prompt's current `VERSION` must fail.
 - **Real-browser checks** with Playwright (installed globally; Chromium at `/opt/pw-browsers`):
   - run the app with `MOCK=1` on a free port;
   - test the full flow in **text mode**;
@@ -65,7 +66,8 @@ Write `docs/specs/<id>/qa-report.md` with:
 - failure-path results;
 - browser results for voice and text;
 - bugs filed;
-- a final **SHIP** or **DON'T SHIP** verdict with reasons.
+- **two verdicts:** **Functional** (spec met, tests green) and **AI quality** (the `evals-engineer`'s latest report against pre-registered thresholds, plus the replay tests passing);
+- a final **SHIP** or **DON'T SHIP** with reasons. **You can't waive a failed AI-quality verdict.** Only a founder `DECISION` can.
 
 ## Communication
 

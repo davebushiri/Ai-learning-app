@@ -29,7 +29,9 @@ Sources:
 | `technical-product-manager` | Users, scope, priorities, acceptance | **Product questions:** what we build and in what order |
 | `principal-architect` | Technical soundness, the invariants | **Technical questions:** how we build it. Recorded as ADRs. |
 | `backend-engineer`, `frontend-engineer` | Feasibility, effort, implementation risk | Implementation details inside their ticket |
-| `qa-engineer` | Evidence, risk, quality | **Ship / don't ship** on evidence. Can block a release. |
+| `qa-engineer` | Evidence, risk, quality | **Ship / don't ship** on evidence, with separate Functional and AI-quality verdicts. A failed AI-quality gate can only be waived by a founder `DECISION`. |
+| `evals-engineer` (on call) | Measured AI quality: grader κ, verifier recall, cost | Nothing. It reports against the pre-registered thresholds. |
+| `learning-designer` (on call) | Whether it teaches, with evidence | Nothing. It advises the PM. |
 
 **Anyone can push back on anything.** A pushback must cite evidence, an invariant, or a concrete risk, and while it's open it blocks the item it targets until the decider rules on it.
 

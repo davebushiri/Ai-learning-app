@@ -17,6 +17,7 @@ Each spec gets a folder, `docs/specs/<ID>-<slug>/`, where the ID is the phase pl
 | `tasks.md` | PM; QA appends bugs |
 | `review.md` | Architect |
 | `qa-report.md` | QA |
+| `learning-review.md` | Learning designer (when called) |
 
 Ticket IDs look like `F1-T01`. Bug IDs look like `F1-B01`.
 
@@ -73,7 +74,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ## Group 1: Foundations
 ### <ID>-T01 [P] <title>
-- **Owner:** backend-engineer | frontend-engineer | qa-engineer
+- **Owner:** backend-engineer | frontend-engineer | qa-engineer | evals-engineer
 - **Size:** S | M   (L means split it)
 - **Depends on:** none | <ID>-T0x
 - **Files:** create `path/a.js`, `tests/a.test.js`; modify `path/b.js`
