@@ -9,7 +9,7 @@ Every place the engine calls Claude: inputs, outputs, quality gates, fallbacks a
 | Structured output only | Every call has a JSON schema (`output_config.format`). No free-text parsing. |
 | Hard deadline per call kind | `AbortSignal.timeout` and `maxRetries: 1`, including retry-after waits. This is the existing BRAIN-02 behavior. |
 | Stamped and logged | Each output carries `{promptId, promptVersion, model, latencyMs, tokens, cost}` and is written to the `llm_call` table. |
-| Prompt registry | Prompts live in `server/prompts/<id>.js` with an exported `VERSION`. Changing the text bumps the version, so data from different versions is never silently mixed. |
+| Prompt registry | Prompts live in `server/prompts/<id>.js` with an exported `VERSION`. Changing the text bumps the version, so data from different versions is never silently mixed. A "text change" is any change to the prompt fingerprint (system text, schema, rendered user template); see [ADR 0005](../adr/0005-ai-gateway-and-prompt-registry.md). |
 | Untrusted input stays fenced | Learner text, uploaded sources and pack text inside prompts are wrapped in tags and stated to be data, never instructions. This extends the grade prompt's `<learner_explanation>` pattern. |
 | Model routing | A per-pipeline default (table below), overridable by env, for A/B testing. |
 | Caching | The stable prefix comes first (system prompt, then pack block, then the scenario script) with `cache_control`. Only the varying parts follow. |
@@ -23,7 +23,7 @@ Every place the engine calls Claude: inputs, outputs, quality gates, fallbacks a
 | L | **Lesson writer** | New competency | Pre-generated | Sonnet 5.5 | Generic "learn the move" built from the mistake-type text |
 | G | **Card generator** (guided, stop, next-move, probe) | Nightly bank fill, or on demand | 40 s on demand; batch overnight | Opus 5.5 | Banked card, then a pack fixture |
 | V | **Verifier** (blind expert pass) | After every G and SB output | Batch / 20 s | Sonnet 5.5 | Card held out of the bank |
-| A | **Grader** | Each STOP | **8 s** | Opus 5.5, low effort (A/B Haiku 5.5) | Keyword grader, server then browser |
+| A | **Grader** | Each STOP | **8 s** | Opus 5.5, low effort (A/B Haiku 5.5) | Keyword grader on the server only; never in the browser ([ADR 0004](../adr/0004-no-grading-in-the-browser.md)) |
 | C | **Coach line** (insight sentence on Today) | Daily | Batch | Haiku 5.5 | A template sentence |
 | M | **Mistake miner** | Weekly, over your wrong explanations and flags | Batch | Sonnet 5.5 | — |
 

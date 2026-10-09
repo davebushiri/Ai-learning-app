@@ -1,7 +1,7 @@
 # 0003: F1 engine core: scope, slicing and open questions
 
 **Type:** PROPOSAL
-**Status:** decided (scope and technical). Founder questions F-0 to F-6 are pending.
+**Status:** decided (scope, technical, and founder answers F-0 to F-6).
 **Opened by:** technical-product-manager · 2026-10-09
 **Decider:** technical-product-manager (scope and slicing inside F1) · principal-architect (technical questions, as ADRs) · founder (anything that changes phase scope or costs money)
 **Targets:** future `docs/specs/F1-*/`; `docs/foundation/decisions.md` "Build phases" F1 row; thread 0002 founder follow-ups 1–4
@@ -604,3 +604,13 @@ The PM folds T00, the order T00 → W6 → W11, and these contracts into the spe
   - `system-architecture.md` §5 (offline grading).
 - **PM:** write `docs/specs/F1a-server-owned-cards/` now. It has no founder dependency. Write `F1b-agnostic-prompts-and-evals/` after F-0 and F-4 are answered.
 - **Lead:** set Status to `decided` (scope part; F-0 to F-6 pending with the founder) and update the INDEX row.
+
+### founder · 2026-10-09 · DECISION
+*Recorded by the lead session from the founder's own answers in the chat on 2026-10-09.*
+- **F-0: accepted.** F1 exits with the W7 prompt rewrite written but held at the gate. The F2 hard rule stands: no non-trades pack ships until W7 passes the live gate and the deny-list allow-list is empty.
+- **F-1: yes.** The founder will blind-label the 32 cases. Who wrote the existing `expectedVerdict` labels was not answered, so they stay tagged "author".
+- **F-2: approved.** $6 per run as a hard abort, $25 per month.
+- **F-3: later.** The founder will say when a key is available. Until then, every live path is tested only through fake Claude.
+- **F-4: option (a).** Hold W7 at the gate until a key and labels exist. No waiver.
+- **F-5: confirmed.** W10 `web/speech/` is in F1, FSRS moves to F2, and Render persistence is out.
+- **F-6: approved.** `grade@1` and `scenario@1` are the initial `pending` entries.

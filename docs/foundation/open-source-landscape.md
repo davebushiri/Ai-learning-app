@@ -32,7 +32,7 @@
 | Running models in the browser | **@huggingface/transformers** (Transformers.js) + **onnxruntime-web** | Apache-2.0 ✅ / MIT ✅ | v4.3.1, 2026-10-06 ✅ | One runtime for in-browser speech recognition and synthesis below |
 | Speech recognition fallback (Safari, offline, privacy) | **Whisper** (base, about 200 MB, cached) or **Moonshine** small models via Transformers.js | Whisper MIT 🔎; `moonshine-voice` MIT ✅ (v0.1.5, 2026-08-24) | Active | Used when Web Speech is missing or you choose "on-device only". Run it in a Web Worker so the UI doesn't freeze 🔎. |
 | Better narration voice | **Kokoro-82M** via **kokoro-js** | Apache-2.0 ✅ (package) / weights Apache 🔎 | kokoro-js last published 2025-05 ✅ (stale wrapper; the model itself is fine) | **Render each card's narration once** to audio and cache it, so replays cost nothing. Rendering can happen server-side in Node or in the browser. WebGPU works best in Chrome and Edge 🔎. **Don't use Piper**: its maintained version moved to GPL-3 in 2025 🔎. |
-| Prompt evaluation gate in CI | **promptfoo** | MIT ✅ | v0.124.1, 2026-10-08 ✅ (acquired by OpenAI in March 2026, which says it stays MIT 🔎) | Implements our rule that prompt changes must pass evals. A YAML suite runs old and new prompts against the adversarial answers, fixture cards and verifier probes, then compares. It runs as a dev tool only and isn't shipped. **Alternative:** Inspect AI (MIT ✅, Python, very active). |
+| Prompt evaluation gate in CI | **promptfoo**: *deferred to F3, not adopted in F1* ([ADR 0007](../adr/0007-plain-node-eval-runner.md)) | MIT ✅ | v0.124.1, 2026-10-08 ✅ (acquired by OpenAI in March 2026, which says it stays MIT 🔎) | **F1 uses a plain Node runner** (`scripts/eval-prompts.js`) that calls our AI gateway. promptfoo is 31.7 MB with 76 direct dependencies including telemetry, needs Node ≥22.22, and its Anthropic provider would bypass the gateway (inv. 3). **Revisit at F3** with the verifier and safety sets, only if it runs offline through a custom provider that calls our gateway, as an optional dev install. **Alternative:** Inspect AI (MIT ✅, Python, very active). |
 | Offline and PWA support | **Workbox** | MIT ✅ | v7.4.1 ✅ | Caches the app shell, card bank, lessons and audio |
 | SQLite | **better-sqlite3**, or the built-in `node:sqlite` | MIT ✅ | v13.0.3 ✅ | Behind `server/db.js`. Start with `node:sqlite` and switch if it misbehaves. |
 | Branching scenarios *(later: rewind and replay, multi-path cases)* | **inkjs** (Inkle's ink runtime) | MIT ✅ | v2.4.0 ✅ | Only if we add real branching. Linear cards don't need it. |
@@ -80,7 +80,7 @@ flowchart TB
     KOK["Narration pre-render · kokoro-js · Apache"]
   end
   subgraph Dev["'Dev and ops tools (not shipped)'"]
-    PF["promptfoo eval gate · MIT"]
+    PF["eval-prompts.js eval gate via the gateway · ours (promptfoo revisit at F3)"]
     FAKE["fake-Claude harness · ours"]
     LF["Langfuse · later · MIT core"]
     LRS["SQL LRS export · later · Apache"]
@@ -113,7 +113,7 @@ flowchart TB
 2. **Voice activity detection** with vad-web for end-of-speech and hotword gating (`voice-first.md`).
 3. **Speech-recognition fallback** becomes "Web Speech, then on-device Whisper/Moonshine", replacing "server-side STT later". It's free and private.
 4. **Narration pre-rendered** with Kokoro and cached. Feedback stays on live browser TTS.
-5. **promptfoo** implements the prompt eval gate. The planned `scripts/eval-prompts.js` becomes a promptfoo config.
+5. ~~**promptfoo** implements the prompt eval gate.~~ **Amended by [ADR 0007](../adr/0007-plain-node-eval-runner.md):** in F1 the gate is a plain Node `scripts/eval-prompts.js` that calls the AI gateway, with a pure `evals/metrics.js` and recordings replayed in `npm test`. promptfoo is reconsidered at F3.
 6. **Langfuse and SQL LRS** are planned integrations, not things we build.
 
 ## 6. Spikes to run before committing
@@ -126,7 +126,7 @@ Each is about half a day. Each one proves an integration works on *your* devices
 | Whisper or Moonshine on your phone's browser (Transformers.js) | Model loads and caches; 10 s of speech transcribed in under 3 s; usable accuracy on 10 sample explanations |
 | Kokoro pre-render for a 10-step card | Under 20 s per card server-side; you prefer it to the browser voice |
 | ts-fsrs scheduling through our event log | Deterministic schedule rebuilt from replaying events |
-| promptfoo suite for the grade prompt (fake Claude + one real-key run) | Catches a deliberately broken prompt version |
+| `scripts/eval-prompts.js` on the grade prompt (fake Claude + one real-key run; the key is pending founder F-3) | Catches a deliberately broken prompt version |
 
 ## Sources
 

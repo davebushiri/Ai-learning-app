@@ -41,8 +41,9 @@ The event log is the source of truth. Everything marked *projection* can be drop
 
 ```sql
 -- truth
-CREATE TABLE event (id TEXT PRIMARY KEY, at TEXT, actor TEXT, verb TEXT, object_json TEXT,
-                    result_json TEXT, context_json TEXT);
+CREATE TABLE event (seq INTEGER PRIMARY KEY, id TEXT NOT NULL UNIQUE, at TEXT NOT NULL,  -- ADR 0002; UPDATE/DELETE blocked by triggers (ADR 0001)
+                    actor TEXT NOT NULL, verb TEXT NOT NULL, object_json TEXT NOT NULL,
+                    result_json TEXT, context_json TEXT NOT NULL);
 CREATE TABLE subject_pack (id TEXT, version INT, json TEXT, provenance_json TEXT, created_at TEXT,
                            PRIMARY KEY (id, version));
 CREATE TABLE card (id TEXT PRIMARY KEY, subject_id TEXT, subject_version INT, mode TEXT,
@@ -53,7 +54,7 @@ CREATE TABLE goal (id TEXT PRIMARY KEY, learner_id TEXT, subject_id TEXT, type T
                    target_date TEXT, weekly_sessions INT, anchor TEXT);
 CREATE TABLE llm_call (id TEXT PRIMARY KEY, at TEXT, pipeline TEXT, prompt_version TEXT, model TEXT,
                        ms INT, input_tokens INT, output_tokens INT, cache_read INT, cost_usd REAL,
-                       outcome TEXT);                     -- ok | fallback | refusal | timeout
+                       outcome TEXT);                     -- ok | timeout | refusal | fallback | mock (ADR 0005)
 CREATE TABLE evidence_assignment (learner_id TEXT, mistake_type_id TEXT, condition TEXT,  -- trained | held_out
                                   assigned_at TEXT, PRIMARY KEY (learner_id, mistake_type_id));
 -- projections (rebuildable)

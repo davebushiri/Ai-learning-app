@@ -23,14 +23,15 @@
 **Boundaries that must hold:**
 - **The browser never holds answers before a STOP is graded.** Cards are stored server-side by id, and the client receives steps only. This closes the hackathon "won't do" item.
 - **Services are subject-agnostic.** Only packs contain subject words, and a test greps engine prompts and code for a deny-list of subject terms.
-- **Shared pure logic** (`shared/`) is used by both browser and server: scoring, mastery maths, the contract validator, and the keyword grader.
+- **Shared pure logic** (`shared/`) runs unchanged in browser and server: scoring, mastery maths, the contract validator, and the keyword grader. Scoring and the keyword grader *run* only on the server, because they need the answers ([ADR 0004](../adr/0004-no-grading-in-the-browser.md)).
 - **One writer per table.** The Session Engine is the only writer of events. Projections are rebuilt only by the Learner Model.
 
 ## 2. Module layout (target)
 
 ```
 web/
-  index.html  app.js (router)  state.js  api.js  speech.js
+  index.html  app.js (router)  state.js  api.js
+  speech/ index.js (facade: speak, listen, onHotword, cancel)  web-speech.js (provider)
   screens/ onboarding.js today.js session.js results.js progress.js subjects.js
 shared/
   contract.js   scoring.js   mastery.js   review-queue.js   mock-grader.js   events.js (event schema)
@@ -38,7 +39,7 @@ server/
   index.js (dispatcher)  db.js  migrations/*.sql
   routes/ subjects.js plan.js cards.js attempts.js grade.js progress.js health.js
   services/ subject-builder.js content.js session.js assessment.js learner-model.js planner.js miner.js
-  ai/ gateway.js models.js gates.js fallbacks.js
+  ai/ gateway.js models.js   (gates.js, fallbacks.js only when something uses them; ADR 0005)
   prompts/ subject-scope.js subject-map.js subject-mistakes.js subject-world.js subject-verify.js
            card-generate.js card-verify.js grade.js lesson.js coach.js miner.js   (each exports VERSION)
 packs/
@@ -66,7 +67,7 @@ The current files map onto this layout directly:
 | AI | Claude via `@anthropic-ai/sdk`, structured outputs, routing per pipeline | Existing integration and hardening | — |
 | Spaced repetition | **FSRS via `ts-fsrs` from day one** (MIT); see open-source-landscape.md | Leitner is about 20 lines. FSRS is open source and benchmarked best on recall prediction in its community benchmark (SuperMemo disputes the metric). | After about 4 weeks of review data |
 | Auth | None on localhost; an owner passphrase when deployed; passkeys later | Personal use first | A second user |
-| Hosting | Local first; Render for remote use (`render.yaml` exists) | — | — |
+| Hosting | Local first; Render for remote use (`render.yaml` exists). In F1 Render is a mock demo with ephemeral data (free plan, no disk) | — | Persistent hosting: pending founder F-5 (costs money) |
 
 ## 4. Governance: how quality is kept
 
@@ -76,8 +77,8 @@ The rules below govern the process, and each one has an automated check.
 |---|---|
 | Every AI output is schema-valid and passes pack rules | Gateway gates and `validateScenario`; failures fall back |
 | Generated cards pass the blind verifier before entering the bank | Content Engine; the defect is logged if they don't |
-| Every stored output carries prompt version and model | Gateway stamps it; a db constraint rejects rows without them |
-| Prompt changes are evaluated before shipping | `scripts/eval-prompts.js` runs the old and new versions against the eval sets (adversarial answers, fixture cards, verifier probes) and must not regress beyond thresholds |
+| Every stored output carries prompt version and model | Gateway stamps it; a db constraint rejects rows without them ([ADR 0003](../adr/0003-server-owned-card-and-attempt-api.md) `card` CHECK, [ADR 0005](../adr/0005-ai-gateway-and-prompt-registry.md) `llm_call`) |
+| Prompt changes are evaluated before shipping | `scripts/eval-prompts.js` (plain Node through the gateway, [ADR 0007](../adr/0007-plain-node-eval-runner.md)) runs the old and new versions against the eval sets (adversarial answers, fixture cards, verifier probes) and must not regress beyond thresholds; recordings replay in `npm test` and a fingerprint check catches a text change without a `VERSION` bump |
 | No subject words in engine code or prompts | Deny-list test in `npm test` |
 | Learner data stays local unless exported | No outbound calls except Claude; the minimum context per call; opaque IDs |
 | Flags quarantine content immediately | Session Engine excludes quarantined cards; Learner Model excludes their events |
@@ -91,6 +92,7 @@ The rules below govern the process, and each one has an automated check.
 | Claude slow or down | Deadline, then fallback | "cached" or "keyword grader (fallback)" badge |
 | Generated card fails the rules or the verifier | Regenerate once, then use a banked card or fixture | Nothing; logged as a defect |
 | Subject Builder fails | Retry once, then offer starter templates or narrow the scope | "Let's narrow this down…" |
-| Offline | The bank and lessons are cached by the PWA, and events are queued | "Offline: grading with keywords" |
+| Server unreachable (F1) | No grading in the browser ([ADR 0004](../adr/0004-no-grading-in-the-browser.md)). The explanation is kept; Try again re-posts it (idempotent per step), Skip resumes without recording the STOP | "Couldn't reach the grader. Try again or skip." (shown and spoken) |
+| Offline (with the offline queue, phase not yet assigned) | The bank and lessons are cached by the PWA. Events and explanations are queued and graded by the server on reconnect; never graded in the browser | "Saved. It'll be graded when you're back online." (placeholder; the spec's copy table decides) |
 | Malformed request | 400/413, never a crash | — |
 | Data corruption | The event log is append-only; projections can be rebuilt; nightly file backup | — |
