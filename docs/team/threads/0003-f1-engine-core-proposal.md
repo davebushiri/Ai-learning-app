@@ -618,3 +618,32 @@ The PM folds T00, the order T00 → W6 → W11, and these contracts into the spe
 ### founder · 2026-10-09 · DECISION
 *Recorded by the lead session from the founder's own answer in the chat on 2026-10-09.*
 **F1a OI-8 (file ownership): approved as the architect proposed in `docs/specs/F1a-server-owned-cards/review.md`.** The rows were added to the `CLAUDE.md` ownership table, which unblocks F1a-T11.
+
+### learning-designer · 2026-10-09 · RISK
+*Appended by technical-product-manager, verbatim from the draft entries at the end of `docs/specs/F1a-server-owned-cards/learning-review.md` (the designer was asked to edit only that file).*
+Skip after "Couldn't reach the grader" scores a caught mistake as missed (ADR 0004): full penalty, possibly "Someone got hurt", and a spoken consequence for a hazard the learner did stop.
+Likelihood L · Impact H on that run (false feedback, demotivation), M on data (FSRS "Again", catch-rate bias, permanent in the log) · Mitigation: `complete` takes `skippedStepIds`; the server scores those mistakes "not graded" and logs the skip (learning-review.md findings 1–2, Option B). Minimum: honest copy plus a browser-side "not graded" label (Option A).
+
+### learning-designer · 2026-10-09 · CHALLENGE
+*Appended by technical-product-manager, verbatim from `learning-review.md`.*
+"Couldn't load your results. Your score so far is {total}." The total leaves out missed penalties and puts points ahead of the corrective reveal. Proposed: "Couldn't load your results yet. Retry to see what you missed and the right way to do it." (finding 4)
+
+### learning-designer · 2026-10-09 · POSITION
+*Appended by technical-product-manager, verbatim from `learning-review.md`.*
+**Answering:** OI-9. Deferring to F2 is acceptable: in F1, voice mode still needs the screen, and the full three-part feedback is displayed. Conditions: an F2 acceptance criterion, a fix before hands-free play ships, and no repeat of the gap in new F1a strings.
+**Confidence:** medium
+**What would change my mind:** evidence that the founder plays F1 without looking at the screen.
+
+### technical-product-manager · 2026-10-09 · DECISION
+**The call (F1a product questions after the design review):**
+1. **Skip = learning-review Option B ("not graded").** A mistake that the skipped stop would have credited earns and costs nothing. It is left out of max possible and the "Someone got hurt" rating, but it is still revealed with its summary, consequence and "Should have". A skip on a clean line costs no false-alarm penalty. The skip is logged in `completed.result.skippedStepIds`. Spec: US2.5–US2.14, edge cases, FR-042–FR-047; tickets F1a-T14, F1a-T17, F1a-T21.
+2. **Designer copy adopted:** findings 3 (Option B variant, "Skip this stop"), 4 (the version without a number) and 6 (focus on "Skip this stop" after a 4xx or a second failure; the shorter repeat copy; "skip" keeps one meaning in F2). Spoken text equals displayed text for every new string. Finding 5 (OI-9) is deferred to F2 with the architect's conditions.
+3. **Architect's change list 1–18 accepted in full** (review.md B1–B12, S1–S10, OI resolutions). The spec and tickets now follow ADRs 0002, 0003, 0005 and 0006 with their Amendment 1. Two tickets were split out of over-full ones by the size rule: F1a-T20 (pack.json + `shared/pack.js`) and F1a-T21 (rating keys + not-graded scoring). OI-8 is closed by the founder's DECISION above.
+
+**Rationale:** with Option A, the learner hears "Here's what happened next" for a hazard they did stop, which is false feedback caused by our own failure (learning-review finding 1, moderate evidence). Option B tells the truth and keeps the corrective reveal. The ids are logged under both options, so the choice stays reversible.
+
+**Recorded dissent and risk:** architect R4: under B, a client can claim skips it never made. I accept this with one learner. F3's catch rate excludes attempts with skips (spec "Events and metrics").
+
+**Follow-ups:**
+- **principal-architect:** rule on spec OI-13 [ARCH DECISION NEEDED], the contract beyond ADR 0003 Amendment 1. It covers (a) `notGraded: true` on `missed[]` items, (b) `completed.result.notGradedStepIds`, and (c) the `skippedStepIds` echo in the `complete` response. This blocks the merge of F1a-T14 and F1a-T17 only. Please also re-review the revised `spec.md` and `tasks.md`.
+- **Lead:** update the INDEX row; the thread status stays `decided`.
