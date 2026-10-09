@@ -123,7 +123,7 @@ stateDiagram-v2
 
   What's spoken matches what's shown.
 - **End of session:**
-  - caught versus missed;
+  - caught versus missed, with a stop skipped because the grader was unreachable shown as "not graded" (never as missed; [ADR 0004](../adr/0004-no-grading-in-the-browser.md) Amendment 1);
   - **"What happened next"** for each miss, the curiosity payoff;
   - one sentence of progress ("Caching: 1120 → 1165").
 - **Never shown before you answer:** hints arrive in stages (area of the step → principle → answer), and only after an attempt.

@@ -33,7 +33,7 @@ Events follow the shape of **xAPI statements** (actor, verb, object, plus result
 | Voice and mode | `mode-assigned`, `mode-switched`, `mode-fallback`, `voice-command`, `stt-corrected` |
 | Subject changes | `subject-built`, `subject-edited`, `map-change-accepted` |
 
-**Outcomes on a mistake:** `caught`, `caught_late`, `wrong_reason`, `missed`, plus `false_alarm` on a clean step and `clean_pass` when a no-mistake run is correctly left alone.
+**Outcomes on a mistake:** `caught`, `caught_late`, `wrong_reason`, `missed`, plus `false_alarm` on a clean step and `clean_pass` when a no-mistake run is correctly left alone. A mistake whose stop was skipped because the grader was unreachable is **not graded** (`completed.result.notGradedStepIds`; [ADR 0004](../adr/0004-no-grading-in-the-browser.md) Amendment 1, [ADR 0002](../adr/0002-event-schema-v1.md) Amendment 2). It is never counted as `missed`.
 
 ## 2. Data model (SQLite)
 
@@ -76,11 +76,12 @@ CREATE TABLE daily_plan (learner_id TEXT, date TEXT, plan_json TEXT, PRIMARY KEY
   | caught late | 0.6 |
   | wrong reason | 0.3 |
   | missed | 0 |
+  | not graded (skipped stop) | excluded; no update |
 
 - **Low-confidence grades** count at half weight.
 - **False alarms** feed calibration, not mastery.
 - **Difficulty targeting:** pick cards where P(catch) ≈ 0.7.
-- **Review queue:** FSRS via `ts-fsrs` (MIT). Each mistake type is an FSRS card, and outcomes map to ratings: missed → Again, wrong reason → Hard, caught late → Good, caught → Easy.
+- **Review queue:** FSRS via `ts-fsrs` (MIT). Each mistake type is an FSRS card, and outcomes map to ratings: missed → Again, wrong reason → Hard, caught late → Good, caught → Easy. A not-graded mistake produces no rating.
 
 ## 3. Metrics
 
