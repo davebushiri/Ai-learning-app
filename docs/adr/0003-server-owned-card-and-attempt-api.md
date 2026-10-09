@@ -1,6 +1,6 @@
 # 0003. Server-owned card and attempt API, and when answers are revealed
 
-**Status:** Accepted
+**Status:** Accepted. Amended 2026-10-09 (below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A2). Dissent recorded there: backend and frontend preferred the name `runId`.
 
@@ -81,3 +81,13 @@ The card holds content. An **attempt** (`attemptId` = `att_` followed by a ULID)
 - **Idempotency tests:** the same STOP posted twice gives an identical body and a single `graded` event, and so does complete.
 - **Order tests:** a backwards `stepId` → 400, a STOP after complete → 409.
 - A `grep` test asserts that no route named `/api/scenario` or `/api/grade` exists after F1a.
+
+## Amendment 1 (2026-10-09, F1a spec review)
+Additive. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../specs/F1a-server-owned-cards/review.md) (OI-1, OI-5, OI-6, B5, B8, B10, B13).
+- **`GET /api/subjects`** returns 200 `[{id, title}]` for the loaded packs. The browser takes the subject id from it, because the id `demo-trades` contains a deny-listed word and so can't be hard-coded in `web/`. Rejected: a `subjects` field in `/api/health` (health reports liveness, not the catalog), and exempting pack ids from the deny-list (a hole in the ratchet).
+- **`card.subject`** in the public card is the pack id (`"demo-trades"`), the same value the client sent. The version lives in the event context.
+- **Order checks use the step's position**, `card.steps.findIndex(s => s.id === stepId)`, never the numeric id, because `validateScenario` doesn't require ids in order. `resolveStop` gets that index.
+- **`complete` body:** `{lastStepShown: int, skippedStepIds?: int[]}`. Each skipped id must be a step id of the card, unique, and not after `lastStepShown`; otherwise the server returns 400. Ids that already have a graded STOP are ignored (the server's record wins). The ids go into `completed.result.skippedStepIds` ([0002](0002-event-schema-v1.md) Amendment 1). Whether a skipped mistake is scored as missed or "not graded" is a product decision for the F1a spec; the contract carries the ids either way.
+- **Concurrency stays 409.** A second STOP while one is in flight for the same attempt returns 409. The spec's per-attempt queue is rejected: it adds waiting work, and idempotent replay already makes a retry safe. The in-flight mark is released in `finally`.
+- **Fixture card stamps are NULL.** `prompt_version` and `model` stay NULL for `source = 'fixture'`, as in the CHECK above. Placeholder strings such as `"none"` are rejected, because they look like a real version in per-version queries.
+- **Leak test.** The key `error` is flagged only when its value is not a string. HTTP error bodies are `{error: "<message>"}`.

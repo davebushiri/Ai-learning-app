@@ -1,6 +1,6 @@
 # 0006. Pack format v1, trust and fencing of pack text, and rating keys
 
-**Status:** Accepted (technical). Shipping any non-trades pack is held by the F2 hard rule, which is **pending founder F-0**.
+**Status:** Accepted. The F2 hard rule is accepted (founder F-0). Amended 2026-10-09 (below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (W2, W7, the "hidden coupling" risk)
 
@@ -51,3 +51,15 @@
 - A test asserts that `ratingLabel(demoTrades.ratings, key)` equals today's 5 strings for the 5 keys.
 - The deny-list ratchet test, with no `shared/` or `web/` entries at F1a exit.
 - A test asserts that the loader refuses a changed `pack.json` whose version wasn't bumped.
+
+## Amendment 1 (2026-10-09, F1a spec review)
+Additive. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../specs/F1a-server-owned-cards/review.md) (B4, OI-3).
+- **The keyword grader's vocabulary moves into the pack.** That's `shared/mock-grader.js:92-105` and `:122`, which this ADR missed. Pack v1 adds:
+  - `copy.falseAlarmFeedback`, a required string;
+  - `grading.synonyms`, optional, shaped `{[term]: string[]}`, with caps on counts and lengths in `validatePack`.
+
+  `mockGrade(card, errorStepId, explanation, lexicon)` takes `{synonyms, falseAlarmFeedback}`, and the module holds no subject words. Synonyms are matched as data and never placed in a prompt.
+- **`scenarios[]` stays flat as decided:** `{id, label, brief, hazardHints, criticalHints?, twists?, fixture}`. `fixture` is a filename under `packs/<id>/scenarios/`, and today's names are kept (`electrical.json`, `brazing.json`, `brakes.json`). Rejected: a nested `generation` object, a `cards/` directory and a `format` field. They add a second shape with no consumer.
+- **Immutability covers the whole pack.** `subject_pack.json` stores `pack.json` plus every scenario file, as canonical JSON. A mismatch for the same `(id, version)` refuses that pack.
+- **Rating keys as decided:** `ratings: {missedCritical, tiers: [t0, t1, t2, t3]}`, with keys `missedCritical` and `tier0`–`tier3`. Rejected: `missed-critical`, `excellent`, `solid`, `developing`, `beginning`. Evaluative names in engine code carry a judgement that belongs to the pack, and tier indices map one to one onto `RULES.ratingTiers`.
+- **Fixture card ids** are `fx_<packId>_<packVersion>_<scenarioId>` ([0003](0003-server-owned-card-and-attempt-api.md)), and the loader inserts each once.

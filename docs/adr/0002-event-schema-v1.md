@@ -1,6 +1,6 @@
 # 0002. Event schema v1 (`shared/events.js`) and the F1 verb subset
 
-**Status:** Accepted
+**Status:** Accepted. Amended 2026-10-09 (below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A2, risk "chatty events")
 
@@ -60,3 +60,14 @@ CREATE INDEX event_attempt ON event (json_extract(context_json, '$.attemptId'));
 - Unit tests check that `validateEvent` accepts each F1 verb's example and rejects missing fields, and that it never throws on garbage input.
 - A unit test checks that `projectAttempt` rebuilds the caught set from a recorded event list.
 - An HTTP test checks that one full attempt writes exactly `started`, the `stopped`/`explained`/`graded` triplets, `step-shown` and `completed`, in that `seq` order, and that each passes `validateEvent`.
+
+## Amendment 1 (2026-10-09, F1a spec review)
+Additive only, under the change rule above. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../specs/F1a-server-owned-cards/review.md) (B2, B3, B10).
+- **`graded.result` gains `feedback`** (string, at most 2000 chars). A repeated STOP must return the identical body ([0003](0003-server-owned-card-and-attempt-api.md)), and the feedback text is stored nowhere else.
+- **`completed.result` gains `skippedStepIds: int[]`.** It is always present and may be empty. It is copied from the `complete` body, and lists the STOPs the learner skipped after "Couldn't reach the grader". It is recorded in F1a because a skipped catch is otherwise indistinguishable from a miss in every later projection, and events can't be corrected afterwards.
+- **Write rule.** A STOP's `stopped`, `explained` and `graded` are appended **after** grading, in one `appendEvents` transaction. Nothing for a STOP is written before its grade is known. A failed grade or failed write leaves no partial STOP.
+- **`step-shown` stays one event, written at complete.** Per-step events derived on the server are rejected: they record an inference rather than an observation, and for abandoned attempts the last `stopped.object.step` already gives the furthest step known.
+- **`context.promptVersions`** lists only the prompts the gateway actually sent to a model for that event, including ones that then fell back. In MOCK mode, and for an explicitly requested cached card, it is `{}`.
+- **Ids.** `evt_` ULIDs are unique, but not ordered within one millisecond. Order is always `seq`.
+- **Repeat `complete`.** The repeat body is recomputed from the card, the events and the pack, all of which are immutable. It is not stored in `completed.result`.
+- `projectAttempt(events)` stays in `shared/events.js` (pure), and returns the names above: `{cardId, caughtStepIds, lastStopStepId, stopsByStepId, completed}`.

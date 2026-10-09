@@ -1,6 +1,6 @@
 # 0005. AI gateway, prompt registry, `x-prompt-id` header, and what counts as a prompt text change
 
-**Status:** Accepted (technical). Whether W7's prompt rewrite can merge without a live gate run is **pending founder F-4**.
+**Status:** Accepted. Founder F-4 = (a): W7's prompt rewrite is held at the gate until a key and labels exist. Amended 2026-10-09 (below).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A4, A5, follow-up 4)
 
@@ -65,3 +65,14 @@ Each `server/prompts/<id>.js` exports:
 - A test asserts that every module in `server/prompts/` exports an integer `VERSION` and a `PROMPT` with the fields above.
 - A test asserts that every prompt's fingerprint matches a recording or a pinned pending entry ([0007](0007-plain-node-eval-runner.md)).
 - Fake-claude scenarios cover hang, 429, refusal and invalid output. Each must produce the fallback within the deadline and exactly one `llm_call` row with the expected `outcome`.
+
+## Amendment 1 (2026-10-09, F1a spec review)
+Clarifications only. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../specs/F1a-server-owned-cards/review.md) (B1, OI-4).
+- **When to call `run()`.** Every place where the live path would call a model calls `run()`. In MOCK mode it calls it with `live: false`, which logs outcome `mock`. A cached card the client asked for explicitly (`source: "fixture"`) is not an AI call, so there is no `run()`, no `llm_call` row and no `promptVersions`.
+- **F1a staging.** F1a exports `VERSION` and `PROMPT = {id, system, schema, render, fingerprintInputs}` from each prompt module. `promptFingerprint` goes in the gateway. `fingerprintInputs` covers each template branch:
+  - grade: an on-time catch, a late catch, a false alarm, and an empty explanation;
+  - scenario: with and without `criticalHints`, `twists` and recent summaries, with a fixed `rng`.
+  
+  An F1a test freezes both fingerprints, so the F-6 `pending` entries in F1b pin exactly those values. The staleness test itself is F1b.
+- **`server/ai/models.js`** holds `MODEL`, the effort constants and the deadline constants (env-overridable, defaults 40000 / 8000).
+- **Console lines.** Today's `[claude] …` console lines stay byte-compatible (`tests/server.test.js` BRAIN-08).

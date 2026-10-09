@@ -1,6 +1,6 @@
 # 0001. Storage on `node:sqlite`, forward-only migrations, trigger-enforced append-only event log
 
-**Status:** Accepted (technical). Render hosting: pending founder F-5.
+**Status:** Accepted. Render hosting stays out of F1 (founder F-5 confirmed, [thread 0003](../team/threads/0003-f1-engine-core-proposal.md) founder DECISION).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A1)
 

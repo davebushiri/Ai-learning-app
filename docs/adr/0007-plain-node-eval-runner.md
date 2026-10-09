@@ -1,6 +1,6 @@
 # 0007. A plain Node eval runner for F1 (not promptfoo), with recordings and a pinned pending ratchet
 
-**Status:** Accepted (technical). Amends [`open-source-landscape.md`](../foundation/open-source-landscape.md) §5 item 5. **Pending founder:** the cost cap (F-2), the API key (F-3), labels (F-1), and the initial pending entries (F-6).
+**Status:** Accepted. Amends [`open-source-landscape.md`](../foundation/open-source-landscape.md) §5 item 5. Founder: cap $6 per run and $25 per month (F-2), labels yes (F-1), initial `grade@1`/`scenario@1` pending entries approved (F-6); API key later (F-3).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (E1, E4, follow-ups 2–3). Dissent recorded: this overrides a foundation recommendation.
 
