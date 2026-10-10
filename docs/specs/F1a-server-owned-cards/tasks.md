@@ -618,6 +618,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B07 [minor] No unit test for the `fake-claude.mjs` `/__log` additions (`system`, `schemaSha256`)
 - Actual: proven only by a scratch script in T03a. · Suggested: T09, which edits `fake-claude.mjs` next, adds the assertion. · Owner: qa-engineer (T09)
+- **Triage (rev 4.1):** owner confirmed: qa-engineer, **F1a-T09**. Its existing test "log entries carry system and schemaSha256" now spells out the string, block-array and `null`-schema cases.
 
 **Process note (lead):** WIP checkpoint commit `5883e06` captured the T03a files seconds before QA's 3× replay finished. The certified files are byte-identical to it; the T03a commit below records the certification.
 
@@ -625,14 +626,17 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B08 [minor] The live-generated golden run depends on a product fixture through fake Claude
 - Actual: `happyScenario()` in `tests/helpers/fake-claude.mjs` reads `fixtures/scenarios/electrical.json`. If T07b changes that file's content or shape, `live-generated-perfect-electrical-text` diffs for a test-input reason, not a regression. · Expected: the fake's generated card stays frozen until deliberately recaptured. · Owner: qa-engineer, with T07b (freeze the card inline in the fake)
+- **Triage (rev 4.1):** owner confirmed: qa-engineer, carried by **F1a-T09** (QA's ticket, the next edit of `fake-claude.mjs` after T07b), not by T07b. T07b stays a path-only edit and is safe, because T07a's frozen sha256 test proves the pack file is byte-identical to the old fixture. T09 freezes the card inline and removes the `FIXTURE` read (Interfaces and Tests updated; golden replay must stay at 0 diffs).
 
 ### F1a-B09 [minor] Importing `tests/helpers/fake-claude.mjs` from `node -e` or stdin crashes
 - Actual: the main-module guard `pathToFileURL(process.argv[1])` throws `ERR_INVALID_ARG_TYPE` when `argv[1]` is undefined (`fake-claude.mjs:132`). · Owner: qa-engineer (T09 edits the fake next)
+- **Triage (rev 4.1):** owner confirmed: qa-engineer, **F1a-T09** (Interfaces and the test "importing fake-claude.mjs from node -e does not throw" added).
 
 *Filed by backend-engineer while building F1a-T05 (2026-10-10).*
 
 ### F1a-B15 [minor] A pack entry without `hazardHints` renders "Hazard areas to draw mistakes from: undefined"
 - Actual: existing behavior in `scenarioUserPrompt`. Not fixed, because F1a forbids prompt text changes; the fix needs a `VERSION` bump and the eval gate. · Matters once packs may omit the field (T07b / pack format). · Owner: technical-product-manager to schedule (F1b W7 is the natural home)
+- **Triage (rev 4.1):** **ratified in place** (review "Code review: Wave 0" S2). The bug is valid and correctly deferred. Scheduled for F1b W7 with the prompt rewrite (`VERSION` bump plus the eval gate), recorded in spec "Non-goals / Later". It can't trigger in F1a: `hazardHints` is required (FR-019), and T20 now tests that `validatePack` rejects a scenario without it. Process: engineers file bugs through QA or a thread from now on, not by appending here.
 
 *Filed by qa-engineer while building F1a-T01b (2026-10-10).*
 
@@ -641,9 +645,12 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B21 [minor] US3.7 / US3.8 "first call" can't be tested
 - Actual: during the first pending `complete` the play screen still shows, and `#again-btn` is on the results screen, so "Run another job" can't be reached then. · Owner: technical-product-manager (say which screen shows, or scope US3.7 to Retry)
+- **Triage (rev 4.1):** resolved in spec rev 4.1. During the first pending `complete` the **play screen** stays (spec "Silent wait"; today's behavior, so no golden change). US3.7 and US3.8 are scoped to a pending "Retry results"; the T01b and T17b test name is now "US3.7 Run another job during a pending Retry results: results never appear over setup" (QA renames the existing e2e test). FR-050 and the `resultsToken` check after the first `complete` are unchanged.
 
 ### F1a-B22 [minor] Copy for a 4xx after an earlier failure is undefined
 - Actual: US2.13 says a 4xx shows the first-showing copy; FR-031 / T17c say a second consecutive failure shows the repeat copy. · Owner: technical-product-manager
+- **Triage (rev 4.1):** resolved in spec rev 4.1 (US2.11, US2.13, FR-031, copy table). The copy follows only the consecutive-failure count for the current STOP: the first failure (any status) gets "Couldn't reach the grader. Your answer is still here. Try again, or skip and this stop won't be scored."; the second and later (any status, so also a 4xx after an earlier failure) get "Still can't reach the grader. Try again, or skip this stop." Focus is on "Skip this stop" in both 4xx cases. Displayed and spoken text are the same string from `graderErrorText`. Carried by T17c (Interfaces plus the new US2.11 4xx test), with T01b's matching e2e test.
 
 ### F1a-B23 [minor] "Displayed (exact)" doesn't say DOM text or rendered text
 - Actual: the golden harness records `innerText` (CSS uppercases severities); the e2e checks `textContent`. · Owner: technical-product-manager
+- **Triage (rev 4.1):** resolved in spec rev 4.1 (paragraph above the copy table). "Displayed (exact)" means DOM `textContent` with whitespace collapsed (`replace(/\s+/g, ' ').trim()`), and that layer is authoritative for the copy table, for inv. 9 and for every e2e copy assertion (T01b Acceptance updated). The golden harness's `innerText` stays as it is: it is a regression layer compared only with its own baseline, so no recapture and no harness change are needed.
