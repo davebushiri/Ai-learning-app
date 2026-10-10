@@ -581,3 +581,22 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 **[P] collision check:** T01a ∥ T02 (tests/acceptance vs. prompts/scenario.js). T04 ∥ T05 ∥ T20 (index.js, routes, services vs. prompts vs. packs/pack.json, shared/pack.js, tests/pack-format). T08a ∥ T07a, T07b, T11, T20 (server/ai/*, tests/gateway.test.js vs. packs, server/packs.js, index.js, content.js, contract.js, tests vs. ownership files vs. pack.json). T07a → T07b → T08b sequential (`server/services/content.js`, test files). T09 ∥ T10 ∥ T11 (fake-claude.mjs and gateway.test.js `after` hook vs. deny-list files vs. ownership files). T13a ∥ T08b, T09, T10, T11, T12, T21 (shared/events.js, server/services/stop-plan.js, tests/events.test.js, tests/stop-plan.test.js, tests/mock-verdicts.test.js, the verdict fixture vs. their files; T13a starts after T07b). T21 ∥ T12, T13a, T13b (shared/scoring.js vs. server, events.js, mock-grader.js, contract.js). T15 ∥ T17a ∥ T12–T14, T21 (web/speech, web/app.js vs. web/copy.js vs. server and shared). T16 ∥ T17a–T17d (tests vs. web). Split parts never run in parallel: T01a → T01b, T03a → T03b, T07a → T07b, T08a → T08b, T13a → T13b, T17a → T17b → T17c → T17d, T19a → T19b. The `web/app.js` edits run T15 → T17b → T17c → T17d.
 
 ## Bugs (QA appends)
+
+*Filed by qa-engineer while building F1a-T01a (2026-10-10). Owners decide; none blocks Wave 0.*
+
+### F1a-B01 [minor] The edge case "two mistakes within reach of one skipped stop" can't happen through the API
+- Steps: try to build it over HTTP. · Expected: an HTTP test exists. · Actual: `validateScenario` forbids adjacent mistakes and `graceSteps` is 1, so only T21's unit test with a synthetic card can cover it. · Evidence: T01a. · Suspected file: spec Edge cases. · Owner: technical-product-manager
+
+### F1a-B02 [minor] `explained.result.chars` is undefined for explanations over 2000 chars
+- Expected: the spec says whether it is the original length or the stored (clipped) length. · Actual: not stated, so the >2000-char test asserts only `text`. · Suspected file: spec events table / ADR 0002. · Owner: technical-product-manager + principal-architect
+
+### F1a-B03 [minor] The US2.9 rating isn't stated
+- Actual: T01a asserts `ratingKey: 'tier0'`, derived from FR-021/FR-047 (270/300 = 0.9). · Owner: technical-product-manager to confirm or correct
+
+### F1a-B04 [minor] T18's test name "legacy routes return 404" breaks T01a's `edge:` naming rule
+- Actual: T01a used T18's exact name. · Owner: technical-product-manager
+
+### F1a-B05 [minor] T09's `assertNoUnroutedCalls` contract doesn't say whether it throws or rejects
+- Actual: the US5.5 test accepts either. · Owner: technical-product-manager
+
+**Risk noted by QA (not a bug):** once implemented, `tests/acceptance/F1a.test.js` adds about 20 s to `npm test` (a 5 s lock test, deadline-bound rows, 800 ms in-flight holds, kill-and-restart). `CLAUDE.md` says the suite takes about 6 s.
