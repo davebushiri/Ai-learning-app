@@ -35,12 +35,13 @@ const DEFAULT_TWISTS = [
   'a part from the truck is the wrong size',
   'the previous work was done by a handyman'
 ];
-const pick = a => a[Math.floor(Math.random() * a.length)];
+const pick = (a, rng) => a[Math.floor(rng() * a.length)];
 
 // Opus 5.5 rejects sampling params, so variety comes from the input: a random
 // critical hazard area (trade.criticalHints, else one of trade.hazardHints), jobsite twist, and apprentice name on every call.
 // recentSummaries (optional) lists mistakes from recent scenarios to avoid.
-export function scenarioUserPrompt(tradeId, trade, recentSummaries = []) {
+// rng (optional) is injectable so tests and the golden harness get a deterministic prompt.
+export function scenarioUserPrompt(tradeId, trade, recentSummaries = [], rng = Math.random) {
   const hints = (Array.isArray(trade.criticalHints) && trade.criticalHints.length
     ? trade.criticalHints
     : String(trade.hazardHints ?? '').split(',')).map(s => String(s).trim()).filter(Boolean);
@@ -49,9 +50,9 @@ export function scenarioUserPrompt(tradeId, trade, recentSummaries = []) {
   return `Trade id: ${tradeId}
 Job: ${trade.brief}
 Hazard areas to draw mistakes from: ${trade.hazardHints}
-Draw the critical mistake from: ${hints.length ? pick(hints) : 'any of the hazard areas'}
-Jobsite twist to include: ${pick(twists)}
-Apprentice name: ${pick(APPRENTICE_NAMES)}
+Draw the critical mistake from: ${hints.length ? pick(hints, rng) : 'any of the hazard areas'}
+Jobsite twist to include: ${pick(twists, rng)}
+Apprentice name: ${pick(APPRENTICE_NAMES, rng)}
 ${recent.length ? `Do not reuse these mistakes from recent scenarios: ${recent.join('; ')}\n` : ''}
 Write a fresh scenario.`;
 }
