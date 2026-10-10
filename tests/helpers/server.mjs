@@ -7,17 +7,29 @@ import { fileURLToPath } from 'node:url';
 
 const ENTRY = fileURLToPath(new URL('../../server/index.js', import.meta.url));
 
+// Never leave a server behind if a test crashes. One shared 'exit' listener for every child,
+// not one per server, so long runs don't pile up listeners (F1a-B06).
+const live = new Set();
+let exitHooked = false;
+
 export function startServer(env = {}) {
   const child = spawn(process.execPath, [ENTRY], {
-    env: { ...process.env, PORT: '0', ...env },
+    // Each spawned server gets its own in-memory DB unless the caller names one (ADR 0001).
+    env: { ...process.env, PORT: '0', DB_PATH: ':memory:', ...env },
     stdio: ['ignore', 'pipe', 'pipe']
   });
-  process.once('exit', () => child.kill()); // never leave a server behind if a test crashes
+  live.add(child);
+  child.once('exit', () => live.delete(child));
+  if (!exitHooked) {
+    exitHooked = true;
+    process.on('exit', () => { for (const c of live) c.kill(); });
+  }
   let out = '';
   child.stdout.on('data', d => (out += d));
   child.stderr.on('data', d => (out += d));
 
   const stop = () => new Promise(resolve => {
+    live.delete(child);
     if (child.exitCode !== null || child.signalCode) return resolve();
     child.once('exit', resolve);
     child.kill();
