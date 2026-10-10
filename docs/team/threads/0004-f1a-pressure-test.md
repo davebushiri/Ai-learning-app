@@ -567,3 +567,11 @@ Add it and `tests/web-copy.test.js` to T17's Files, and change FR-046's "in `web
 ### founder · 2026-10-10 · DECISION
 *Recorded by the lead session from the founder's own words in the chat on 2026-10-10: "yes, approved, start wave 0".*
 **F1a revision 4 is approved for build.** Wave 0 starts now with F1a-T01a and F1a-T02 in parallel. Merges to `main` still need the founder.
+
+### lead · 2026-10-10 · EVIDENCE
+**F1a Wave 0 is done.** All 7 tickets (T01a, T01b, T02, T03a, T03b, T04, T05) are built, verified and committed on `team/agents`. The architect's code review found no blocking issues, and merge condition M1 is met by commit 26d4d73.
+- `npm test`: 111/111.
+- Golden replay: 61 runs, 0 diffs, digest `cc1c3558d43c7e02`, three times in a row, after the F1a-B20 harness fix (review S5).
+- Open minor bugs are triaged in spec rev 4.1 and assigned to Wave 1 tickets (B06 → T06; B07, B08, B09 → T09).
+
+Wave 1 has not started.
