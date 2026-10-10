@@ -654,3 +654,14 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 ### F1a-B23 [minor] "Displayed (exact)" doesn't say DOM text or rendered text
 - Actual: the golden harness records `innerText` (CSS uppercases severities); the e2e checks `textContent`. · Owner: technical-product-manager
 - **Triage (rev 4.1):** resolved in spec rev 4.1 (paragraph above the copy table). "Displayed (exact)" means DOM `textContent` with whitespace collapsed (`replace(/\s+/g, ' ').trim()`), and that layer is authoritative for the copy table, for inv. 9 and for every e2e copy assertion (T01b Acceptance updated). The golden harness's `innerText` stays as it is: it is a regression layer compared only with its own baseline, so no recapture and no harness change are needed.
+
+*Filed by backend-engineer while building F1a-T06 (2026-10-10).*
+
+### F1a-B30 [major] The ticket's literal card CHECK accepts live cards with no stamps
+- Actual: `CHECK (source <> 'live' OR (length(prompt_version) > 0 AND length(model) > 0))` passes for NULL stamps (a CHECK fails only on false, and `length(NULL)` is NULL); a NULL `source` also passes `CHECK (source IN (...))`. · Fixed in T06's `001-init.sql`: `source TEXT NOT NULL` plus an explicit `IS NOT NULL` in the CHECK, proven by mutation. · Owner: principal-architect to confirm against ADR 0003; PM to update the FR-015 and T06 SQL text
+
+### F1a-B31 [major] `INSERT OR IGNORE` silently swallows CHECK and NOT NULL violations
+- Actual: an unstamped live card vanished with no error. · Fixed in T06: `INSERT … ON CONFLICT (id) DO NOTHING` (and `ON CONFLICT (id, version)` for `putPack`), which ignores only duplicate keys. · Owner: principal-architect (ADR 0006's pack loader must not use OR IGNORE either); PM to update the tasks.md wording
+
+### F1a-B32 [minor] `package-lock.json` still records `engines.node: ">=20.12"`
+- Actual: the lockfile isn't on T06's file list; the next `npm install` will sync it. · Owner: backend-engineer (grant the one-line edit in a later ticket)
