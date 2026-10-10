@@ -13,10 +13,13 @@
 //   delayMs, hang, status (+ retryAfter, shouldRetry), times (apply to next N requests),
 //   stopReason + stopDetails, scenario / grade (objects), scenarioText / gradeText (raw),
 //   content (raw content block array), thinkingFirst.
-// GET /__log lists every request seen; POST /__reset clears log and mode.
+// GET /__log lists every request seen; POST /__reset clears log and mode. Each entry
+// also carries `system` (one string; text blocks joined with "\n") and
+// `schemaSha256` (of the output schema, null if none) for the golden prompt layer.
 // Request kind (scenario vs grade) is detected from the json_schema in output_config.
 
 import http from 'node:http';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -71,6 +74,10 @@ export async function startFakeClaude({ port = 0, mode: initialMode = {}, quiet 
     try { body = JSON.parse(raw); } catch {}
     const isGrade = JSON.stringify(body.output_config?.format?.schema ?? {}).includes('verdict');
     const kind = isGrade ? 'grade' : 'scenario';
+    const schema = body.output_config?.format?.schema;
+    const system = Array.isArray(body.system)
+      ? body.system.filter(b => b?.type === 'text').map(b => b.text).join('\n')
+      : body.system ?? null;
 
     const active = remaining > 0 ? mode : {};
     if (remaining > 0 && remaining !== Infinity) remaining--;
@@ -79,7 +86,8 @@ export async function startFakeClaude({ port = 0, mode: initialMode = {}, quiet 
       t: new Date().toISOString(), ms: Date.now(), path: req.url, kind,
       retryCount: req.headers['x-stainless-retry-count'], beta: req.headers['anthropic-beta'],
       model: body.model, effort: body.output_config?.effort, fallbacks: body.fallbacks,
-      max_tokens: body.max_tokens, user: body.messages?.[0]?.content, applied: active
+      max_tokens: body.max_tokens, user: body.messages?.[0]?.content, applied: active,
+      system, schemaSha256: schema === undefined ? null : createHash('sha256').update(JSON.stringify(schema)).digest('hex')
     });
     if (!quiet) console.log(`[stub] ${kind} ${req.url} retry=${req.headers['x-stainless-retry-count']} applied=${JSON.stringify(active)}`);
 

@@ -600,3 +600,13 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - Actual: the US5.5 test accepts either. · Owner: technical-product-manager
 
 **Risk noted by QA (not a bug):** once implemented, `tests/acceptance/F1a.test.js` adds about 20 s to `npm test` (a 5 s lock test, deadline-bound rows, 800 ms in-flight holds, kill-and-restart). `CLAUDE.md` says the suite takes about 6 s.
+
+*Filed by qa-engineer while building F1a-T03a (2026-10-10).*
+
+### F1a-B06 [minor] `tests/helpers/server.mjs` adds a `process.once('exit')` listener per server
+- Actual: after 11 servers, `MaxListenersExceededWarning`, and listeners pile up over a long harness run. `tests/golden/run.mjs` raises the limit as a workaround. · Owner: backend-engineer (T06 edits the helper)
+
+### F1a-B07 [minor] No unit test for the `fake-claude.mjs` `/__log` additions (`system`, `schemaSha256`)
+- Actual: proven only by a scratch script in T03a. · Suggested: T09, which edits `fake-claude.mjs` next, adds the assertion. · Owner: qa-engineer (T09)
+
+**Process note (lead):** WIP checkpoint commit `5883e06` captured the T03a files seconds before QA's 3× replay finished. The certified files are byte-identical to it; the T03a commit below records the certification.
