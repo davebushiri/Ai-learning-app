@@ -1,6 +1,6 @@
 # 0001. Storage on `node:sqlite`, forward-only migrations, trigger-enforced append-only event log
 
-**Status:** Accepted. Render hosting stays out of F1 (founder F-5 confirmed, [thread 0003](../team/threads/0003-f1-engine-core-proposal.md) founder DECISION).
+**Status:** Accepted. Amended 2026-10-10 (Amendment 1, SQL write rules). Render hosting stays out of F1 (founder F-5 confirmed, [thread 0003](../team/threads/0003-f1-engine-core-proposal.md) founder DECISION).
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A1)
 
@@ -39,3 +39,12 @@ Use `node:sqlite`, wrapped by `server/db.js`, with `engines: ">=22.13"`. Enforce
 - A test runs UPDATE and DELETE on `event` and expects both to throw.
 - A test migrates an empty `:memory:` database and asserts that `user_version` equals the highest migration number. Running the migrations a second time is a no-op.
 - A `grep` test asserts that `node:sqlite` is imported only in `server/db.js`.
+
+## Amendment 1 (2026-10-10, F1a-T06 build, bugs F1a-B30 and F1a-B31)
+Additive. These are write rules for `server/db.js` and `server/migrations/`. They were checked on Node v22.22.0 and SQLite 3.50.4.
+- **No conflict-resolution clauses on writes.** `INSERT OR IGNORE`, `INSERT OR REPLACE`, `REPLACE INTO` and `UPDATE OR …` are banned. `OR IGNORE` also skips rows that fail a CHECK or NOT NULL, so a live card with no stamps vanished with no error (B31). `OR REPLACE` is worse on `event`: it deletes the clashing row **without firing `event_no_delete`**, because `recursive_triggers` is off. Verified: `INSERT OR REPLACE` with an existing `id` rewrote history and returned `changes: 1`. That is a silent breach of inv. 6.
+- **Idempotent inserts** use `INSERT … ON CONFLICT (<key columns>) DO NOTHING`. This ignores only a clash on that key. CHECK and NOT NULL are checked before uniqueness, so a bad row still throws even when its key already exists. `ON CONFLICT … DO UPDATE` on `event` is blocked by `event_no_update`.
+- **CHECKs are NULL-safe.** A CHECK fails only when it is false, and anything compared with NULL is NULL. So every column a CHECK depends on is `NOT NULL`, or the CHECK spells out `IS NOT NULL` (B30). Key columns of rowid tables are `NOT NULL`, because SQLite lets a non-`INTEGER` `PRIMARY KEY` hold NULL (verified: two `card` rows with `id` NULL were both inserted).
+- **`001-init.sql` may be edited in place until F1a merges to `main`.** No persistent database exists yet: Render is out of F1, `data/` is gitignored and tests use `:memory:`. Once F1a merges, schema changes go in `002-*.sql` and later files.
+- **Rejected:** `PRAGMA recursive_triggers = ON` as the guard against `OR REPLACE`. It is per-connection state that a later driver swap could lose, and a ban that a grep test checks is simpler.
+- **Verification:** a grep test in `tests/db.test.js` strips `//` and `--` comments from `server/**/*.js` and `server/migrations/*.sql`, then finds no match for `/\bOR\s+(IGNORE|REPLACE|ROLLBACK|ABORT|FAIL)\b|\bREPLACE\s+INTO\b/i`. The `db.js:93` comment that names the rule must not trip it. A test shows that `INSERT … ON CONFLICT (id) DO NOTHING` with an existing `id` and a failing CHECK still throws. A test shows that `card.id`, `subject_pack.(id, version)` and `llm_call.id` reject NULL.

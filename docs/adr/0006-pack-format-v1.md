@@ -1,6 +1,6 @@
 # 0006. Pack format v1, trust and fencing of pack text, and rating keys
 
-**Status:** Accepted. The F2 hard rule is accepted (founder F-0). Amended 2026-10-09 (below).
+**Status:** Accepted. The F2 hard rule is accepted (founder F-0). Amended 2026-10-09 (Amendment 1) and 2026-10-10 (Amendment 2, `putPack` insert), below.
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (W2, W7, the "hidden coupling" risk)
 
@@ -63,3 +63,10 @@ Additive. Reasons are in [`docs/specs/F1a-server-owned-cards/review.md`](../spec
 - **Immutability covers the whole pack.** `subject_pack.json` stores `pack.json` plus every scenario file, as canonical JSON. A mismatch for the same `(id, version)` refuses that pack.
 - **Rating keys as decided:** `ratings: {missedCritical, tiers: [t0, t1, t2, t3]}`, with keys `missedCritical` and `tier0`–`tier3`. Rejected: `missed-critical`, `excellent`, `solid`, `developing`, `beginning`. Evaluative names in engine code carry a judgement that belongs to the pack, and tier indices map one to one onto `RULES.ratingTiers`.
 - **Fixture card ids** are `fx_<packId>_<packVersion>_<scenarioId>` ([0003](0003-server-owned-card-and-attempt-api.md)), and the loader inserts each once.
+
+## Amendment 2 (2026-10-10, F1a-T06 build, bug F1a-B31)
+Clarifies "inserted once". The rules are in [0001](0001-sqlite-storage-and-append-only-event-log.md) Amendment 1.
+- **`putPack`** uses `INSERT … ON CONFLICT (id, version) DO NOTHING`, never `INSERT OR IGNORE`. When `changes` is 0, it compares the stored `json` with the incoming one and returns `'same'` or `'conflict'`. The loader refuses the pack on `'conflict'`. Using `OR IGNORE` would hide a constraint failure as `changes: 0`, and the follow-up read would then find no row.
+- **`subject_pack.id` and `version` are `NOT NULL`.** SQLite allows NULL in a composite `PRIMARY KEY` on a rowid table, and NULLs never conflict, so a keyless pack row could be inserted any number of times.
+- **The loader's fixture cards** go through `putCard`, which follows [0003](0003-server-owned-card-and-attempt-api.md) Amendment 4.
+- **Verification:** the existing "putPack returns inserted, same, conflict" test, plus "putPack with a NULL id or version throws".

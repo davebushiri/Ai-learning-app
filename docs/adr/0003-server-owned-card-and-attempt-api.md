@@ -1,6 +1,6 @@
 # 0003. Server-owned card and attempt API, and when answers are revealed
 
-**Status:** Accepted. Amended 2026-10-09 (Amendments 1, 2 and 3, below).
+**Status:** Accepted. Amended 2026-10-09 (Amendments 1, 2 and 3) and 2026-10-10 (Amendment 4, `card` constraints), below.
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A2). Dissent recorded there: backend and frontend preferred the name `runId`.
 
@@ -108,3 +108,18 @@ Narrows Amendment 1's concurrency rule. The wire shapes don't change. Reasons ar
 - **Check order (FR-007):** checks 1–4 are unchanged. Check 5 becomes "an entry is in flight for this attempt: same `stepId` → await its promise; otherwise → 409". The no-`await` rule still holds: nothing is awaited between `eventsForAttempt` and either `inFlight.set` or returning the joined promise. The mark is deleted in `finally` by the request that set it.
 - **Single-instance assumption.** The in-flight mark lives in process memory. F1a is correct only with **one server process per database file**. That holds today: local runs, `npm test` (one process per temp DB) and Render's free plan with one instance. With two processes on one file, two STOPs could each pass the check and write two triplets for one step. **Revisit trigger:** any second process or instance on the same DB (scale-out, a cluster, a worker that writes events). That needs a new ADR with a database-level guard, such as `BEGIN IMMEDIATE` plus a re-read of the projection inside the append transaction. With one process and one connection, `busy_timeout` never waits on our own writes. It applies only to an outside reader or writer, and it blocks the event loop while it waits, which is accepted for F1.
 - **Verification:** "same STOP twice in flight: both 200, identical body, one triplet, one grade call" and "different stepId while one is in flight: 409, no events" (gateway stub that resolves after 100 ms); "a joined request whose leader's grade rejects gets 500 and the next STOP is graded once".
+
+## Amendment 4 (2026-10-10, F1a-T06 build, bugs F1a-B30 and F1a-B31)
+Corrects the `card` constraints in the Decision above. The wire shapes don't change. The rules are in [0001](0001-sqlite-storage-and-append-only-event-log.md) Amendment 1.
+- **The `card` constraints are:**
+  ```sql
+  id TEXT NOT NULL PRIMARY KEY,
+  source TEXT NOT NULL,
+  CHECK (source IN ('fixture','live')),
+  CHECK (source <> 'live' OR (prompt_version IS NOT NULL AND model IS NOT NULL
+                              AND length(prompt_version) > 0 AND length(model) > 0))
+  ```
+  The Decision's CHECK rejected NULL stamps but allowed `''`, and it allowed a NULL `source` (NULL `IN (...)` is NULL, which passes). FR-015's "tightened" `length(x) > 0` form dropped the NULL test, and `length(NULL) > 0` is NULL, which also passes. Both gaps were verified. Only the combined form above closes them. `prompt_version` and `model` stay nullable, because fixture cards keep NULL stamps (Amendment 1).
+- **"Inserted once" means** `INSERT … ON CONFLICT (id) DO NOTHING`, never `INSERT OR IGNORE`. A repeat `putCard` for an existing id is a no-op. A row that fails a constraint throws, even when its id already exists.
+- **Rejected:** `typeof(prompt_version) = 'text'` and a `trim()` test. The CHECK is a backstop: the gateway sets the stamps from `VERSION` and `server/ai/models.js`. Stricter SQL would only repeat validation that belongs in code.
+- **Verification:** the existing T06 tests "live card with NULL or empty prompt_version or model is rejected" and "source other than fixture or live is rejected" (with `null` in its list) prove the gaps are closed. Add "putCard with an existing id and NULL stamps still throws" and "card with NULL id is rejected".
