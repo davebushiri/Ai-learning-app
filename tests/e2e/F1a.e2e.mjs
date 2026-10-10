@@ -2,11 +2,13 @@
 //
 //   node tests/e2e/F1a.e2e.mjs
 //
+//   node tests/e2e/F1a.e2e.mjs --width 390     (one width only, for a quick local run)
+//
 // One MOCK server (spawned through tests/helpers/server.mjs on a free port, with a temp-file
 // DB_PATH so the skip tests can read what was stored), one Chromium, a fresh context per test.
-// Voice tests run at 390 px and text tests at 1280 px; the SC-010 tests cross them over, and
-// every test ends with screenshots at both widths (OS temp dir, not committed, not asserted).
-// Every test asserts zero console errors.
+// Every test runs at 390 px and at 1280 px (name suffix "[390 px]" / "[1280 px]"), except the
+// layout checks pinned to 390 px. Every test asserts zero console errors and leaves a
+// screenshot in the OS temp dir (not committed, not asserted).
 //
 // Timing contract (same as F1a-T03a; tasks.md F1a-T01b):
 //   1. page.clock.install() before page.goto.
@@ -41,6 +43,9 @@ const MAX_TICKS = 2000;
 const WAIT_MS = 8000; // real-time cap on one DOM wait; a wrong state fails instead of hanging
 const TEST_TIMEOUT_MS = 120000;
 const CLIENT_TIMEOUT_MS = 12000; // FR-031 / FR-032
+const argv = process.argv.slice(2);
+const WIDTHS = argv.includes('--width') ? [Number(argv[argv.indexOf('--width') + 1])] : [390, 1280];
+if (!WIDTHS.every(w => Number.isInteger(w) && w > 0)) throw new Error('usage: F1a.e2e.mjs [--width <px>]');
 
 // ---------------------------------------------------------------------------
 // Frozen expectations: spec copy table, US1–US3 numbers, today's electrical card
@@ -58,6 +63,9 @@ const COPY = {
   happened: c => `Here's what happened next. ${c}`
 };
 const LINE4 = "Cover plate's off. Backing out the two mounting screws and pulling the receptacle out of the box.";
+const LINE10 = 'Breaker back on. Plug-in tester shows two ambers, correct wiring. Done.';
+// Everything spoken after the last narration line: the run-end speech, and nothing else.
+const runEndSpeech = spoken => spoken.slice(spoken.lastIndexOf(LINE10) + 1);
 const MISTAKE = {
   3: {
     severity: 'critical',
@@ -214,7 +222,7 @@ after(async () => {
 class Session {
   constructor({ speech, width }) {
     this.voice = speech === 'voice';
-    this.width = width ?? (this.voice ? 390 : 1280);
+    this.width = width;
     this.pending = new Set();
     this.entries = new Map(); // Request → log entry
     this.requests = [];
@@ -493,31 +501,35 @@ class Session {
     });
   }
 
-  async screenshots(name) {
+  async screenshot(seq, name) {
     const slug = name.replace(/[^A-Za-z0-9]+/g, '-').slice(0, 80);
-    for (const width of [390, 1280]) {
-      await this.page.setViewportSize({ width, height: 900 });
-      await this.page.screenshot({ path: path.join(SHOTS_DIR, `${slug}-${width}.png`), fullPage: true, animations: 'disabled' });
-    }
+    const file = `${String(seq).padStart(3, '0')}-${this.width}px-${slug}.png`; // unique per registration
+    await this.page.screenshot({ path: path.join(SHOTS_DIR, file), fullPage: true, animations: 'disabled' });
   }
 
   async close() { await this.context?.close().catch(() => {}); }
 }
 
-// Registers one browser test. `opts` carries speech/width plus node:test options (the ticket
-// reason is passed straight through).
+// Registers a browser test once per width (or once, at `width`, when it is pinned). `opts`
+// carries speech/width plus node:test options; the ticket reason is passed straight through.
+let registered = 0;
 function e2e(name, opts, fn) {
   const { speech, width, ...testOpts } = opts;
-  test(name, { ...testOpts, timeout: TEST_TIMEOUT_MS }, async () => {
-    const s = await new Session({ speech, width }).open();
-    try {
-      await fn(s);
-      await s.screenshots(name);
-      assert.deepEqual(s.consoleErrors, [], 'zero console errors');
-    } finally {
-      await s.close();
-    }
-  });
+  const widths = width ? (WIDTHS.includes(width) ? [width] : []) : WIDTHS;
+  for (const w of widths) {
+    const full = `${name} [${w} px]`;
+    const seq = ++registered;
+    test(full, { ...testOpts, timeout: TEST_TIMEOUT_MS }, async () => {
+      const s = await new Session({ speech, width: w }).open();
+      try {
+        await fn(s);
+        await s.screenshot(seq, name);
+        assert.deepEqual(s.consoleErrors, [], 'zero console errors');
+      } finally {
+        await s.close();
+      }
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -615,7 +627,7 @@ for (const speech of ['voice', 'text']) {
     assert.deepEqual(r.items.map(i => i.text), [missedItem(3), missedItem(5), missedItem(7)]);
     await s.drain({ clock: true });
     const spoken = await s.spoken();
-    if (v) assert.equal(spoken.at(-1), COPY.happened(MISTAKE[3].consequence));
+    if (v) assert.deepEqual(runEndSpeech(spoken), [COPY.happened(MISTAKE[3].consequence)]);
     else assert.deepEqual(spoken, [], 'nothing spoken');
   });
 
@@ -645,7 +657,7 @@ for (const speech of ['voice', 'text']) {
     assert.deepEqual(r.items, []);
     await s.drain({ clock: true });
     const spoken = await s.spoken();
-    if (v) assert.equal(spoken.at(-1), COPY.cleanRun);
+    if (v) assert.deepEqual(runEndSpeech(spoken), [COPY.cleanRun]);
     else assert.deepEqual(spoken, [], 'nothing spoken');
   });
 
@@ -668,7 +680,7 @@ for (const speech of ['voice', 'text']) {
     assert.deepEqual(await s.spoken(), [], 'nothing spoken');
   });
 
-  e2e(`US1 ${speech}: the STOP response for a false alarm has caught null and only the STOP keys`, { speech, todo: 'F1a-T17b' }, async s => {
+  e2e(`${id('US1.3', 'US1.4')} STOP response: caught null and only the STOP keys, nothing about another mistake (${speech})`, { speech, todo: 'F1a-T17b' }, async s => {
     await s.begin();
     await s.stopAndExplain(1, FALSE_ALARM_SAY);
     const [stop] = await s.responsesOf('stop');
@@ -678,7 +690,7 @@ for (const speech of ['voice', 'text']) {
     assert.deepEqual(leakScan(stop.json, { kind: 'stop' }), []);
   });
 
-  e2e(`US1 ${speech}: the STOP response for a late catch credits step 3 with stepsLate 1`, { speech, todo: 'F1a-T17b' }, async s => {
+  e2e(`${id('US1.5', 'US1.6')} STOP response: caught credits step 3 with stepsLate 1 and 135 points (${speech})`, { speech, todo: 'F1a-T17b' }, async s => {
     await s.begin();
     await s.stopAndExplain(4, GOOD[3]);
     const [stop] = await s.responsesOf('stop');
@@ -755,7 +767,7 @@ for (const speech of ['voice', 'text']) {
     assert.deepEqual(triplets(eventsFor(db.dbPath, await s.attemptId())), { 3: ['stopped', 'explained', 'graded'] });
   });
 
-  e2e(`US2.5 Skip half (${speech}): Skip closes the panel, adds no points, resumes at line 4 and focuses #stop-btn`, { speech, todo: 'F1a-T17c' }, async s => {
+  e2e(`${id('US2.5', 'US2.6')} Skip half: the panel closes, no points, narration resumes at line 4, focus on #stop-btn after Skip (${speech})`, { speech, todo: 'F1a-T17c' }, async s => {
     await failedStop(s, 'abort');
     let st = await s.skip();
     assert.equal(st.explain, false, 'explain panel closed');
@@ -783,7 +795,7 @@ for (const speech of ['voice', 'text']) {
     assert.equal(r.note, COPY.note1, '#results-note');
     await s.drain({ clock: true });
     const spoken = await s.spoken();
-    if (v) assert.deepEqual(spoken.slice(-2), [COPY.happened(MISTAKE[5].consequence), COPY.note1]);
+    if (v) assert.deepEqual(runEndSpeech(spoken), [COPY.happened(MISTAKE[5].consequence), COPY.note1]);
     else assert.deepEqual(spoken, []);
     const completed = eventsFor(db.dbPath, await s.attemptId()).find(e => e.verb === 'completed');
     assert.deepEqual(completed?.result?.skippedStepIds, [3], 'stored completed.result.skippedStepIds');
@@ -805,7 +817,7 @@ for (const speech of ['voice', 'text']) {
     assert.equal(r.note, COPY.note1);
     await s.drain({ clock: true });
     const spoken = await s.spoken();
-    if (v) assert.deepEqual(spoken.slice(-2), [COPY.cleanRun, COPY.note1]);
+    if (v) assert.deepEqual(runEndSpeech(spoken), [COPY.cleanRun, COPY.note1]);
     else assert.deepEqual(spoken, []);
   });
 
@@ -819,15 +831,14 @@ for (const speech of ['voice', 'text']) {
     assert.equal(r.total, '270');
     assert.equal(r.max, '300');
     assert.equal(r.note, COPY.note1);
-    const before = (await s.spoken()).length;
     await s.drain({ clock: true });
     const spoken = await s.spoken();
     assert.equal(spoken.includes(COPY.cleanRun), false, 'the clean-run line is not spoken');
-    if (v) assert.deepEqual(spoken.slice(before - 1), [COPY.note1], 'only the note is spoken at run end');
+    if (v) assert.deepEqual(runEndSpeech(spoken), [COPY.note1], 'only the note is spoken at run end');
     else assert.deepEqual(spoken, []);
   });
 
-  e2e(`${id('US2.11', 'US2.12')} ${speech}: Try again fails again: the repeat copy${v ? ' spoken once' : ', not spoken'}, focus on Skip this stop`, { speech, todo: 'F1a-T17c' }, async s => {
+  e2e(`${id('US2.11', 'US2.12')} Try again fails again (${speech}): the repeat copy${v ? ' spoken once' : ', not spoken'}, focus on Skip this stop`, { speech, todo: 'F1a-T17c' }, async s => {
     await failedStop(s, 'abort', 'abort');
     await s.press('#retry-grade-btn');
     const st = await s.until('repeat panel', x => x.graderError && x.focus === 'skip-stop-btn' || x.feedback);
@@ -895,7 +906,7 @@ for (const speech of ['voice', 'text']) {
     if (!v) assert.deepEqual(await s.spoken(), []);
   });
 
-  e2e(`US2.18 ${speech}: ${v ? 'Submit' : 'Enter'} in the error state runs Try again with the edited text`, { speech, todo: 'F1a-T17c' }, async s => {
+  e2e(`US2.18 ${v ? 'Submit' : 'Enter'} in the error state runs Try again with the edited text (${speech})`, { speech, todo: 'F1a-T17c' }, async s => {
     await failedStop(s, 'abort');
     await s.page.locator('#explain-input').fill(EDITED_SAY);
     if (v) await s.page.locator('#submit-btn').click();
@@ -907,7 +918,7 @@ for (const speech of ['voice', 'text']) {
     assert.equal(JSON.parse(stops[1].body).explanation, EDITED_SAY, 'with the edited text');
   });
 
-  e2e(`US2.14 ${speech}: lost response then skip: the server's graded STOP stands and no results note`, { speech, todo: 'F1a-T17d' }, async s => {
+  e2e(`US2.14 lost response then skip: the server's graded STOP stands and no results note (${speech})`, { speech, todo: 'F1a-T17d' }, async s => {
     await failedStop(s, 'lose');
     await s.skip();
     await s.playToEnd();
@@ -973,7 +984,7 @@ e2e('US2.17 mic during the spoken error cancels speech before listening', { spee
   assert.equal(events[iListen].value, GOOD[3], 'the textbox still holds the learner\'s words');
 });
 
-e2e('FR-049 grader panel: role=alert on #grader-error-msg, aria-describedby from Try again and Skip this stop', { speech: 'text', todo: 'F1a-T17c' }, async s => {
+e2e('role=alert and aria-describedby on the grader-error panel (FR-049)', { speech: 'text', todo: 'F1a-T17c' }, async s => {
   await s.goto();
   const a = await s.page.evaluate(() => {
     const $ = id => document.getElementById(id);
@@ -982,7 +993,7 @@ e2e('FR-049 grader panel: role=alert on #grader-error-msg, aria-describedby from
   assert.deepEqual(a, { role: 'alert', retry: 'grader-error-msg', skip: 'grader-error-msg' });
 });
 
-e2e('layout: at 390 px the grader-error message, textbox and both buttons are inside the viewport', { speech: 'text', width: 390, todo: 'F1a-T17c' }, async s => {
+e2e('at 390 px the message, textbox and both buttons are inside the viewport (grader-error panel)', { speech: 'text', width: 390, todo: 'F1a-T17c' }, async s => {
   await s.begin();
   await s.inject('stop', 'abort');
   const st = await s.stopAndExplain(3, GOOD[3]);
@@ -1050,11 +1061,11 @@ for (const speech of ['voice', 'text']) {
     await assertOneCatchResults(s);
     await s.drain({ clock: true });
     const spoken = await s.spoken();
-    if (v) assert.equal(spoken.at(-1), COPY.happened(MISTAKE[5].consequence), 'run-end line as in US1');
+    if (v) assert.deepEqual(runEndSpeech(spoken), [COPY.resultsError, COPY.happened(MISTAKE[5].consequence)], 'error once, then the run-end line as in US1');
     else assert.deepEqual(spoken, []);
   });
 
-  e2e(`US3.5 ${speech}: Retry results fails again: same copy${v ? ', spoken again' : ''}, focus stays on Retry results`, { speech, todo: 'F1a-T17b' }, async s => {
+  e2e(`US3.5 Retry results fails again (${speech}): same copy${v ? ', spoken again' : ''}, focus stays on Retry results`, { speech, todo: 'F1a-T17b' }, async s => {
     await failedComplete(s, 'abort', 'abort');
     await s.drain();
     await s.press('#retry-results-btn');
@@ -1117,7 +1128,7 @@ e2e('US3.6 focus on #result-rating after a successful Retry results', { speech: 
   assert.equal(await s.page.locator('#result-rating').getAttribute('tabindex'), '-1');
 });
 
-e2e('FR-049 results error: role=alert on #results-error-msg, aria-describedby on Retry results', { speech: 'text', todo: 'F1a-T17b' }, async s => {
+e2e('role=alert on #results-error-msg and aria-describedby on Retry results (FR-049)', { speech: 'text', todo: 'F1a-T17b' }, async s => {
   await s.goto();
   const a = await s.page.evaluate(() => {
     const $ = id => document.getElementById(id);
@@ -1126,7 +1137,7 @@ e2e('FR-049 results error: role=alert on #results-error-msg, aria-describedby on
   assert.deepEqual(a, { role: 'alert', retry: 'results-error-msg', rating: '-1' });
 });
 
-e2e('FR-049 role=status on #results-note', { speech: 'text', todo: 'F1a-T17d' }, async s => {
+e2e('role=status on #results-note (FR-049)', { speech: 'text', todo: 'F1a-T17d' }, async s => {
   await s.goto();
   assert.equal(await s.page.evaluate(() => document.getElementById('results-note')?.getAttribute('role') ?? null), 'status');
 });
@@ -1185,7 +1196,7 @@ e2e('no speechSynthesis.speak after #again-btn between the run-end line and the 
 // FR-011 / FR-045: what the browser holds and renders
 // ===========================================================================
 
-e2e('FR-011 leak check in the browser: no /api/* response before each STOP response holds an answer field (3 STOPs)', { speech: 'text', todo: 'F1a-T17b' }, async s => {
+e2e('edge: leak check in the browser: no /api/* response before each STOP response holds an answer field (FR-011, 3 STOPs)', { speech: 'text', todo: 'F1a-T17b' }, async s => {
   await s.begin();
   await s.catchLine(1, FALSE_ALARM_SAY);
   await s.catchLine(3, GOOD[3]);
@@ -1193,7 +1204,7 @@ e2e('FR-011 leak check in the browser: no /api/* response before each STOP respo
   await assertNoLeakBeforeStops(s);
 });
 
-e2e('FR-011 localStorage and sessionStorage stay empty through a run', { speech: 'text' }, async s => {
+e2e('edge: localStorage and sessionStorage stay empty through a run (FR-011)', { speech: 'text' }, async s => {
   await s.begin();
   await s.catchLine(3, GOOD[3]);
   await s.playToEnd();
@@ -1318,18 +1329,10 @@ e2e("edge: offline at Start the job shows Couldn't load the job and Start works 
 });
 
 // ===========================================================================
-// SC-010: both widths in both modes
+// Layout at 390 px (SC-010 runs every test above at both widths)
 // ===========================================================================
 
-e2e('SC-010 voice at 1280 px: perfect run, 0 console errors', { speech: 'voice', width: 1280 }, async s => {
-  await s.begin();
-  for (const n of [3, 5, 7]) await s.catchLine(n, GOOD[n]);
-  const st = await s.playToEnd();
-  assert.ok(st.results);
-  assert.equal((await s.results()).rating, 'Journeyman eyes');
-});
-
-e2e('SC-010 text at 390 px: perfect run, explain panel textbox, Talk and Submit inside the viewport', { speech: 'text', width: 390 }, async s => {
+e2e('edge: at 390 px the explain panel textbox, Talk and Submit are inside the viewport', { speech: 'text', width: 390 }, async s => {
   await s.begin();
   await s.playTo(3);
   await s.pressStop();
@@ -1338,21 +1341,13 @@ e2e('SC-010 text at 390 px: perfect run, explain panel textbox, Talk and Submit 
     return { sel, inside: Boolean(r && r.width > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight) };
   }), ['#explain-input', '#mic-btn', '#submit-btn']);
   assert.deepEqual(boxes.filter(b => !b.inside), []);
-  await s.explain(GOOD[3]);
-  await s.submit();
-  assert.ok((await s.afterSubmit()).feedback);
-  await s.backToWork();
-  for (const n of [5, 7]) await s.catchLine(n, GOOD[n]);
-  const st = await s.playToEnd();
-  assert.ok(st.results);
-  assert.equal((await s.results()).rating, 'Journeyman eyes');
 });
 
 // ===========================================================================
 // Inv. 7 and the budget
 // ===========================================================================
 
-test('inv. 7: the server is still running after the whole suite (budget 10 min)', t => {
+test('edge: the server is still running after the whole suite (inv. 7), within the 10 min budget', t => {
   const secs = (Date.now() - suiteStart) / 1000;
   t.diagnostic(`e2e suite time so far: ${secs.toFixed(1)} s; screenshots: ${SHOTS_DIR}`);
   assert.equal(app.alive(), true);
