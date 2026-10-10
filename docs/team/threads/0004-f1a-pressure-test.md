@@ -575,3 +575,7 @@ Add it and `tests/web-copy.test.js` to T17's Files, and change FR-046's "in `web
 - Open minor bugs are triaged in spec rev 4.1 and assigned to Wave 1 tickets (B06 → T06; B07, B08, B09 → T09).
 
 Wave 1 has not started.
+
+### founder · 2026-10-10 · DECISION
+*Recorded by the lead session from the founder's own words in the chat on 2026-10-10: "yes, start wave 1".*
+**F1a Wave 1 starts now.** The first two tickets, F1a-T06 and F1a-T20, run in parallel.
