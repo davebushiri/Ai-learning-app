@@ -618,3 +618,8 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B09 [minor] Importing `tests/helpers/fake-claude.mjs` from `node -e` or stdin crashes
 - Actual: the main-module guard `pathToFileURL(process.argv[1])` throws `ERR_INVALID_ARG_TYPE` when `argv[1]` is undefined (`fake-claude.mjs:132`). · Owner: qa-engineer (T09 edits the fake next)
+
+*Filed by backend-engineer while building F1a-T05 (2026-10-10).*
+
+### F1a-B15 [minor] A pack entry without `hazardHints` renders "Hazard areas to draw mistakes from: undefined"
+- Actual: existing behavior in `scenarioUserPrompt`. Not fixed, because F1a forbids prompt text changes; the fix needs a `VERSION` bump and the eval gate. · Matters once packs may omit the field (T07b / pack format). · Owner: technical-product-manager to schedule (F1b W7 is the natural home)

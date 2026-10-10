@@ -1,6 +1,11 @@
 // Grading prompt — owned by the Brain.
 // Output shape is enforced by GRADE_SCHEMA in shared/contract.js.
 
+import { GRADE_SCHEMA } from '../../shared/contract.js';
+
+// Bump on any change that alters the fingerprint (system, template or schema); ADR 0005.
+export const VERSION = 1;
+
 export const GRADE_SYSTEM = `You grade a learner playing "Stop the Apprentice". The learner supervises an apprentice who narrates a trade job. The learner hit STOP and explained out loud what they think is wrong. The explanation is a speech-to-text transcript, so expect misheard words, filler, slang, and no punctuation; judge what they meant.
 
 You get the job, the full script, the step where they stopped, the hidden mistake they are being credited for (or none), and their explanation. The learner may have stopped one step after the mistake; that still counts, so grade against the credited mistake.
@@ -55,3 +60,32 @@ Hidden mistake being credited: ${mistake}${late}
 ${clean(explanation).trim() || '(no explanation given)'}
 </learner_explanation>`;
 }
+
+// Synthetic, subject-free card for the fingerprint: one branch per input
+// (on-time catch, late catch, false alarm, empty explanation).
+const FP_CARD = {
+  title: 'Hang a framed picture',
+  setting: 'A quiet hallway in a small flat.',
+  steps: [
+    { id: 1, line: 'I pick the spot on the wall and mark it in pencil.', error: null },
+    { id: 2, line: 'I grab the hammer and a picture hook from the box.', error: null },
+    { id: 3, line: 'I tap the hook in without checking what is behind the wall.',
+      error: { severity: 'critical', summary: 'Did not check behind the wall',
+        why: 'A hidden pipe or cable could be hit.', correctAction: 'Scan the wall with a detector before fixing anything.' } },
+    { id: 4, line: 'I hang the frame on the hook.', error: null },
+    { id: 5, line: 'I step back and check it is level.', error: null }
+  ]
+};
+
+export const PROMPT = {
+  id: 'grade',
+  system: GRADE_SYSTEM,
+  schema: GRADE_SCHEMA,
+  render: (i) => gradeUserPrompt(i.scenario, i.stepId, i.errorStepId, i.explanation),
+  fingerprintInputs: [
+    { scenario: FP_CARD, stepId: 3, errorStepId: 3, explanation: 'he never checked what was behind the wall' },
+    { scenario: FP_CARD, stepId: 4, errorStepId: 3, explanation: 'he should have scanned the wall first' },
+    { scenario: FP_CARD, stepId: 2, errorStepId: null, explanation: 'that hammer looks too big' },
+    { scenario: FP_CARD, stepId: 3, errorStepId: 3, explanation: '' }
+  ]
+};

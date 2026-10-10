@@ -1,6 +1,11 @@
 // Scenario-generation prompt — owned by the Brain.
 // Output shape is enforced by SCENARIO_SCHEMA in shared/contract.js.
 
+import { SCENARIO_SCHEMA } from '../../shared/contract.js';
+
+// Bump on any change that alters the fingerprint (system, template or schema); ADR 0005.
+export const VERSION = 1;
+
 export const SCENARIO_SYSTEM = `You write training scenarios for "Stop the Apprentice", a game where a learner supervises a rookie apprentice who narrates a job out loud and occasionally makes mistakes. The learner's job is to hit STOP at the moment of a mistake and explain what's wrong.
 
 Write the apprentice's narration as a sequence of steps. Rules:
@@ -56,3 +61,23 @@ Apprentice name: ${pick(APPRENTICE_NAMES, rng)}
 ${recent.length ? `Do not reuse these mistakes from recent scenarios: ${recent.join('; ')}\n` : ''}
 Write a fresh scenario.`;
 }
+
+// Synthetic, subject-free entries for the fingerprint: with and without
+// criticalHints, with twists, with recent summaries, and with no hints at all.
+// rng () => 0 makes every render deterministic.
+const fpRng = () => 0;
+const FP_ENTRY = { brief: 'Hang a heavy mirror on a plaster wall.', hazardHints: 'hidden pipes, hidden cables, falling glass' };
+
+export const PROMPT = {
+  id: 'scenario',
+  system: SCENARIO_SYSTEM,
+  schema: SCENARIO_SCHEMA,
+  render: (i) => scenarioUserPrompt(i.key, i.entry, i.recentSummaries ?? [], i.rng),
+  fingerprintInputs: [
+    { key: 'demo-hanging', entry: { ...FP_ENTRY, criticalHints: ['hidden cables behind the wall', 'a ladder on a wet floor'] }, rng: fpRng },
+    { key: 'demo-hanging', entry: FP_ENTRY, rng: fpRng },
+    { key: 'demo-hanging', entry: { ...FP_ENTRY, twists: ['the owner keeps moving the mirror', 'the drill battery is low'] }, rng: fpRng },
+    { key: 'demo-hanging', entry: FP_ENTRY, recentSummaries: ['Did not check behind the wall', 'Used the wrong wall plug'], rng: fpRng },
+    { key: 'demo-blank', entry: { brief: 'Fold a stack of towels.', hazardHints: '' }, rng: fpRng }
+  ]
+};
