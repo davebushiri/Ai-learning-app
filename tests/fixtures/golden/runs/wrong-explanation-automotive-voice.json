@@ -1,0 +1,82 @@
+{
+  "runId": "wrong-explanation-automotive-voice",
+  "mode": "mock",
+  "speech": "voice",
+  "fixture": "automotive",
+  "script": "wrong-explanation",
+  "displayed": [
+    "mode-badge: MOCK",
+    "trade-select: Electrical: replace a receptacle | HVAC: braze a suction line | Automotive: front brake job",
+    "setup-msg: ",
+    "score: 0",
+    "job-title: Front brake pads and rotors",
+    "job-setting: Small independent shop, customer's sedan on the floor, and the only lift is taken.",
+    "job-source: Scenario: cached",
+    "score: 0",
+    "line 1: Jess\nCar's on the ground, cracking the lug nuts loose on both front wheels before I lift it.",
+    "line 2: Jess\nRear wheels are chocked. Floor jack under the front center jacking point, lifting till both front tires are off the ground.",
+    "line 3: Jess\nLift's taken, so I'll just leave it sitting up on the floor jack. I'm only gonna be in the wheel wells for a few minutes.",
+    "explain-panel: What's wrong, and why?\n🎤 Talk\nSubmit",
+    "explain-input: his shoes are untied",
+    "feedback-verdict: Close…",
+    "feedback-text: Right moment to stop. Here's the problem: A jack is for lifting, not holding. A hydraulic jack can bleed down or roll, and Jess's hands and arms are in the wheel well the whole job. Here's the right way: Set jack stands under the factory support points, lower the car onto them, and leave the jack snugged up underneath as a backup.",
+    "feedback-source: Graded by: keyword grader",
+    "feedback-points: +180 points",
+    "score: 180",
+    "line 4: Jess\nWheels off. Pulling the caliper bolts and the bracket bolts on the driver side.",
+    "line 5: Jess\nLetting the caliper hang off the brake hose while I swap the rotor.",
+    "line 6: Jess\nWire brushed the rust off the hub, new rotor's on and wiped down with brake cleaner. Fluid level's checked, now pushing the piston back with the old pad and a C clamp.",
+    "line 7: Jess\nPads in with new clips, slide pins greased, caliper's back on. Running the bracket bolts in with the impact, a couple good hits and they're tight.",
+    "line 8: Jess\nSame on the other side. Wheels on, lugs run down snug, car's back on the ground, then torquing the lugs in a star pattern.",
+    "line 9: Jess\nPumping the pedal till it's firm, checking the fluid level again, and taking it around the block to bed in the pads before I hand the keys back.",
+    "result-rating: Back to the classroom",
+    "result-total: 80",
+    "result-max: 600",
+    "result-summary: Caught 1 of 3 mistakes · 0 false alarms",
+    "missed-heading: What happened next",
+    "missed-list: MINOR · MISSED · -25 PTS\n\nLet the caliper hang by its brake hose. The hose tore on the inside and started trapping pressure. The customer came back a month later with that brake dragging and the car pulling to one side.\n\nShould have: Hang the caliper from the spring or strut with a hook, a bungee, or a piece of wire so there's no strain on the hose.\n\nMAJOR · MISSED · -75 PTS\n\nRan the bracket bolts in with an impact, no torque. One bracket bolt backed out over the next few weeks. The customer came back with a grinding clunk when braking, and the shop paid for a new rotor, a bracket, and a chewed up wheel.\n\nShould have: Start the bolts by hand, then tighten them with a torque wrench to the factory spec, with thread locker if the manual calls for it.",
+    "score: 80",
+    "line 1 class: ",
+    "line 2 class: ",
+    "line 3 class: caught",
+    "line 4 class: ",
+    "line 5 class: ",
+    "line 6 class: ",
+    "line 7 class: ",
+    "line 8 class: ",
+    "line 9 class: current"
+  ],
+  "spoken": [
+    "Car's on the ground, cracking the lug nuts loose on both front wheels before I lift it.",
+    "Rear wheels are chocked. Floor jack under the front center jacking point, lifting till both front tires are off the ground.",
+    "Lift's taken, so I'll just leave it sitting up on the floor jack. I'm only gonna be in the wheel wells for a few minutes.",
+    "Right moment to stop. Here's the problem: A jack is for lifting, not holding. A hydraulic jack can bleed down or roll, and Jess's hands and arms are in the wheel well the whole job. Here's the right way: Set jack stands under the factory support points, lower the car onto them, and leave the jack snugged up underneath as a backup.",
+    "Wheels off. Pulling the caliper bolts and the bracket bolts on the driver side.",
+    "Letting the caliper hang off the brake hose while I swap the rotor.",
+    "Wire brushed the rust off the hub, new rotor's on and wiped down with brake cleaner. Fluid level's checked, now pushing the piston back with the old pad and a C clamp.",
+    "Pads in with new clips, slide pins greased, caliper's back on. Running the bracket bolts in with the impact, a couple good hits and they're tight.",
+    "Same on the other side. Wheels on, lugs run down snug, car's back on the ground, then torquing the lugs in a star pattern.",
+    "Pumping the pedal till it's firm, checking the fluid level again, and taking it around the block to bed in the pads before I hand the keys back.",
+    "Here's what happened next. The hose tore on the inside and started trapping pressure. The customer came back a month later with that brake dragging and the car pulling to one side."
+  ],
+  "focus": [
+    "body",
+    "explain-input",
+    "continue-btn",
+    "body"
+  ],
+  "points": [
+    180
+  ],
+  "score": 80,
+  "rating": "Back to the classroom",
+  "outcomeLine": "Here's what happened next. The hose tore on the inside and started trapping pressure. The customer came back a month later with that brake dragging and the car pulling to one side.",
+  "grades": [
+    {
+      "verdict": "partial",
+      "source": "keyword grader"
+    }
+  ],
+  "prompts": [],
+  "abortsFired": 0
+}
