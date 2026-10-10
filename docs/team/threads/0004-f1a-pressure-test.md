@@ -563,3 +563,7 @@ Add it and `tests/web-copy.test.js` to T17's Files, and change FR-046's "in `web
 5. QA: add the thread-0004 tests to T01a and T01b before verifying the tickets they name.
 
 **Open RISKs: none.** Every RISK in this thread has a RESPONSE: fixed, accepted with a reason and owner, or turned into a ticket or Later item. The only open item is OI-14, which doesn't block F1a. The header `Status` and the `INDEX.md` row should be set to `decided`. I was asked to edit only `spec.md`, `tasks.md` and this thread (append-only), so I've left that for the lead.
+
+### founder · 2026-10-10 · DECISION
+*Recorded by the lead session from the founder's own words in the chat on 2026-10-10: "yes, approved, start wave 0".*
+**F1a revision 4 is approved for build.** Wave 0 starts now with F1a-T01a and F1a-T02 in parallel. Merges to `main` still need the founder.
