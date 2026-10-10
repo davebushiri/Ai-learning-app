@@ -627,7 +627,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 *Filed by qa-engineer while building F1a-T01b (2026-10-10).*
 
 ### F1a-B20 [major] The golden harness never presses "Retry results"
-- Actual: the harness's `results` flag is `#results-screen:not([hidden])`, but US3.1 shows `#results-error` on the results screen. After T17b the results loop exits at once in the error state, so both complete-aborted runs record an empty error state as "results"; the diff is allow-listed and the US3 retry path goes unchecked. · Expected: results = results screen visible and `#results-error` not visible. · Suspected file: `tests/golden/harness.mjs:105`, `:263-264`. · Owner: qa-engineer. **Must be fixed before T17b.**
+- Actual: the harness's `results` flag is `#results-screen:not([hidden])`, but US3.1 shows `#results-error` on the results screen. After T17b the results loop exits at once in the error state, so both complete-aborted runs record an empty error state as "results"; the diff is allow-listed and the US3 retry path goes unchecked. · Expected: results = results screen visible and `#results-error` not visible. · Suspected file: `tests/golden/harness.mjs:105`, `:263-264`. · Owner: qa-engineer. **Fixed 2026-10-10** (harness.mjs; 61-run replay unchanged, digest cc1c3558d43c7e02; negative proof shows Retry is now pressed). Follow-up at T17b: recapture the two complete-aborted runs and review their allow-list entry.
 
 ### F1a-B21 [minor] US3.7 / US3.8 "first call" can't be tested
 - Actual: during the first pending `complete` the play screen still shows, and `#again-btn` is on the results screen, so "Run another job" can't be reached then. · Owner: technical-product-manager (say which screen shows, or scope US3.7 to Retry)

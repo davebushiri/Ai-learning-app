@@ -102,7 +102,9 @@ function snapshot() {
     explain: vis($('explain-panel')),
     feedback: vis($('feedback-panel')),
     graderError: vis($('grader-error')),
-    results: vis(document.querySelector('#results-screen:not([hidden])')),
+    // F1a-B20: US3.1 shows #results-error on the results screen, so "results"
+    // means the screen is visible and the error is not (as tests/e2e/F1a.e2e.mjs).
+    results: vis(document.querySelector('#results-screen:not([hidden])')) && !vis($('results-error')),
     resultsError: vis($('results-error')),
     held: window.__golden.held(),
     listening: window.__golden.listening(),
