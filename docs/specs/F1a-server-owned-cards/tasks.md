@@ -623,3 +623,17 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B15 [minor] A pack entry without `hazardHints` renders "Hazard areas to draw mistakes from: undefined"
 - Actual: existing behavior in `scenarioUserPrompt`. Not fixed, because F1a forbids prompt text changes; the fix needs a `VERSION` bump and the eval gate. · Matters once packs may omit the field (T07b / pack format). · Owner: technical-product-manager to schedule (F1b W7 is the natural home)
+
+*Filed by qa-engineer while building F1a-T01b (2026-10-10).*
+
+### F1a-B20 [major] The golden harness never presses "Retry results"
+- Actual: the harness's `results` flag is `#results-screen:not([hidden])`, but US3.1 shows `#results-error` on the results screen. After T17b the results loop exits at once in the error state, so both complete-aborted runs record an empty error state as "results"; the diff is allow-listed and the US3 retry path goes unchecked. · Expected: results = results screen visible and `#results-error` not visible. · Suspected file: `tests/golden/harness.mjs:105`, `:263-264`. · Owner: qa-engineer. **Must be fixed before T17b.**
+
+### F1a-B21 [minor] US3.7 / US3.8 "first call" can't be tested
+- Actual: during the first pending `complete` the play screen still shows, and `#again-btn` is on the results screen, so "Run another job" can't be reached then. · Owner: technical-product-manager (say which screen shows, or scope US3.7 to Retry)
+
+### F1a-B22 [minor] Copy for a 4xx after an earlier failure is undefined
+- Actual: US2.13 says a 4xx shows the first-showing copy; FR-031 / T17c say a second consecutive failure shows the repeat copy. · Owner: technical-product-manager
+
+### F1a-B23 [minor] "Displayed (exact)" doesn't say DOM text or rendered text
+- Actual: the golden harness records `innerText` (CSS uppercases severities); the e2e checks `textContent`. · Owner: technical-product-manager
