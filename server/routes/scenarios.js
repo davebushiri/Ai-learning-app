@@ -1,5 +1,4 @@
-// GET /api/trades                      -> [{ id, label }]
-// GET /api/scenario?trade=electrical   -> Scenario   (&source=fixture forces the cached one)
+// Content routes; the full route set is in server/routes/*.
 
 import { TRADES, listTrades } from '../prompts/trades.js';
 import { sendJson } from '../http.js';

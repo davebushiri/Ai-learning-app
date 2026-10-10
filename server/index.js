@@ -1,9 +1,4 @@
-// Tiny zero-framework server: serves the web page and three JSON endpoints.
-//
-//   GET  /api/health                      -> { mode, lastLiveOkAt, lastLiveError }
-//   GET  /api/trades                      -> [{ id, label }]
-//   GET  /api/scenario?trade=electrical   -> Scenario   (&source=fixture forces the cached one)
-//   POST /api/grade  GradeRequest         -> GradeResponse
+// HTTP entry point; routes are in server/routes/*.
 //
 // MOCK mode (no ANTHROPIC_API_KEY, or MOCK=1) serves fixtures and keyword grading,
 // so the frontend and scoring can be built without an API key.
