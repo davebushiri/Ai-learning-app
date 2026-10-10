@@ -452,3 +452,95 @@ All of B1–B12 and S1–S10 are applied, and the OI resolutions are written int
 | R7 | **Stored derived ids drift from the code.** `notGradedStepIds` freezes a judgement made under the current `graceSteps`. A later rule change makes old and new attempts disagree, and a projection that recomputes would contradict the log. | L | M | ADR 0002 Amendment 2: the log is the record, and projections and repeat `complete` read the stored ids (change 2). Changing a scoring rule is a migration with a comparison (`system-architecture.md` §4). |
 | R8 | **A complete/STOP race corrupts the permanent log** (R2-B1). | L | H | Change 3: a shared in-flight mark, no `await` inside the read-then-write sections, and a test. |
 | R9 | **The echo reflects client claims.** The note can say "3 stops weren't graded" for skips the client invented (R4). | L | L | Only the claimant sees the note; F3 excludes attempts with skips; the ids are logged. |
+
+## Code review: Wave 0
+
+**Reviewer:** principal-architect · **Date:** 2026-10-10 · **Scope:** F1a-T02 (`da42c2e`), F1a-T05 (`e552a90`), F1a-T04 (the `server/` part of WIP `7cec5c8`), and the test-only Wave 0 work (T01a `tests/acceptance/`, T03a/T03b `tests/golden/`) checked for invariant and ADR conformance. The `tests/e2e` part of `7cec5c8` and the rest of T01b are out of scope.
+
+### Verdicts
+
+| Ticket | Verdict |
+|---|---|
+| F1a-T02 | **APPROVED** |
+| F1a-T05 | **APPROVED** (S2 to fix, non-blocking) |
+| F1a-T04 | **APPROVED** on merge condition M1. S1 and S3 are non-blocking. Design points 1–4 are ruled below |
+| T01a, T03a, T03b (test-only) | No invariant or ADR violation found |
+
+### Evidence (run fresh this round)
+
+- `npm test`, with the product code at `7cec5c8` and a clean tree: `# tests 110 / # pass 110 / # fail 0 / # todo 0`, `duration_ms 6554`.
+- `node tests/golden/run.mjs --replay` (finished before QA's uncommitted B20 edit to `harness.mjs` at 19:48:47): `replay 1/1: 61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02, 129.0 s`, exit 0. The `grade-aborted` runs show `aborts 1`; the `complete-aborted` runs show `aborts 0`, as expected before T17b.
+- `node --test tests/acceptance/F1a.test.js tests/acceptance/todo-guardrail.test.js`: `# tests 76 / # pass 10 / # fail 0 / # todo 66`. The todo reasons are T07a ×2, T09, T12 ×13, T13b ×27, T14 ×22 and T18; all match `/^F1a-T\d\d[a-d]?$/`.
+- **T05 fingerprints, recomputed independently.** In a scratch copy, I took `grade.js`, `scenario.js` and `contract.js` from `da42c2e^` (before any F1a ticket) and also from `dade9ef`. I fed T05's `fingerprintInputs` through the *old* functions (scenario: `Math.random` stubbed to `() => 0`), using sha256 of `system`, then `JSON.stringify(schema)`, then each `render(i)` in order, hex. Both trees give `grade 4f7d7c35…fca1b08` and `scenario 9de348f4…74fb898`, which equal the frozen values in `tests/prompt-version.test.js`. So T02 and T05 changed no prompt bytes, and FR-027 holds.
+- **T04, old vs new.** Both servers ran in MOCK mode and took the same 15 requests: health, trades, unknown trade, `trade=__proto__`, fixture scenario, `GET /api/grade`, `POST /api/health`, unknown `/api/*`, static 404, encoded `..` traversal, grade with non-object steps, bad JSON, a body over 1 MB (413), a catch and a false alarm. Status codes, bodies and `[api]` lines (ms masked) are **identical**.
+- **T04 design point 1, live check.** A scratch copy of the tree had a `.env` holding a fake key, `ANTHROPIC_BASE_URL` pointing at a local server that never answers, and `GRADE_DEADLINE_MS=1234`; the process env was scrubbed. Result: startup line `LIVE mode: Claude`, grade `source: mock-fallback` after 1257 ms, and `/api/health.lastLiveError` "… grade: Claude grade timed out after 1234 ms". So `.env` values still reach both `ai-client.js` (MOCK) and `llm.js` (deadlines).
+- **Standing checks.**
+  - `messages.create`: only in `server/llm.js:35`, with `AbortSignal.timeout(deadlineMs)` and `maxRetries: 1` at `:48` (the move to the gateway is T08a/T08b). The two `AbortSignal.timeout` hits in `web/api.js` are browser request timeouts, which ADR 0005 Amendment 2 scopes out; T17b replaces them.
+  - `VERSION`: exported by `grade.js:7` and `scenario.js:7`.
+  - No `UPDATE`/`DELETE` on `event` (there is no DB yet).
+  - Answer fields: unchanged. The legacy `/api/scenario` still sends them by design until T18, and every new public route is still `todo`.
+  - Subject words: the T04 files hold only moved legacy code (see S1 for the count).
+
+### Blocking findings
+
+None. Nothing in Wave 0 breaks an invariant, a contract or an ADR, and every acceptance criterion has its named test or evidence.
+
+### Merge condition
+
+- **M1 (F1a-T04, backend-engineer + lead): T04 has no commit of its own.**
+  - Its code exists only inside WIP checkpoint `7cec5c8`, whose message says "Neither ticket is verified yet" and which also carries T01b's `tests/e2e/F1a.e2e.mjs`.
+  - The ticket rule is one PR per ticket, and T04's acceptance says "zero test-file changes". A reviewer reading `7cec5c8` sees a test change under T04's name.
+  - **Fix:** land T04 as its own commit or PR that touches exactly the 9 listed `server/` files. The message should explain why and quote the evidence above. QA's certification is already recorded in `7834eb8`. Alternatively, the lead records in the PR that `7cec5c8`'s `tests/e2e` hunk belongs to T01b. No code change is needed: the `server/` content of `7cec5c8` is approved as is.
+
+### Should fix (non-blocking)
+
+- **S1 (F1a-T04, backend-engineer): `server/index.js:1-6` still lists the four legacy routes.**
+  - The dispatcher no longer defines them, line 1 says "three JSON endpoints", and `routes/scenarios.js:1-2` now repeats the same lines.
+  - **Why it matters:** the split *raises* the count of `trade|electrical` hits in the moved code from 29 (old `index.js`) to 34. T10 baselines per-file counts after T07b/T08b, and F1 exit (c) needs the allow-list to shrink to `server/prompts/*` only.
+  - **Fix:** replace `index.js:1-6` with one line, for example "HTTP entry point; routes are in server/routes/*". Do it in T04's commit (M1) or in T07a, which edits `index.js` next.
+- **S2 (F1a-T05, backend-engineer → technical-product-manager): `e552a90` appended bug F1a-B15 to `tasks.md`.**
+  - The ownership table gives `tasks.md` to the PM, with QA appending bugs. The deviation isn't explained in the commit, and the number skips B10–B14.
+  - B15 itself is valid, and correctly deferred: fixing it would change prompt text, which F1a forbids (FR-027).
+  - **Fix:** the PM ratifies B15 in place (no rewrite). From now on, engineers raise bugs through QA or a thread.
+- **S3 (F1a-T04 → T06/T07a/T08a, backend-engineer): the env-at-load trap now rests on a comment only (`index.js:28-29`).**
+  - Today only `ai-client.js` and `llm.js` read `process.env` at module load. T08a adds `server/ai/models.js`, which does too. `initDb` reads `DB_PATH` at call time (T06 interface), so it is safe.
+  - **Fix:** T07a keeps every new `index.js` import that can reach `ai-client.js` or `ai/models.js` behind the dynamic import. T11 (or T07a) adds a static test: "server/index.js statically imports only `node:` builtins and `./http.js`".
+- **S4 (F1a-T07b spec, technical-product-manager): required before T07b starts.**
+  - `tests/scenario-prompt-rng.test.js:7` (T02) imports `TRADES` from `server/prompts/trades.js`, which T07b deletes. T07b's Files and Changed tests don't list this test.
+  - **Fix:** add it to T07b as "`TRADES` import → the pack's scenario entries (setup only; the frozen snapshot string is unchanged)". Without it, T07b can't finish within its file list.
+- **S5 (F1a-B20 fix, qa-engineer):** the uncommitted `tests/golden/harness.mjs:105` change redefines the `results` flag. Before it lands, run `--replay --repeat 3` with 0 diffs against the current baseline, which shows today's records don't change. If records do change, recapture under a named ticket with the 3× certification. Never cover a change with an allow-list entry (review R2).
+
+### Rulings on the four T04 design points
+
+1. **Dynamic `await import()` of `ai-client.js` and the routes after `loadEnvFile`: accepted.**
+   - Static ESM imports are evaluated before the importer's body runs, so `MOCK` and `llm.js`'s constants would otherwise be read before `.env` is loaded. The live check above shows it works.
+   - Rejected: a side-effect `import './env.js'` as the first static import. It works too, but it is a second way to express the same ordering, and the change is already verified. Revisit only if a third env-at-load module appears outside `server/ai/`.
+   - Constraint: S3.
+2. **`res.apiSource` for the `[api]` line: accepted.** It keeps `handle() → Promise<boolean>` exactly as the ticket specifies, and the `[api]` lines are byte-identical (evidence above).
+   - Constraint for T12 and T13b: `POST /api/attempts` and `POST …/stops` set `res.apiSource = <response source>` so the line keeps its value. `complete` has no source and logs `-`.
+   - Rejected: returning `{source}` from `handle`. It changes the ticket's interface for one log field.
+3. **`/api/trades` in `routes/scenarios.js`: accepted.** ADR 0003 makes `/api/scenarios` its replacement, and the sequencing rule already runs `routes/scenarios.js` through T04 → T07b → T12 → T18. A `routes/trades.js` would be one more file for T18 to delete.
+4. **Moved constants: accepted.**
+   - `MAX_BODY_BYTES` stays private to `http.js`, because `readBody` is its only reader. `MIME` and `ROOT` are exported per the interface, and `STATIC_DIRS` stays private.
+   - `MAX_EXPLANATION_CHARS` stays in `services/assessment.js`, the layer that clips the grader's input. Constraint for T13b: the STOP path's 2000-char clip (ADR 0003) reuses this one constant (export it), never a second literal `2000`.
+
+### Test-only Wave 0 work (T01a, T03a, T03b)
+
+- **No real API.** LIVE tests and golden runs set `ANTHROPIC_BASE_URL` to fake Claude, and the key is `sk-fake` (`tests/acceptance/helpers.mjs:107`, `tests/golden/harness.mjs:148`). MOCK runs force `MOCK=1`, so a developer's `.env` key can't switch them to live.
+- **`leakScan`** (`helpers.mjs:31-60`) matches ADR 0003 Verification and Amendment 1:
+  - it flags `error` only when the value isn't a string;
+  - it allows `caught.severity` and `caught.correctAction` only at `$.caught` for `kind: 'stop'`, and allows all of `$.missed` only for `kind: 'complete'`;
+  - it never throws. A clean step's `error: null` is flagged, which is correct: a null `error` reveals that the step is clean.
+- **The failure matrix** (`F1a.test.js:880-890`) matches ADR 0005 Amendment 2's outcome table row for row: hang and 429 `retry-after: 60` → `timeout`; 500, 529, `max_tokens`, non-JSON and `{}` → `fallback`; refusal → `refusal`; fallback block → `ok`.
+- **Golden isolation:** `tests/golden-isolation.test.js` passes in `npm test`. `treeSha256` reads product dirs only at `--capture` (`run.mjs:73-87`), as T03a allows.
+- **Expected values:** no test uses a legacy route as its expected value. The only legacy-route uses are the T18 `todo` "returns 404" checks (`F1a.test.js:716-718`). `US1.5` uses `scoreStop` as its oracle, as spec US1.5 states; T13b's wiring is still checked through `severity` and `stepsLate`.
+- **Known and filed, not repeated here:** B06 (an `exit` listener per server), B08 (the fake's generated card reads a product fixture; freeze it with T07b), B09.
+
+### Risks (devil's advocate on what Wave 0 now freezes)
+
+| # | Failure mode | Likelihood | Impact | Mitigation |
+|---|---|---|---|---|
+| R10 | **The fingerprint has no separators.** `system ‖ schema ‖ render…` is hashed as one stream, so text moved across a boundary can, in principle, keep the hash. With 4–5 renders that each repeat the template's head, a moved prefix changes every render, so the realistic hole is tiny. But ADR 0005 fixes this exact algorithm, and T08a must reproduce it, so it can't be quietly fixed later. | L | M | Accept for F1. If it ever matters, a new ADR changes the algorithm, re-pins F-6's `pending` entries, and needs founder sign-off. It must never be changed silently in T08a. |
+| R11 | **Fingerprint inputs live in the product prompt modules** (`grade.js` `FP_CARD`, `scenario.js` `FP_ENTRY`). Editing them changes the fingerprint without any prompt change, so it forces a `VERSION` bump and an eval run for nothing. And as the deny-list grows in F2, their synthetic words (wall, pipes, mirror) could start to hit. | M | L | The T05 test already scans them for the seed words. The F1b staleness test should report "inputs changed" separately from "text changed" before anyone bumps `VERSION`. |
+| R12 | **The dynamic-import ordering is a convention, not a check.** A future static import of a route or service in `index.js` silently reads env before `.env` loads. In MOCK it would *look* fine, so `npm test` (all env passed explicitly) wouldn't catch it. | M | M | S3's static test. |
+| R13 | **`res.apiSource` is an untyped expando on Node's response object.** A new route that forgets it logs `-`, and nobody notices, because no test reads `[api]` lines. | M | L | The T12/T13b constraint above. If the `[api]` line becomes a metric source, move it into a tested helper first. |
