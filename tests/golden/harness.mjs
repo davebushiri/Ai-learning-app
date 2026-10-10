@@ -9,6 +9,8 @@
 //      never on elapsed time.
 //   4. Time moves only through page.clock.runFor, and only while no /api/*
 //      request is pending (tracked with request / requestfinished / requestfailed).
+//   5. Live-fake runs (F1a-T03b) pin GRADE_DEADLINE_MS / SCENARIO_DEADLINE_MS
+//      (LIVE_FAKE_ENV, recorded in manifest.env) and talk to fake Claude.
 // The server is spawned only through tests/helpers/server.mjs.
 
 import { createRequire } from 'node:module';
@@ -17,6 +19,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startServer } from '../helpers/server.mjs';
+import { startFakeClaude } from '../helpers/fake-claude.mjs';
+import { MASKS } from './scripts.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STUBS = path.join(HERE, 'browser-stubs.js');
@@ -26,7 +30,7 @@ const T0 = Date.UTC(2026, 0, 1, 9, 0, 0); // fixed page clock
 const TICK_MS = 250; // shorter than any app delay (900 ms gap, 1500 ms min reading time)
 const MAX_TICKS = 4000; // 1000 s of page time: a stalled run fails instead of hanging
 const WAIT_MS = 15000; // real-time cap on any single DOM wait
-export const LIVE_FAKE_ENV = { GRADE_DEADLINE_MS: 1500, SCENARIO_DEADLINE_MS: 2000 }; // used by T03b's live-fake rows
+export const LIVE_FAKE_ENV = { GRADE_DEADLINE_MS: 1500, SCENARIO_DEADLINE_MS: 2000 }; // thread 0004 ruling 10, timing item 5
 
 // Abort patterns match the legacy and the F1a URL shapes (thread 0004).
 export const ABORT_PATTERNS = {
@@ -59,6 +63,29 @@ export async function launchBrowser() {
 
 // `Date.now()`-based ids (13-digit ms timestamps) never reach the baseline.
 export const normalize = s => String(s).replace(/\b\d{13}\b/g, '<id>');
+
+// Live-generated run only (review OI-10): the scenario prompt draws three
+// values at random. Replace each value with <masked> when it belongs to its
+// frozen source list; otherwise keep it visible, so a non-member is a diff
+// against the baseline's <masked> and is reported as a membership problem.
+export function maskDraws(text, problems = []) {
+  let out = String(text);
+  for (const [label, { list, values }] of Object.entries(MASKS)) {
+    out = out.replace(new RegExp(`(^|\\n)(${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})([^\\n]*)`, 'g'), (_, pre, lab, value) => {
+      if (values.includes(value)) return `${pre}${lab}<masked>`;
+      problems.push(`${label.trim()} ${JSON.stringify(value)} is not in ${list}`);
+      return `${pre}${lab}<not in ${list}: ${value}>`;
+    });
+  }
+  return out;
+}
+
+// The outbound-prompt layer: one entry per request fake Claude saw, in order.
+async function promptLayer(fake, mask, problems) {
+  const log = await (await fetch(`${fake.url}/__log`)).json();
+  const norm = s => (s == null ? null : normalize(mask ? maskDraws(s, problems) : s));
+  return log.map(e => ({ kind: e.kind, system: norm(e.system), user: norm(typeof e.user === 'string' ? e.user : JSON.stringify(e.user)), schemaSha256: e.schemaSha256 }));
+}
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -114,7 +141,22 @@ async function settle(page) {
 }
 
 export async function playRun(browser, run, { shots = true } = {}) {
-  const app = await startServer({ MOCK: '1', DB_PATH: ':memory:' });
+  const live = run.mode === 'live-fake';
+  const fake = live ? await startFakeClaude({ mode: run.fake }) : null;
+  const env = live
+    ? {
+        MOCK: '0', ANTHROPIC_API_KEY: 'sk-fake', ANTHROPIC_BASE_URL: fake.url, DB_PATH: ':memory:',
+        GRADE_DEADLINE_MS: String(LIVE_FAKE_ENV.GRADE_DEADLINE_MS), SCENARIO_DEADLINE_MS: String(LIVE_FAKE_ENV.SCENARIO_DEADLINE_MS)
+      }
+    : { MOCK: '1', DB_PATH: ':memory:' };
+  let app;
+  try {
+    app = await startServer(env);
+  } catch (err) {
+    await fake?.close();
+    throw err;
+  }
+  const maskProblems = [];
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
   const page = await context.newPage();
   const pending = new Set();
@@ -187,6 +229,7 @@ export async function playRun(browser, run, { shots = true } = {}) {
     show(await texts(['mode-badge', 'trade-select', 'setup-msg', 'score']));
     await page.getByLabel('Job').selectOption({ label: run.label });
     await page.getByLabel('Read aloud').setChecked(run.speech === 'voice');
+    if (live) await page.getByLabel('Use cached scenario (demo safe)').setChecked(run.card === 'cached');
     await page.getByRole('button', { name: 'Start the job' }).click();
     await until('first line', s => s.play && s.lines.length > 0);
     show(await texts(['job-title', 'job-setting', 'job-source', 'score']));
@@ -243,8 +286,9 @@ export async function playRun(browser, run, { shots = true } = {}) {
         await page.screenshot({ path: path.join(SHOTS_DIR, `${run.runId}-${width}.png`), fullPage: true, animations: 'disabled' });
       }
     }
+    if (live) record.prompts = await promptLayer(fake, run.mask, maskProblems);
     record.abortsFired = abortsFired;
-    return { record, consoleErrors };
+    return { record, consoleErrors, maskProblems };
 
     // ---- one STOP: explain, submit, feedback, back to work ----
     async function doStop({ line, say }) {
@@ -300,5 +344,6 @@ export async function playRun(browser, run, { shots = true } = {}) {
   } finally {
     await context.close().catch(() => {});
     await app.stop();
+    await fake?.close();
   }
 }

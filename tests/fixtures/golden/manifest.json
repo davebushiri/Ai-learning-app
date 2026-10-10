@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-10T19:13:16.336Z",
-  "gitSha": "da42c2e91ee23092d9e2aec69f9d1c042a2c18bb",
+  "capturedAt": "2026-10-10T19:26:36.761Z",
+  "gitSha": "81df0f926f46d96a237eacc5aca369332ee17f98",
   "treeSha256": "1b89c68c254225b1221b84183dad309fd64ab27452eca0cd149afe761c7cc849",
   "node": "v22.22.0",
   "chromium": "141.0.7390.37",
@@ -60,6 +60,15 @@
     "grade-aborted-electrical-voice",
     "grade-aborted-electrical-text",
     "complete-aborted-electrical-voice",
-    "complete-aborted-electrical-text"
+    "complete-aborted-electrical-text",
+    "live-perfect-electrical-text",
+    "live-false-alarm-electrical-text",
+    "live-perfect-hvac-text",
+    "live-false-alarm-hvac-text",
+    "live-perfect-automotive-text",
+    "live-false-alarm-automotive-text",
+    "live-generated-perfect-electrical-text",
+    "live-hang-perfect-electrical-text",
+    "live-429-perfect-electrical-text"
   ]
 }

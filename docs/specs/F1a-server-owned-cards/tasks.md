@@ -610,3 +610,11 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - Actual: proven only by a scratch script in T03a. · Suggested: T09, which edits `fake-claude.mjs` next, adds the assertion. · Owner: qa-engineer (T09)
 
 **Process note (lead):** WIP checkpoint commit `5883e06` captured the T03a files seconds before QA's 3× replay finished. The certified files are byte-identical to it; the T03a commit below records the certification.
+
+*Filed by qa-engineer while building F1a-T03b (2026-10-10).*
+
+### F1a-B08 [minor] The live-generated golden run depends on a product fixture through fake Claude
+- Actual: `happyScenario()` in `tests/helpers/fake-claude.mjs` reads `fixtures/scenarios/electrical.json`. If T07b changes that file's content or shape, `live-generated-perfect-electrical-text` diffs for a test-input reason, not a regression. · Expected: the fake's generated card stays frozen until deliberately recaptured. · Owner: qa-engineer, with T07b (freeze the card inline in the fake)
+
+### F1a-B09 [minor] Importing `tests/helpers/fake-claude.mjs` from `node -e` or stdin crashes
+- Actual: the main-module guard `pathToFileURL(process.argv[1])` throws `ERR_INVALID_ARG_TYPE` when `argv[1]` is undefined (`fake-claude.mjs:132`). · Owner: qa-engineer (T09 edits the fake next)

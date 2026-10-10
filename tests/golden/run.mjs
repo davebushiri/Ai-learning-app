@@ -1,10 +1,11 @@
-// Golden replay CLI (F1a-T03a).
+// Golden replay CLI (F1a-T03a, F1a-T03b).
 //
-//   node tests/golden/run.mjs --capture [--only <runId>]
-//   node tests/golden/run.mjs --replay [--repeat N] [--only <runId>] [--expect-aborts]
+//   node tests/golden/run.mjs --capture [--only <runId>[,<runId>...]]
+//   node tests/golden/run.mjs --replay [--repeat N] [--only <runId>[,<runId>...]] [--expect-aborts]
 //
-// Exit 0 = no diff outside allow-list.json, every abort check passed, no
-// console errors and no run error. At replay this reads only tests/golden/**
+// Exit 0 = no diff outside allow-list.json, every abort check passed, every
+// masked value of the live-generated run is a member of its list, no console
+// errors and no run error. At replay this reads only tests/golden/**
 // and tests/fixtures/golden/** (the server it spawns reads the product, of course).
 
 import { createHash } from 'node:crypto';
@@ -99,8 +100,10 @@ async function main() {
   const all = matrix();
   let runs = all;
   if (only) {
-    runs = all.filter(r => r.runId === only);
-    if (!runs.length) throw new Error(`unknown run id ${only}`);
+    const ids = only.split(',').map(s => s.trim()).filter(Boolean);
+    const unknown = ids.filter(id => !all.some(r => r.runId === id));
+    if (!ids.length || unknown.length) throw new Error(`unknown run id ${unknown.join(', ') || only}`);
+    runs = all.filter(r => ids.includes(r.runId));
   }
   const allow = new Set(readJson(ALLOW_LIST));
   // tests/helpers/server.mjs adds one process 'exit' listener per server it starts.
@@ -113,7 +116,13 @@ async function main() {
       mkdirSync(RUNS_DIR, { recursive: true });
       const t0 = Date.now();
       for (const run of runs) {
-        const { record, consoleErrors } = await playRun(browser, run);
+        const { record, consoleErrors, maskProblems } = await playRun(browser, run);
+        if (maskProblems.length) {
+          // A non-member value must never become part of the baseline.
+          failed = true;
+          console.log(`FAIL ${run.runId}: not captured: ${maskProblems.join(' | ')}`);
+          continue;
+        }
         if (consoleErrors.length) {
           failed = true;
           console.log(`FAIL ${run.runId}: console errors: ${consoleErrors.join(' | ')}`);
@@ -163,13 +172,14 @@ async function main() {
           console.log(`FAIL ${run.runId}: run error: ${err.message}`);
           continue;
         }
-        const { record, consoleErrors } = result;
+        const { record, consoleErrors, maskProblems } = result;
         writeFileSync(path.join(dir, `${run.runId}.json`), serialize(record));
         digest.update(serialize(comparable(record)));
         const problems = diffRun(expected, record);
         const abort = abortProblem(run, record.abortsFired);
         if (abort) { failed = true; console.log(`FAIL ${run.runId}: ${abort}`); }
         if (consoleErrors.length) { failed = true; console.log(`FAIL ${run.runId}: console errors: ${consoleErrors.join(' | ')}`); }
+        if (maskProblems.length) { failed = true; console.log(`FAIL ${run.runId}: membership: ${maskProblems.join(' | ')}`); }
         if (problems.length && allow.has(run.runId)) {
           allowed++;
           console.log(`allow-listed diff ${run.runId} (aborts ${record.abortsFired}):\n  ${problems.join('\n  ')}`);
