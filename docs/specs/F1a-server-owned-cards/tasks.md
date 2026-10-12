@@ -667,3 +667,20 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B32 [minor] `package-lock.json` still records `engines.node: ">=20.12"`
 - Actual: the lockfile isn't on T06's file list; the next `npm install` will sync it. · Owner: backend-engineer (grant the one-line edit in a later ticket)
+
+*Filed by qa-engineer while building F1a-T11 (2026-10-12).*
+
+### F1a-B50 [minor] T11's parse rule for a bare token leaves root files unowned
+- Actual: read literally ("a token without `/` is relative to the previous token's directory"), `packs/**`, `README.md` gives `packs/README.md`, so `README.md`, `DEMO.md` and `PITCH.md` are unowned. The test resolves a bare token against the previous token only when that token is a concrete file. · Owner: technical-product-manager (fix the T11 wording)
+
+### F1a-B51 [minor] Default `--base main` is useless on the shared branch
+- Actual: `check-ticket.mjs F1a-T11` on team/agents reports 156 extra files. · Expected: a per-ticket base (the ticket's commit `^`, or a merge-base) defined for T19b's evidence. · Owner: technical-product-manager
+
+### F1a-B52 [major] Lead's WIP checkpoint commits mix tickets, so check:ticket can't isolate them
+- Actual: d2b18a0 holds T07a, T08a and T11 together (also 7cec5c8 held T04 + T01b, 90f090c held T06). · Expected: one diff per ticket for T19b. · Owner: lead. Mitigation: certifying commits per ticket plus a per-ticket file manifest for T19b; stop mixing tickets in checkpoints from now on.
+
+### F1a-B53 [minor] No ownership row for likely tool-config paths
+- Actual: adding `.claude/settings.json`, `.claude/commands/**` or `.github/**` would fail the ownership test (nothing hits it today). · Owner: founder, via the PM
+
+### F1a-B54 [minor] check:ticket only checks for extra files
+- Actual: it doesn't flag a listed file that was never touched, a "create" file that was deleted, or a changed file outside the ticket owner's rows. · Owner: technical-product-manager (say whether the reverse check is wanted)
