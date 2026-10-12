@@ -13,7 +13,7 @@ import * as gradePrompt from '../server/prompts/grade.js';
 import * as scenarioPrompt from '../server/prompts/scenario.js';
 import { clampGrade } from '../shared/contract.js';
 import { openDb } from '../server/db.js';
-import { startFakeClaude } from './helpers/fake-claude.mjs';
+import { startFakeClaude, assertNoUnroutedCalls } from './helpers/fake-claude.mjs';
 
 const GRADE_INPUT = gradePrompt.PROMPT.fingerprintInputs[0];
 const SCENARIO_INPUT = scenarioPrompt.PROMPT.fingerprintInputs[0];
@@ -342,7 +342,10 @@ describe('gateway with a real SDK client against fake Claude', () => {
     const logCall = r => { db.logLlmCall(r); rows.push(r); };
     gw = createGateway({ client: new Anthropic({ apiKey: 'sk-fake', baseURL: stub.url }), logCall });
   });
-  after(async () => { db.close(); await stub.close(); });
+  after(async () => {
+    db.close();
+    try { await assertNoUnroutedCalls(stub); } finally { await stub.close(); }
+  });
 
   const timed = async args => {
     const t0 = Date.now();

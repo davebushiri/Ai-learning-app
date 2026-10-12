@@ -1045,7 +1045,7 @@ describe('LIVE server against fake Claude', () => {
     assert.equal(eventsFor(db(), attemptId).find(e => e.verb === 'explained').result.text, long.slice(0, 2000));
   });
 
-  test('US5.5 a model request without x-prompt-id gets 500 and is logged with kind null', { todo: 'F1a-T09' }, async () => {
+  test('US5.5 a model request without x-prompt-id gets 500 and is logged with kind null', async () => {
     const own = await startFakeClaude(); // its own stub: this test makes an unrouted call on purpose
     try {
       const res = await fetch(`${own.url}/v1/messages`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: 'x', messages: [] }) });
@@ -1053,7 +1053,7 @@ describe('LIVE server against fake Claude', () => {
       assert.equal((await res.json()).error?.message, 'stub: missing x-prompt-id');
       assert.equal(own.log.at(-1)?.kind, null);
       const { assertNoUnroutedCalls: strict } = await import('../helpers/fake-claude.mjs');
-      await assert.rejects(Promise.resolve().then(() => strict(own)));
+      await assert.rejects(strict(own), assert.AssertionError); // F1a-B05: an async rejection
     } finally {
       await own.close();
     }
