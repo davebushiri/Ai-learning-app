@@ -791,3 +791,11 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
   - The T09 brief's mention was outside its ticket, and T09 was right not to build it. No F1a ticket gains it.
 
 *Filed by qa-engineer while building F1a-T09 (2026-10-12).*
+
+*Filed by the lead from qa-engineer's W1-B1 report (2026-10-12).*
+
+### F1a-B75 [minor] check:ticket flags bug appends to `tasks.md` as extra files
+- Actual: `check-ticket F1a-T07b --base 69acf28^ --head 69acf28` and the same for T10 (7d65254) each report one extra, `tasks.md`. The lead committed append-only bug filings in the same commit as the ticket. · Options:
+  1. Always allow `tasks.md` when its diff only adds lines.
+  2. T19b checks those appends by hand.
+- Lead: from now on, bug filings go in their own commit. · Owner: technical-product-manager (choose 1 or 2; option 1 changes the T11 contract)
