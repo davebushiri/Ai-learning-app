@@ -594,3 +594,11 @@ Wave 1 has not started.
 - **Behavior:** scenario files are byte-identical to `fixtures/`. A failing migration exits before listen. An invalid pack is skipped and logged.
 
 **Batch 1 of the Wave 1 resume is done** (T07a, T08a, T11). Batch 2 starts now: the T06 follow-up (NOT NULL keys and the conflict-clause ban), the PM's B30/B31 spec text, and the architect's data-and-evidence §2.
+
+### lead · 2026-10-12 · EVIDENCE
+**Per-ticket file manifests for tickets whose code sits in mixed WIP checkpoints** (F1a-B52; for T19b's hand check). T07a and T08a are recorded above. T11 has a clean commit (7054e7e).
+- **F1a-T04** (WIP 7cec5c8 + certifying 26d4d73): `server/index.js`, `server/http.js`, `server/routes/{health,scenarios,grade}.js`, `server/services/{content,assessment,live-status,ai-client}.js`. The S1/S3 follow-up added `server/routes/scenarios.js` comment edits and `tests/index-imports.test.js`.
+- **F1a-T01b** (WIP 41de4da, 7cec5c8 + certifying 7834eb8): `tests/e2e/F1a.e2e.mjs`.
+- **F1a-T06** (WIP 90f090c + certifying 620b3fc): `server/db.js`, `server/migrations/001-init.sql`, `shared/events.js`, `tests/db.test.js`, `tests/events.test.js`, `tests/server-helper.test.js`, `package.json`, `.gitignore`, `tests/helpers/server.mjs`.
+
+From now on: one checkpoint commit per ticket.

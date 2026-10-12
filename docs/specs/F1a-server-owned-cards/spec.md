@@ -348,6 +348,7 @@ Example `graded` event (MOCK mode; exact shape per ADR 0002):
 - **Subject copy in `web/index.html` that isn't on the deny-list** (placeholder "He didn't test that it was dead…", the "Job" label): F1b with the agnostic-copy sweep.
 - **Cost in `llm_call.cost_usd`:** F1b (needs the price table from E3).
 - **F1a-B15, "Hazard areas to draw mistakes from: undefined" (F1b W7, with the prompt rewrite).** `scenarioUserPrompt` prints `undefined` for an entry without `hazardHints`. The fix changes prompt text, so it needs a `VERSION` bump and the eval gate, which F1a forbids (FR-027). Unreachable in F1a: `hazardHints` is required by FR-019, and `validatePack` rejects a scenario without it (F1a-T20). Owner: PM, in the F1b spec.
+- **F1a-B54, reverse checks in `check:ticket` (F1b tooling, rev 4.2).** Flag a listed file never touched, a "create" file that was deleted, and a changed file outside the ticket owner's `CLAUDE.md` rows. Deferred: F1a's `check:ticket` (FR-039, F1a-T11) checks only for extra files; T19b's evidence and QA's per-ticket verification cover the reverse by review. Owner: PM, in the F1b spec, as a `qa-engineer` ticket.
 
 ## Assumptions
 
