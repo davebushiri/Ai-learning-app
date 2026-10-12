@@ -1,6 +1,6 @@
 # 0005. AI gateway, prompt registry, `x-prompt-id` header, and what counts as a prompt text change
 
-**Status:** Accepted. Founder F-4 = (a): W7's prompt rewrite is held at the gate until a key and labels exist. Amended 2026-10-09 (Amendments 1 and 2, below).
+**Status:** Accepted. Founder F-4 = (a): W7's prompt rewrite is held at the gate until a key and labels exist. Amended 2026-10-09 (Amendments 1 and 2) and 2026-10-12 (Amendment 3), below.
 **Date:** 2026-10-09   **Deciders:** principal-architect
 **Thread:** [0003](../team/threads/0003-f1-engine-core-proposal.md) (A4, A5, follow-up 4)
 
@@ -97,3 +97,9 @@ Additive changes to `run()` and clarifications. Reasons are in [thread 0004](../
   Every row writes exactly one `llm_call` row and answers within `deadlineMs + 1 s`.
 - **Scope of the `AbortSignal.timeout` rule.** Inv. 3's deadline rule covers model calls in the gateway. Browser request timeouts in `web/api.js` are not AI calls. They use `setTimeout` plus `AbortController`, cleared when the request settles, so Playwright's `page.clock` can drive them (`page.clock` does not fake `AbortSignal.timeout`; QA EVIDENCE in thread 0004).
 - **Verification:** unit tests in `tests/gateway.test.js` with an injected client cover every row of the table, plus "timeout meta.error is 'Claude grade timed out after 1500 ms'" and "normalize runs before accept and never on fallback data". The fake-Claude failure matrix test drives each row through `POST /api/attempts` and `POST …/stops`.
+
+## Amendment 3 (2026-10-12, F1a Wave 1 code review)
+Two gateway rules. Reasons are in [`review.md`](../specs/F1a-server-owned-cards/review.md) "Code review: Wave 1", W1-S1.
+- **`run()` guards `deadlineMs`.** When `live` is true, `run()` rejects with `TypeError` unless `Number.isInteger(deadlineMs) && deadlineMs > 0`, in `checkArgs` with the S12 guards, before any request and with no `llm_call` row. Today a missing or negative deadline throws inside the call's `try`, so it is served as outcome `fallback` with zero requests sent: a caller bug that looks like a flaky model. MOCK (`live: false`) never uses the deadline and is not checked. `server/ai/models.js` uses the default for any env value that isn't a positive integer (today `-1` passes because only falsy values default).
+- **A throwing `fallback()` keeps rejecting.** `run()` writes its row first, then `await fallback()`; if that throws, `run()` rejects, the route answers 500 and the process stays up (inv. 7: never crash). There is no second fallback to fall back to. The contract is that **fallbacks must not throw**: each must be total over its inputs. F1a's known breach is B60 (`mockGrade` on non-array `keywords`), fixed in T13b. Rejected: catching it in the gateway and returning a placeholder (a fake answer that hides the bug and has no honest label).
+- **Verification:** `tests/gateway.test.js` "run with live true and a missing, zero, negative or non-integer deadlineMs rejects with TypeError and writes no row"; "a throwing fallback rejects run() after exactly one llm_call row"; a `models.js` case showing `GRADE_DEADLINE_MS=-1` yields 8000.
