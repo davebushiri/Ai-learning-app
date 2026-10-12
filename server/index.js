@@ -22,6 +22,19 @@ process.on('unhandledRejection', err => console.error('[unhandled]', err));
 
 // Imported only after .env is loaded: ai-client.js and llm.js read the environment
 // when they are first evaluated, and static imports would run before loadEnvFile.
+const { initDb } = await import('./db.js');
+const { loadPacks } = await import('./packs.js');
+
+// Startup order (review B6): DB and migrations, then packs, then listen. A failed migration
+// leaves the schema unknown, so exit rather than serve; a bad pack only warns (loadPacks).
+try {
+  initDb();
+} catch (err) {
+  console.error(err.message);
+  process.exit(1);
+}
+loadPacks();
+
 const { MOCK } = await import('./services/ai-client.js');
 const ROUTES = (await Promise.all([
   import('./routes/health.js'),

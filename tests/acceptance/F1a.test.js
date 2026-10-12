@@ -699,7 +699,7 @@ describe('MOCK server', () => {
 
   // --- static files and legacy routes ---
 
-  test('edge: pack and scenario files are never served statically (403 or 404)', { todo: 'F1a-T07a' }, async () => {
+  test('edge: pack and scenario files are never served statically (403 or 404)', async () => {
     assert.ok(existsSync(PACK_JSON), 'packs/demo-trades/pack.json exists');
     assert.ok(existsSync(new URL('../../packs/demo-trades/scenarios/electrical.json', import.meta.url)));
     for (const p of [
@@ -1147,7 +1147,7 @@ describe('restarts and storage', () => {
     }
   });
 
-  test('edge: a failing migration exits non-zero with [db] migration 001 failed and never listens', { todo: 'F1a-T07a' }, async () => {
+  test('edge: a failing migration exits non-zero with [db] migration 001 failed and never listens', async () => {
     const tmp = tempDbPath();
     try {
       const db = new DatabaseSync(tmp.dbPath);
