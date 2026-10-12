@@ -44,15 +44,19 @@ The event log is the source of truth. Everything marked *projection* can be drop
 CREATE TABLE event (seq INTEGER PRIMARY KEY, id TEXT NOT NULL UNIQUE, at TEXT NOT NULL,  -- ADR 0002; UPDATE/DELETE blocked by triggers (ADR 0001)
                     actor TEXT NOT NULL, verb TEXT NOT NULL, object_json TEXT NOT NULL,
                     result_json TEXT, context_json TEXT NOT NULL);
-CREATE TABLE subject_pack (id TEXT, version INT, json TEXT, provenance_json TEXT, created_at TEXT,
-                           PRIMARY KEY (id, version));
-CREATE TABLE card (id TEXT PRIMARY KEY, subject_id TEXT, subject_version INT, mode TEXT,
+CREATE TABLE subject_pack (id TEXT NOT NULL, version INT NOT NULL, json TEXT, provenance_json TEXT,
+                           created_at TEXT, PRIMARY KEY (id, version));   -- keys NOT NULL (ADR 0001 Am. 1)
+CREATE TABLE card (id TEXT NOT NULL PRIMARY KEY, subject_id TEXT, subject_version INT, mode TEXT,
                    competency_id TEXT, mistake_types_json TEXT, subtlety INT, json TEXT,
                    verify_json TEXT, status TEXT,        -- ok | quarantined | defect
-                   prompt_version TEXT, model TEXT, source TEXT, created_at TEXT);
+                   prompt_version TEXT, model TEXT,      -- NULL for fixture cards (ADR 0003 Am. 1)
+                   source TEXT NOT NULL, created_at TEXT,
+                   CHECK (source IN ('fixture','live')),  -- NULL-safe form: ADR 0003 Am. 4
+                   CHECK (source <> 'live' OR (prompt_version IS NOT NULL AND model IS NOT NULL
+                                               AND length(prompt_version) > 0 AND length(model) > 0)));
 CREATE TABLE goal (id TEXT PRIMARY KEY, learner_id TEXT, subject_id TEXT, type TEXT,
                    target_date TEXT, weekly_sessions INT, anchor TEXT);
-CREATE TABLE llm_call (id TEXT PRIMARY KEY, at TEXT, pipeline TEXT, prompt_version TEXT, model TEXT,
+CREATE TABLE llm_call (id TEXT NOT NULL PRIMARY KEY, at TEXT, pipeline TEXT, prompt_version TEXT, model TEXT,
                        ms INT, input_tokens INT, output_tokens INT, cache_read INT, cost_usd REAL,
                        outcome TEXT);                     -- ok | timeout | refusal | fallback | mock (ADR 0005)
 CREATE TABLE evidence_assignment (learner_id TEXT, mistake_type_id TEXT, condition TEXT,  -- trained | held_out
@@ -64,6 +68,10 @@ CREATE TABLE review_item (learner_id TEXT, mistake_type_id TEXT, box INT, due_at
                           PRIMARY KEY (learner_id, mistake_type_id));
 CREATE TABLE daily_plan (learner_id TEXT, date TEXT, plan_json TEXT, PRIMARY KEY (learner_id, date));
 ```
+
+**Write rules** ([ADR 0001](../adr/0001-sqlite-storage-and-append-only-event-log.md) Amendment 1):
+- **No conflict clauses.** `INSERT OR IGNORE`, `INSERT OR REPLACE`, `REPLACE INTO` and `UPDATE OR …` are banned; `OR REPLACE` on `event` deletes a row without firing `event_no_delete`. Idempotent inserts use `INSERT … ON CONFLICT (<key>) DO NOTHING`, so a row that fails a constraint still throws.
+- **CHECKs are NULL-safe.** Every column a CHECK reads is `NOT NULL`, or the CHECK says `IS NOT NULL`. Key columns of rowid tables are `NOT NULL`, because SQLite lets a non-`INTEGER` `PRIMARY KEY` hold NULL.
 
 **Mastery maths** (`shared/mastery.js`, pure):
 - An Elo rating per competency against card difficulty. Difficulty starts from subtlety (1000 / 1200 / 1400) and is then learned per card.
