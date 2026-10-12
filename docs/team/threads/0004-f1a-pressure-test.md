@@ -579,3 +579,10 @@ Wave 1 has not started.
 ### founder · 2026-10-10 · DECISION
 *Recorded by the lead session from the founder's own words in the chat on 2026-10-10: "yes, start wave 1".*
 **F1a Wave 1 starts now.** The first two tickets, F1a-T06 and F1a-T20, run in parallel.
+
+### lead · 2026-10-12 · EVIDENCE
+**F1a-T08a is certified** (the AI gateway module). Its code landed in mixed WIP commit d2b18a0 (F1a-B52) and needed no changes on resume.
+- **File manifest for T19b:** `server/ai/gateway.js`, `server/ai/models.js`, `tests/gateway.test.js`.
+- **Evidence:** `tests/gateway.test.js` 29/29; `npm test` 285 tests, 0 fail, 64 todo; golden replay 61 runs, 0 diffs, digest `cc1c3558d43c7e02`.
+- **Coverage:** every failure mode maps to its ADR 0005 Amendment 2 outcome, each with a named test.
+- **Open for T08b:** what `run()` does when the caller's own `fallback()` throws. Today it rejects after the `llm_call` row is written.
