@@ -586,3 +586,11 @@ Wave 1 has not started.
 - **Evidence:** `tests/gateway.test.js` 29/29; `npm test` 285 tests, 0 fail, 64 todo; golden replay 61 runs, 0 diffs, digest `cc1c3558d43c7e02`.
 - **Coverage:** every failure mode maps to its ADR 0005 Amendment 2 outcome, each with a named test.
 - **Open for T08b:** what `run()` does when the caller's own `fallback()` throws. Today it rejects after the `llm_call` row is written.
+
+### lead · 2026-10-12 · EVIDENCE
+**F1a-T07a is certified** (the pack loader and the startup order). Its code is split across WIP commits d2b18a0 (mixed, F1a-B52) and 4fd1d74 (T07a only).
+- **File manifest for T19b:** `packs/demo-trades/scenarios/{electrical,brazing,brakes}.json`, `server/packs.js`, `tests/pack.test.js`, `server/index.js`, plus the two T07a todos in `tests/acceptance/F1a.test.js`.
+- **Evidence:** `tests/pack.test.js` + `tests/index-imports.test.js` 20/20 (red before: "server startup (B6)" 2 fails); `npm test` 285 tests, 0 fail, 64 todo; golden replay 61 runs, 0 diffs, digest `cc1c3558d43c7e02`.
+- **Behavior:** scenario files are byte-identical to `fixtures/`. A failing migration exits before listen. An invalid pack is skipped and logged.
+
+**Batch 1 of the Wave 1 resume is done** (T07a, T08a, T11). Batch 2 starts now: the T06 follow-up (NOT NULL keys and the conflict-clause ban), the PM's B30/B31 spec text, and the architect's data-and-evidence §2.
