@@ -1,17 +1,16 @@
 // Content routes; the full route set is in server/routes/*.
 
-import { TRADES, listTrades } from '../prompts/trades.js';
 import { sendJson } from '../http.js';
-import { getScenario } from '../services/content.js';
+import { getScenario, legacyEntry, legacyScenarios } from '../services/content.js';
 
 export async function handle(req, res, url) {
   if (url.pathname === '/api/trades') {
-    sendJson(res, 200, listTrades());
+    sendJson(res, 200, legacyScenarios());
     return true;
   }
   if (url.pathname === '/api/scenario') {
     const trade = url.searchParams.get('trade') || 'electrical';
-    if (!Object.hasOwn(TRADES, trade)) {
+    if (!legacyEntry(trade)) {
       sendJson(res, 400, { error: `unknown trade ${trade}` });
       return true;
     }

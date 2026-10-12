@@ -4,11 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { validatePack, ratingLabel, RATING_KEYS } from '../shared/pack.js';
-// Today's sources of the copied values. T07b deletes or rewires these and
-// replaces the imports with frozen literals.
-import { TRADES, listTrades } from '../server/prompts/trades.js';
 import { SCENARIO_SYSTEM } from '../server/prompts/scenario.js';
-import { mockGrade } from '../shared/mock-grader.js';
 
 const PACK_URL = new URL('../packs/demo-trades/pack.json', import.meta.url);
 const loadPack = () => JSON.parse(readFileSync(PACK_URL, 'utf8'));
@@ -152,9 +148,8 @@ test('copy, severity, synonyms and scenario fields equal today\'s literals', () 
   assert.equal(p.copy.cleanRun, 'Clean job. Nobody got hurt.');
   assert.ok(readFileSync(new URL('../web/app.js', import.meta.url), 'utf8').includes(`'${p.copy.cleanRun}'`));
 
-  // False-alarm feedback: today's mockGrade on a step without an error.
-  const scenario = { steps: [{ id: 1, line: 'x', error: null }] };
-  assert.equal(p.copy.falseAlarmFeedback, mockGrade(scenario, 1, 'anything at all').feedback);
+  // False-alarm feedback: mockGrade's text on a step without an error, frozen at F1a-T07b.
+  assert.equal(p.copy.falseAlarmFeedback, 'That step was actually fine. Stopping the job costs time, so save the STOP for real hazards.');
 
   // Severity meanings: server/prompts/scenario.js:13.
   for (const sev of ['critical', 'major', 'minor']) {
@@ -182,7 +177,72 @@ test('copy, severity, synonyms and scenario fields equal today\'s literals', () 
     assert.ok(mockSrc.includes(`  ${key}: [${forms.map(f => `'${f}'`).join(', ')}]`), `synonyms.${term} matches mock-grader.js`);
   }
 
-  // Scenarios: server/prompts/trades.js, in listTrades() order.
-  assert.deepEqual(p.scenarios.map(s => s.id), listTrades().map(t => t.id));
-  assert.deepEqual(p.scenarios, listTrades().map(({ id }) => ({ id, ...TRADES[id] })));
+  // Scenarios: server/prompts/trades.js in listTrades() order, frozen at F1a-T07b when it was deleted.
+  const scenarios = [
+    {
+      id: 'electrical',
+      label: 'Electrical: replace a receptacle',
+      brief: 'A first-year electrical apprentice replaces a countertop receptacle near a kitchen sink in an occupied home.',
+      hazardHints: 'lockout / verifying de-energized (live-dead-live), GFCI requirements near water, terminations, box fill, grounding',
+      criticalHints: [
+        'verifying the circuit is dead before touching it',
+        'shock protection near water',
+        'grounding and the equipment ground',
+        'a second circuit or shared neutral in the same box'
+      ],
+      twists: [
+        'the homeowner is cooking dinner and wants the kitchen back fast',
+        'the panel directory is faded and half the labels are guesses',
+        'the box is old metal with cloth-covered wiring',
+        'a handyman did the last repair and it shows',
+        'the countertop backsplash is tile and the box is set deep',
+        'the homeowner keeps asking if the dishwasher will still work'
+      ],
+      fixture: 'electrical.json'
+    },
+    {
+      id: 'hvac',
+      label: 'HVAC: braze a suction line',
+      brief: 'An HVAC apprentice brazes a replacement section of copper suction line on a residential split system outdoors.',
+      hazardHints: 'hot work and fire prevention, nitrogen purge while brazing, heat protection of valves, refrigerant recovery, pressure and vacuum testing',
+      criticalHints: [
+        'hot work and fire prevention',
+        'opening or heating a line that still holds refrigerant or pressure',
+        'pressure testing with the right gas through a regulator',
+        'electrical disconnect at the condenser before working on it'
+      ],
+      twists: [
+        'it is ninety five degrees out and the customer wants cooling today',
+        'the condenser is tight against a wooden fence',
+        'the leak is right next to the service valves',
+        'the nitrogen bottle is almost empty',
+        'it is windy and the torch flame keeps getting pushed around',
+        'the homeowner\'s kids are playing in the yard'
+      ],
+      fixture: 'brazing.json'
+    },
+    {
+      id: 'automotive',
+      label: 'Automotive: front brake job',
+      brief: 'An automotive apprentice replaces front brake pads and rotors on a sedan in a small shop with no lift available.',
+      hazardHints: 'vehicle support (jack stands), caliper and hose handling, brake dust, torque specs, pumping the pedal and road testing',
+      criticalHints: [
+        'vehicle support and jack stands',
+        'a firm brake pedal before the car moves',
+        'wheel and lug nut tightening',
+        'caliper and bracket fasteners'
+      ],
+      twists: [
+        'the customer is waiting in the lobby and asks for it in an hour',
+        'one of the caliper slide pins is seized',
+        'the rotors are rusted onto the hubs',
+        'the shop is out of the right brake cleaner',
+        'the car has an electronic parking brake',
+        'the lug nuts were put on with an impact last time and are stuck'
+      ],
+      fixture: 'brakes.json'
+    }
+  ];
+  assert.deepEqual(p.scenarios.map(s => s.id), scenarios.map(t => t.id));
+  assert.deepEqual(p.scenarios, scenarios);
 });

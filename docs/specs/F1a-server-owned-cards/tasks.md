@@ -703,3 +703,14 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 ### F1a-B56 [minor] `README.md` still mentions `fixtures/scenarios/*` and `server/prompts/trades.js`
 - Actual: `README.md:28, 62, 68` will be stale after T07b. This is prose, not an importer. · Owner: technical-product-manager
 - **Triage (PM, rev 4.3):** resolved (thread 0005 DECISION). Left to T18, which already modifies `README.md`. Its README bullet now names these lines. T07b doesn't touch the README.
+
+*Filed by backend-engineer while building F1a-T07b (2026-10-12).*
+
+### F1a-B57 [major] `tests/pack-format.test.js:172–177` reads `shared/mock-grader.js` source text, which T13b changes
+- Actual: T13b edits `mock-grader.js`, but this test's edit sequence ends at T07b, so T13b would break it without being allowed to edit it. · Owner: technical-product-manager (add the file to T13b, or freeze the values inline now)
+
+### F1a-B58 [minor] A test name in `tests/prompt-version.test.js` still says "except trades.js"
+- Owner: technical-product-manager / qa-engineer (rename)
+
+### F1a-B59 [minor] The golden manifest's `treeSha256` (`tests/golden/run.mjs:83`) hashes `fixtures/`, which no longer exists, and not `packs/`
+- Actual: the provenance stamp no longer covers scenario content; replay itself is unaffected. · Owner: qa-engineer

@@ -23,7 +23,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-const FIXTURE = new URL('../../fixtures/scenarios/electrical.json', import.meta.url);
+const FIXTURE = new URL('../../packs/demo-trades/scenarios/electrical.json', import.meta.url);
 const ERROR_TYPES = { 400: 'invalid_request_error', 401: 'authentication_error', 429: 'rate_limit_error', 500: 'api_error', 529: 'overloaded_error' };
 
 export const happyScenario = () => {

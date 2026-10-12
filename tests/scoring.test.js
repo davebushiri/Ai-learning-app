@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolveStop, scoreStop, scoreRun, RULES } from '../shared/scoring.js';
 
-const scenario = JSON.parse(readFileSync(new URL('../fixtures/scenarios/electrical.json', import.meta.url)));
+const scenario = JSON.parse(readFileSync(new URL('../packs/demo-trades/scenarios/electrical.json', import.meta.url)));
 const idx = id => scenario.steps.findIndex(s => s.id === id);
 
 test('STOP on the mistake step targets that mistake', () => {

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { PLAYERS, playRun } from '../scripts/simulate.js';
 
-const dir = new URL('../fixtures/scenarios/', import.meta.url);
+const dir = new URL('../packs/demo-trades/scenarios/', import.meta.url);
 const fixtures = readdirSync(dir)
   .filter(f => f.endsWith('.json'))
   .map(f => [f, JSON.parse(readFileSync(new URL(f, dir)))]);

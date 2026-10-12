@@ -1,24 +1,26 @@
-// Scenario content: live generation with a fixture fallback.
+// Scenario content: live generation with a fixture fallback, read from the pack registry.
 
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-import { TRADES } from '../prompts/trades.js';
+import { getScenarioEntry, listScenarios } from '../packs.js';
 import { validateScenario } from '../../shared/contract.js';
-import { ROOT } from '../http.js';
 import { MOCK, ai as llm } from './ai-client.js';
 import { noteLive } from './live-status.js';
 
-async function loadFixture(tradeId) {
-  const file = path.join(ROOT, 'fixtures', 'scenarios', TRADES[tradeId].fixture);
-  return JSON.parse(await readFile(file, 'utf8'));
-}
+// The legacy routes serve one pack until the attempt API replaces them (removed by F1a-T18).
+export const LEGACY_SUBJECT = 'demo-trades';
+
+export const legacyScenarios = () => listScenarios(LEGACY_SUBJECT) ?? [];
+export const legacyEntry = id => getScenarioEntry(LEGACY_SUBJECT, id);
+
+// Registry cards are frozen and shared; every response gets its own copy.
+const fixtureCard = entry => structuredClone(entry.card);
 
 export async function getScenario(tradeId, source) {
-  if (MOCK || source === 'fixture') return { scenario: await loadFixture(tradeId), source: 'fixture' };
+  const entry = legacyEntry(tradeId);
+  if (MOCK || source === 'fixture') return { scenario: fixtureCard(entry), source: 'fixture' };
   try {
-    const scenario = await llm.generateScenario(tradeId, TRADES[tradeId]);
+    const scenario = await llm.generateScenario(tradeId, entry);
     if (scenario && typeof scenario === 'object') {
-      // We asked for this trade; don't trust the model to echo it back.
+      // We asked for this scenario; don't trust the model to echo it back.
       scenario.trade = tradeId;
       scenario.id ||= `live-${tradeId}-${Date.now()}`;
     }
@@ -29,6 +31,6 @@ export async function getScenario(tradeId, source) {
   } catch (err) {
     noteLive('scenario', err);
     console.warn(`[scenario] live generation failed, using fixture: ${err.message}`);
-    return { scenario: await loadFixture(tradeId), source: 'fixture-fallback' };
+    return { scenario: fixtureCard(entry), source: 'fixture-fallback' };
   }
 }

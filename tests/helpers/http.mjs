@@ -3,7 +3,7 @@ import net from 'node:net';
 import { readFileSync } from 'node:fs';
 
 export const loadFixture = name =>
-  JSON.parse(readFileSync(new URL(`../../fixtures/scenarios/${name}`, import.meta.url), 'utf8'));
+  JSON.parse(readFileSync(new URL(`../../packs/demo-trades/scenarios/${name}`, import.meta.url), 'utf8'));
 
 // Sends bytes exactly as given (fetch would normalize the URL) and returns the status, or null if the socket died.
 export function rawRequest(baseUrl, text) {

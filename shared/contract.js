@@ -1,21 +1,23 @@
 // THE CONTRACT. Server, browser, fixtures, and tests all depend on these shapes.
 // Change them only after telling the whole team.
 //
-// Scenario
-//   { id, trade, title, setting, apprentice, steps: Step[] }
+// Scenario (a card)
+//   { id, title, setting, apprentice, steps: Step[] }
 // Step
 //   { id: number, line: string, error: Mistake | null }
 // Mistake
 //   { severity: "minor" | "major" | "critical",
 //     summary,        // short label, shown on the score screen
 //     why,            // why it's wrong, one or two sentences
-//     correctAction,  // what a journeyman would do instead
+//     correctAction,  // what an expert would do instead
 //     consequence,    // "here's what happened next" if the learner misses it
 //     keywords: [] }  // lowercase words a correct explanation would likely use (mock grader + hints)
 //
 // GradeRequest   { scenario, stepId, errorStepId: number | null, explanation }
 // GradeResponse  { verdict: "correct" | "partial" | "wrong" | "false_alarm",
 //                  reasoningScore: 0..1, feedback }
+// PublicCard     { id, subject, title, setting, apprentice, steps: [{ id, line }] }
+//                  what the browser may see before a STOP is graded (toPublicCard).
 
 export const SEVERITIES = ['minor', 'major', 'critical'];
 export const VERDICTS = ['correct', 'partial', 'wrong', 'false_alarm'];
@@ -91,25 +93,21 @@ const nonEmptyString = v => typeof v === 'string' && v.trim().length > 0;
 
 // Returns a list of problems; empty list means the scenario is usable.
 // Used to reject bad LLM output (and fall back to a fixture) and in tests.
-// Never throws, whatever it is given.
-// Optional `opts.trade`: the trade id the scenario was requested for.
-export function validateScenario(s, opts = {}) {
+// Never throws, whatever it is given. The subject is not checked: the server sets it.
+export function validateScenario(s) {
   try {
-    return scenarioProblems(s, opts ?? {});
+    return scenarioProblems(s);
   } catch (err) {
     return [`scenario could not be checked: ${String(err?.message ?? err).slice(0, 200)}`];
   }
 }
 
-function scenarioProblems(s, opts) {
+function scenarioProblems(s) {
   const R = SCENARIO_RULES;
   const problems = [];
   if (!isPlainObject(s)) return ['scenario is not an object'];
-  for (const k of ['id', 'trade', 'title', 'setting', 'apprentice']) {
+  for (const k of ['id', 'title', 'setting', 'apprentice']) {
     if (!nonEmptyString(s[k])) problems.push(`missing ${k}`);
-  }
-  if (opts.trade && nonEmptyString(s.trade) && s.trade !== opts.trade) {
-    problems.push(`trade is ${s.trade.slice(0, 40)}, expected ${opts.trade}`);
   }
   if (!Array.isArray(s.steps)) {
     problems.push('steps must be an array');
@@ -176,6 +174,19 @@ function scenarioProblems(s, opts) {
     problems.push(`needs exactly one critical, one major, and one minor mistake (has ${has})`);
   }
   return problems;
+}
+
+// The public view of a card (ADR 0003): an allow-list copy, never built by spreading or
+// deleting, so a field added to cards later can't leak to the browser by accident.
+export function toPublicCard(card, { id, subject }) {
+  return {
+    id,
+    subject,
+    title: card.title,
+    setting: card.setting,
+    apprentice: card.apprentice,
+    steps: card.steps.map(step => ({ id: step.id, line: step.line }))
+  };
 }
 
 export function clampGrade(g) {

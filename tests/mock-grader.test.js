@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { mockGrade } from '../shared/mock-grader.js';
 
 // The demo fixture is read at test time, so these follow its keywords as they change.
-const electrical = JSON.parse(readFileSync(new URL('../fixtures/scenarios/electrical.json', import.meta.url)));
+const electrical = JSON.parse(readFileSync(new URL('../packs/demo-trades/scenarios/electrical.json', import.meta.url)));
 const adversarial = JSON.parse(readFileSync(new URL('./fixtures/adversarial-inputs.json', import.meta.url)));
 const input = id => adversarial.find(x => x.id === id).explanation;
 

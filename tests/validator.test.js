@@ -3,12 +3,14 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { validateScenario, SCENARIO_RULES } from '../shared/contract.js';
-import { TRADES } from '../server/prompts/trades.js';
 import { SCENARIO_SYSTEM, scenarioUserPrompt } from '../server/prompts/scenario.js';
 
-const dir = new URL('../fixtures/scenarios/', import.meta.url);
+const dir = new URL('../packs/demo-trades/scenarios/', import.meta.url);
+const pack = JSON.parse(readFileSync(new URL('../packs/demo-trades/pack.json', import.meta.url)));
+// Pack scenario entries keyed by id, passed to the prompt as the legacy live path passes them.
+const ENTRIES = Object.fromEntries(pack.scenarios.map(e => [e.id, e]));
 const load = f => JSON.parse(readFileSync(new URL(f, dir)));
 const electrical = () => load('electrical.json');
 
@@ -27,11 +29,9 @@ const has = (problems, re) => problems.some(p => re.test(p));
 
 // ---- fixtures -------------------------------------------------------------
 
-for (const file of readdirSync(dir).filter(f => f.endsWith('.json'))) {
-  test(`fixture ${file} passes the strict rules for its own trade`, () => {
-    const s = load(file);
-    const tradeId = Object.keys(TRADES).find(id => TRADES[id].fixture === file);
-    assert.deepEqual(validateScenario(s, { trade: tradeId }), []);
+for (const { fixture: file } of pack.scenarios) {
+  test(`pack fixture ${file} passes the strict rules`, () => {
+    assert.deepEqual(validateScenario(load(file)), []);
   });
 }
 
@@ -130,13 +130,6 @@ test('I: a single line over the length limit is rejected', () => {
   assert.ok(has(validateScenario(s), /step 4: line is over/));
 });
 
-test('J: trade mismatch is rejected when the requested trade is given', () => {
-  const s = good();
-  s.trade = 'plumbing';
-  assert.ok(has(validateScenario(s, { trade: 'electrical' }), /expected electrical/));
-  assert.deepEqual(validateScenario(s), [], 'trade is only checked when asked');
-});
-
 // ---- counts, severities, step range ----------------------------------------
 
 test('needs exactly one critical, one major and one minor', () => {
@@ -229,7 +222,7 @@ test('never throws and always returns a non-empty list for junk input', () => {
 // ---- BRAIN-12: scenario prompt ---------------------------------------------
 
 test('scenario user prompt names a critical hazard, a twist and an apprentice', () => {
-  for (const [id, trade] of Object.entries(TRADES)) {
+  for (const [id, trade] of Object.entries(ENTRIES)) {
     const p = scenarioUserPrompt(id, trade);
     assert.match(p, /Draw the critical mistake from: \S/);
     const hint = p.match(/Draw the critical mistake from: (.+)/)[1];
@@ -245,12 +238,12 @@ test('scenario user prompt names a critical hazard, a twist and an apprentice', 
 
 test('scenario user prompt varies the apprentice across calls', () => {
   const names = new Set();
-  for (let i = 0; i < 200; i++) names.add(scenarioUserPrompt('electrical', TRADES.electrical).match(/Apprentice name: (\w+)/)[1]);
+  for (let i = 0; i < 200; i++) names.add(scenarioUserPrompt('electrical', ENTRIES.electrical).match(/Apprentice name: (\w+)/)[1]);
   assert.ok(names.size >= 2, [...names].join());
 });
 
 test('scenario user prompt lists recent mistakes to avoid when given', () => {
-  const p = scenarioUserPrompt('hvac', TRADES.hvac, ['Brazing without flowing nitrogen', 'No extinguisher']);
+  const p = scenarioUserPrompt('hvac', ENTRIES.hvac, ['Brazing without flowing nitrogen', 'No extinguisher']);
   assert.match(p, /Do not reuse these mistakes from recent scenarios: Brazing without flowing nitrogen; No extinguisher/);
 });
 

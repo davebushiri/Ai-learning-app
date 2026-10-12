@@ -4,8 +4,12 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TRADES } from '../server/prompts/trades.js';
+import { readFileSync } from 'node:fs';
 import { scenarioUserPrompt } from '../server/prompts/scenario.js';
+
+// The pack's scenario entries keyed by id, passed as `trade` exactly as the legacy live path does.
+const pack = JSON.parse(readFileSync(new URL('../packs/demo-trades/pack.json', import.meta.url), 'utf8'));
+const TRADES = Object.fromEntries(pack.scenarios.map(e => [e.id, e]));
 
 // Deterministic draw sequence: replays the same values on every fresh instance.
 const seq = values => { let i = 0; return () => values[i++ % values.length]; };

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { GRADE_SYSTEM, gradeUserPrompt } from '../server/prompts/grade.js';
 
-const scenario = JSON.parse(readFileSync(new URL('../fixtures/scenarios/electrical.json', import.meta.url)));
+const scenario = JSON.parse(readFileSync(new URL('../packs/demo-trades/scenarios/electrical.json', import.meta.url)));
 const section = (prompt, tag) => prompt.match(new RegExp(`<${tag}>\\n([\\s\\S]*?)\\n</${tag}>`))?.[1];
 
 test('the explanation appears only inside <learner_explanation>', () => {

@@ -13,11 +13,9 @@ import { gradeUserPrompt } from '../server/prompts/grade.js';
 import { scenarioUserPrompt } from '../server/prompts/scenario.js';
 
 const PROMPTS_DIR = fileURLToPath(new URL('../server/prompts/', import.meta.url));
-// trades.js is pack data, not a prompt; T07b deletes it and removes this exclusion.
-const EXCLUDED = new Set(['trades.js']);
 
 async function loadPromptModules() {
-  const files = readdirSync(PROMPTS_DIR).filter(f => f.endsWith('.js') && !EXCLUDED.has(f)).sort();
+  const files = readdirSync(PROMPTS_DIR).filter(f => f.endsWith('.js')).sort();
   return Promise.all(files.map(async f => ({ file: f, mod: await import(pathToFileURL(join(PROMPTS_DIR, f))) })));
 }
 

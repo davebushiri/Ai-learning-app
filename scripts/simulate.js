@@ -46,11 +46,28 @@ export function playRun(scenario, player) {
   return scoreRun(scenario, events);
 }
 
+// Every pack's scenario files, in pack-id order and then ascending fixture file-name order
+// (thread 0005), so adding a pack needs no change here.
+function packFixtures() {
+  const root = new URL('../packs/', import.meta.url);
+  const out = [];
+  for (const d of readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort()) {
+    const dir = new URL(`${d}/`, root);
+    let pack;
+    try {
+      pack = JSON.parse(readFileSync(new URL('pack.json', dir)));
+    } catch {
+      continue; // not a pack
+    }
+    const files = [...new Set((pack.scenarios ?? []).map(s => s.fixture))].sort();
+    for (const file of files) out.push({ file, url: new URL(`scenarios/${file}`, dir) });
+  }
+  return out;
+}
+
 function main() {
-  const dir = new URL('../fixtures/scenarios/', import.meta.url);
-  const files = readdirSync(dir).filter(f => f.endsWith('.json'));
-  for (const file of files) {
-    const scenario = JSON.parse(readFileSync(new URL(file, dir)));
+  for (const { file, url } of packFixtures()) {
+    const scenario = JSON.parse(readFileSync(url));
     console.log(`\n${scenario.title}  (${file})`);
     const rows = Object.entries(PLAYERS).map(([name, player]) => {
       const r = playRun(scenario, player);
