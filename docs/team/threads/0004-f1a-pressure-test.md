@@ -602,3 +602,11 @@ Wave 1 has not started.
 - **F1a-T06** (WIP 90f090c + certifying 620b3fc): `server/db.js`, `server/migrations/001-init.sql`, `shared/events.js`, `tests/db.test.js`, `tests/events.test.js`, `tests/server-helper.test.js`, `package.json`, `.gitignore`, `tests/helpers/server.mjs`.
 
 From now on: one checkpoint commit per ticket.
+
+### lead · 2026-10-12 · EVIDENCE
+**F1a Wave 1 is done.** All 9 tickets are built, verified and committed on `team/agents`: T06 (plus its B30/B31 follow-up), T20, T07a, T07b, T08a, T08b, T09, T10 and T11.
+- **Architect's Wave 1 code review:** 8 approved. T11's one blocker (W1-B1) is fixed and certified.
+- **Tests:** `npm test` 304, 0 fail, 63 todo. Golden replay 61 runs, 0 diffs, digest `cc1c3558d43c7e02`.
+- **Open, not blocking Wave 2:**
+  - founder: B53 (ownership row for tool-config paths);
+  - PM: B75, the SC-007 exemption for `tests/fake-claude-routing.test.js`, and placing review S1–S5 (ADR 0005 Am. 3 code → T18).
