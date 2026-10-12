@@ -227,6 +227,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - **Owner:** backend-engineer
 - **Size:** M
 - **Depends on:** F1a-T07a, F1a-T05
+- **Blocked by:** docs/team/threads/0005-f1a-t07b-file-list-gap.md
 - **Files:** modify `server/services/content.js`, `server/routes/scenarios.js`, `shared/contract.js`, `scripts/simulate.js`, `tests/contract.test.js`, `tests/validator.test.js`, `tests/scoring.test.js`, `tests/mock-grader.test.js`, `tests/game-balance.test.js`, `tests/helpers/http.mjs`, `tests/helpers/fake-claude.mjs`, `tests/prompt-version.test.js`, `tests/pack-format.test.js`, `tests/scenario-prompt-rng.test.js`; delete `server/prompts/trades.js`, `fixtures/scenarios/electrical.json`, `fixtures/scenarios/brazing.json`, `fixtures/scenarios/brakes.json`
 - **Interfaces (ADR 0006 + Amendment 1, ADR 0003; review B4, B6):**
   - Consumes: `getPack`, `listScenarios`, `getScenarioEntry` (T07a).
