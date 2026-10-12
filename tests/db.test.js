@@ -240,3 +240,80 @@ test('Db returns plain objects', () => {
   }
   db.close();
 });
+
+// ADR 0001 Amendment 1: conflict clauses are banned. OR IGNORE swallows CHECK/NOT NULL failures
+// (F1a-B31); OR REPLACE deletes an event row without firing event_no_delete. The scan reads only
+// SQL (the .sql files with `--` comments removed, and SQL-looking string literals in server JS),
+// so English prose in prompts and comments such as the one in db.js can't trip it.
+const BANNED_CONFLICT = /\bOR\s+(IGNORE|REPLACE|ROLLBACK|ABORT|FAIL)\b|\bREPLACE\s+INTO\b/i;
+const SQL_START = /^\s*(INSERT|UPDATE|REPLACE|SELECT|DELETE|CREATE|WITH|PRAGMA)\s/i;
+
+// String literals outside comments. A small scanner, not a parser: a quote inside a regex
+// literal can mis-split, but the fragments that produces don't start like SQL.
+function jsStringLiterals(src) {
+  const out = [];
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (c === '/' && src[i + 1] === '/') { i = src.indexOf('\n', i); if (i < 0) break; continue; }
+    if (c === '/' && src[i + 1] === '*') { i = src.indexOf('*/', i + 2) + 1; if (i <= 0) break; continue; }
+    if (c === "'" || c === '"' || c === '`') {
+      let j = i + 1;
+      while (j < src.length && src[j] !== c) j += src[j] === '\\' ? 2 : 1;
+      out.push(src.slice(i + 1, j));
+      i = j;
+    }
+  }
+  return out;
+}
+const sqlOfJs = src => jsStringLiterals(src).filter(s => SQL_START.test(s));
+const sqlOfSql = src => [src.replace(/--[^\n]*/g, '')];
+
+function conflictClauseOffenders(dir) {
+  const hits = [];
+  const walk = d => {
+    for (const name of readdirSync(d)) {
+      const p = path.join(d, name);
+      if (statSync(p).isDirectory()) { walk(p); continue; }
+      const pick = name.endsWith('.sql') ? sqlOfSql : /\.(m?js|cjs)$/.test(name) ? sqlOfJs : null;
+      if (!pick) continue;
+      for (const sql of pick(readFileSync(p, 'utf8'))) {
+        const m = sql.match(BANNED_CONFLICT);
+        if (m) hits.push(`${path.relative(ROOT, p)}: ${m[0]}`);
+      }
+    }
+  };
+  walk(dir);
+  return hits;
+}
+
+test('no SQL conflict clause (OR IGNORE / OR REPLACE / REPLACE INTO / OR ROLLBACK|ABORT|FAIL) in server/ outside comments', () => {
+  // The scanner itself: catches the clause in SQL, ignores it in comments and prose.
+  assert.deepEqual(sqlOfJs("const s = db.prepare(`INSERT OR REPLACE INTO event (id) VALUES (?)`);")
+    .map(s => s.match(BANNED_CONFLICT)?.[0]), ['OR REPLACE']);
+  assert.ok(sqlOfJs("x.prepare('replace into card (id) values (?)')").some(s => BANNED_CONFLICT.test(s)));
+  assert.deepEqual(sqlOfJs('// never INSERT OR IGNORE\n/* or REPLACE INTO */ const t = "Fix it or fail the job";'), []);
+  assert.ok(!BANNED_CONFLICT.test(sqlOfSql('-- not INSERT OR IGNORE\nCREATE TABLE t (id TEXT);')[0]));
+  assert.ok(BANNED_CONFLICT.test(sqlOfSql('INSERT OR ABORT INTO t VALUES (1);')[0]));
+
+  assert.deepEqual(conflictClauseOffenders(path.join(ROOT, 'server')), []);
+});
+
+test('putCard with an existing id and NULL stamps still throws', () => {
+  const db = openDb(':memory:');
+  const live = card({ id: 'card_dup', source: 'live', prompt_version: 'scenario@1', model: 'claude-x' });
+  db.putCard(live);
+  // ON CONFLICT (id) DO NOTHING ignores only the key clash; the CHECK runs first (ADR 0003 Amendment 4).
+  assert.throws(() => db.putCard({ ...live, prompt_version: null, model: null }), /CHECK constraint failed/);
+  assert.equal(db.getCard('card_dup').prompt_version, 'scenario@1');
+  db.close();
+});
+
+test('card, subject_pack and llm_call reject a NULL key', () => {
+  const db = openDb(':memory:');
+  assert.throws(() => db.putCard(card({ id: null })), /NOT NULL constraint failed: card\.id/);
+  const pack = { id: 'demo-trades', version: 1, json: '{}', provenance: null };
+  assert.throws(() => db.putPack({ ...pack, id: null }), /NOT NULL constraint failed: subject_pack\.id/);
+  assert.throws(() => db.putPack({ ...pack, version: null }), /NOT NULL constraint failed: subject_pack\.version/);
+  assert.throws(() => db.logLlmCall({ id: null, outcome: 'ok' }), /NOT NULL constraint failed: llm_call\.id/);
+  db.close();
+});

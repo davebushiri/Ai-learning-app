@@ -18,9 +18,10 @@ CREATE INDEX event_attempt ON event (json_extract(context_json, '$.attemptId'));
 CREATE TRIGGER event_no_update BEFORE UPDATE ON event BEGIN SELECT RAISE(ABORT, 'event is append-only'); END;
 CREATE TRIGGER event_no_delete BEFORE DELETE ON event BEGIN SELECT RAISE(ABORT, 'event is append-only'); END;
 
+-- Keys are NOT NULL: SQLite lets a non-INTEGER PRIMARY KEY hold NULL, and NULLs never clash (ADR 0001 Amdt 1).
 CREATE TABLE subject_pack (
-  id TEXT,
-  version INT,
+  id TEXT NOT NULL,
+  version INT NOT NULL,
   json TEXT,
   provenance_json TEXT,
   created_at TEXT,
@@ -30,7 +31,7 @@ CREATE TABLE subject_pack (
 -- A CHECK passes when it evaluates to NULL, so the NULL tests are spelled out: length(NULL) > 0
 -- is NULL, not false, and would let a live card with no stamps through (F1a-B30).
 CREATE TABLE card (
-  id TEXT PRIMARY KEY,
+  id TEXT NOT NULL PRIMARY KEY,
   subject_id TEXT,
   subject_version INT,
   mode TEXT,
@@ -50,7 +51,7 @@ CREATE TABLE card (
 );
 
 CREATE TABLE llm_call (
-  id TEXT PRIMARY KEY,
+  id TEXT NOT NULL PRIMARY KEY,
   at TEXT,
   pipeline TEXT,
   prompt_version TEXT,
