@@ -714,3 +714,14 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B59 [minor] The golden manifest's `treeSha256` (`tests/golden/run.mjs:83`) hashes `fixtures/`, which no longer exists, and not `packs/`
 - Actual: the provenance stamp no longer covers scenario content; replay itself is unaffected. · Owner: qa-engineer
+
+*Filed by backend-engineer while building F1a-T08b (2026-10-12).*
+
+### F1a-B60 [minor] `mockGrade` throws on a client card whose `error.keywords` isn't an array
+- Actual: `shared/mock-grader.js:52`; a 500 for client input in MOCK and fallback, after the gateway's `llm_call` row is written. Not new (the old path called the same function). · Fix: an `Array.isArray` guard plus a test. · Owner: backend-engineer (T13b edits mock-grader.js)
+
+### F1a-B61 [minor] Stale `llm.js` comments
+- Actual: `server/ai/models.js:2`, `server/index.js:23`, `shared/contract.js:25`. · Owner: backend-engineer (next ticket touching each file)
+
+### F1a-B62 [minor] `tests/index-imports.test.js:2` header comment lists `llm.js`
+- Owner: qa-engineer

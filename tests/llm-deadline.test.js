@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { startServer } from './helpers/server.mjs';
 import { startFakeClaude, happyGrade, happyScenario } from './helpers/fake-claude.mjs';
 import { postGrade, getJson, loadFixture } from './helpers/http.mjs';
-import { responseText } from '../server/llm.js';
+import { responseText } from '../server/ai/gateway.js';
 
 const scenario = loadFixture('electrical.json');
 const mistake = scenario.steps.find(s => s.error);
