@@ -227,23 +227,23 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - **Owner:** backend-engineer
 - **Size:** M
 - **Depends on:** F1a-T07a, F1a-T05
-- **Blocked by:** docs/team/threads/0005-f1a-t07b-file-list-gap.md
-- **Files:** modify `server/services/content.js`, `server/routes/scenarios.js`, `shared/contract.js`, `scripts/simulate.js`, `tests/contract.test.js`, `tests/validator.test.js`, `tests/scoring.test.js`, `tests/mock-grader.test.js`, `tests/game-balance.test.js`, `tests/helpers/http.mjs`, `tests/helpers/fake-claude.mjs`, `tests/prompt-version.test.js`, `tests/pack-format.test.js`, `tests/scenario-prompt-rng.test.js`; delete `server/prompts/trades.js`, `fixtures/scenarios/electrical.json`, `fixtures/scenarios/brazing.json`, `fixtures/scenarios/brakes.json`
+- **Files:** modify `server/services/content.js`, `server/routes/scenarios.js`, `shared/contract.js`, `scripts/simulate.js`, `tests/contract.test.js`, `tests/validator.test.js`, `tests/scoring.test.js`, `tests/mock-grader.test.js`, `tests/game-balance.test.js`, `tests/grade-prompt.test.js` (rev 4.3, F1a-B55), `tests/helpers/http.mjs`, `tests/helpers/fake-claude.mjs`, `tests/prompt-version.test.js`, `tests/pack-format.test.js`, `tests/scenario-prompt-rng.test.js`; delete `server/prompts/trades.js`, `fixtures/scenarios/electrical.json`, `fixtures/scenarios/brazing.json`, `fixtures/scenarios/brakes.json`
 - **Interfaces (ADR 0006 + Amendment 1, ADR 0003; review B4, B6):**
   - Consumes: `getPack`, `listScenarios`, `getScenarioEntry` (T07a).
   - Changes (`shared/contract.js`): adds `toPublicCard(card, {id, subject}) → {id, subject, title, setting, apprentice, steps: [{id, line}]}` (allow-list copy; never spreads or deletes). `validateScenario` no longer reads or checks `trade` (`opts.trade` removed). The header comment drops "journeyman" and the `trade` field. `SCENARIO_SCHEMA` and `GRADE_SCHEMA` unchanged.
   - Changes (`server/services/content.js`, `server/routes/scenarios.js`): legacy routes read the pack via `LEGACY_SUBJECT = 'demo-trades'` (removed by T18). `GET /api/trades` → `listScenarios(LEGACY_SUBJECT)`; `GET /api/scenario?trade=` → `getScenarioEntry`; live generation passes the flat entry as `trade`; the fixture path returns a deep copy of `entry.card`. Legacy JSON responses are unchanged for all three ids.
-  - `scripts/simulate.js`: reads every `packs/*/pack.json` and plays each scenario's fixture (no pack id hard-coded); output table unchanged for demo-trades.
+  - `scripts/simulate.js`: reads every `packs/*/pack.json` and plays each scenario's fixture (no pack id hard-coded); output table unchanged for demo-trades. Within a pack, scenarios are played in ascending fixture file-name order (`brakes`, `brazing`, `electrical`, the same as today's `readdirSync`), not in `pack.scenarios` order (rev 4.3, thread 0005).
 - **Acceptance:** FR-019 (the pack is the only copy of the scenarios), FR-001 (`toPublicCard`), FR-023 (legacy responses and `npm run simulate` output unchanged). Golden replay empty (the harness reads no product file, T03a).
 - **Changed tests:**
   - `tests/contract.test.js`: fixture dir → `packs/demo-trades/scenarios/`; "every trade points at an existing fixture" → "every pack scenario points at an existing fixture" (same assertion over `pack.scenarios`); `TRADES` import removed.
   - `tests/validator.test.js`: fixture dir and the `TRADES` loops read `pack.scenarios` (same assertions); "fixture passes the strict rules for its own trade" → "pack fixture passes the strict rules" (`validateScenario(s)` with no opts); **"J: trade mismatch is rejected…" deleted** (the check no longer exists; the server sets the subject).
   - `tests/scoring.test.js`, `tests/mock-grader.test.js`, `tests/game-balance.test.js`, `tests/helpers/http.mjs` (`loadFixture`), `tests/helpers/fake-claude.mjs` (`FIXTURE` constant): path only.
+  - `tests/grade-prompt.test.js` (rev 4.3, F1a-B55): path only, `fixtures/scenarios/electrical.json` → `packs/demo-trades/scenarios/electrical.json` (line 6). Every assertion is unchanged.
   - `tests/prompt-version.test.js`: the `trades.js` exclusion removed (setup only).
   - `tests/pack-format.test.js`: literals previously compared with `trades.js` / `mock-grader.js` imports are frozen inline (setup only, same values).
   - `tests/scenario-prompt-rng.test.js` (T02; review "Code review: Wave 0" S4, rev 4.1): the `TRADES` import from `server/prompts/trades.js` → the pack's scenario entries (`packs/demo-trades/pack.json` `scenarios`, keyed by `id`, passed as `trade` exactly as the legacy live path passes them). Setup only: every assertion and the frozen snapshot string are unchanged, and the four tests pass byte-for-byte.
 - **Tests that prove it:** `tests/contract.test.js`: "toPublicCard returns exactly the public keys (deep key allow-list)"; the changed tests above pass with their stated edits only; full `npm test` green (`# tests` ≥ 97 after deleting "J: trade mismatch…", because `toPublicCard` adds one); `npm run simulate` output for demo-trades byte-identical to before (diff quoted in the PR).
-- **Notes:** split from the old T07 (thread 0004). No file under `fixtures/scenarios/` may have an importer left (grep in the PR).
+- **Notes:** split from the old T07 (thread 0004). No file under `fixtures/scenarios/` may have an importer left (grep in the PR). That grep covers code and tests. `README.md` prose mentions belong to T18 (F1a-B56). String literals used as test inputs in `tests/golden-isolation.test.js` are not importers.
 
 ### F1a-T08a [P] AI gateway module and `llm_call` logging (new files only)
 - **Owner:** backend-engineer
@@ -515,7 +515,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - **Interfaces:**
   - Removes: `GET /api/trades`, `GET /api/scenario`, `POST /api/grade` (→ 404 via the dispatcher's fallback); `LEGACY_SUBJECT`; `getScenario`; the `scenario.trade = …` stamp; legacy `grade(body)`; `scoreRun().rating` and every rating label string in `shared/scoring.js`.
   - `scripts/simulate.js`: prints `ratingLabel(pack.ratings, r.ratingKey)` for the pack each card came from; `PLAYERS` and `playRun` signatures unchanged.
-  - `README.md` (`README.md:24-25, 45, 52, 111`; review S7): the diagram and API sections document `GET /api/subjects`, `GET /api/scenarios`, `POST /api/attempts`, `…/stops`, `…/complete`; `local-fallback` removed from the source list; `llm.js` → `server/ai/gateway.js`.
+  - `README.md` (`README.md:24-25, 45, 52, 111`; review S7): the diagram and API sections document `GET /api/subjects`, `GET /api/scenarios`, `POST /api/attempts`, `…/stops`, `…/complete`; `local-fallback` removed from the source list; `llm.js` → `server/ai/gateway.js`. Also `README.md:28, 62, 68` (rev 4.3, F1a-B56): the `fixtures/scenarios/*` and `server/prompts/trades.js` mentions → `packs/demo-trades/` (`pack.json`, `scenarios/*.json`).
 - **Acceptance:** FR-012, FR-021 (labels gone), FR-048 (route strings), SC-002 (route half), SC-003.
 - **Changed tests:**
   - `tests/scoring.test.js`: `r.rating === 'Someone got hurt'` → `r.ratingKey === 'missedCritical'`; `r.rating === 'Journeyman eyes'` → `r.ratingKey === 'tier0'`.
@@ -693,3 +693,13 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 ### F1a-B54 [minor] check:ticket only checks for extra files
 - Actual: it doesn't flag a listed file that was never touched, a "create" file that was deleted, or a changed file outside the ticket owner's rows. · Owner: technical-product-manager (say whether the reverse check is wanted)
 - **Triage (PM, rev 4.2):** resolved in spec rev 4.2: **not in F1a.** Keeping scope small, `check:ticket` stays an extra-files check (FR-039 unchanged). The reverse checks (listed but untouched, "create" file deleted, changed file outside the owner's rows) are deferred to F1b tooling and logged in spec "Non-goals / Later". QA covers them by review in each ticket's verification and in T19b.
+
+*Filed by backend-engineer before building F1a-T07b, via thread 0005 (2026-10-12).*
+
+### F1a-B55 [major] T07b's file list misses `tests/grade-prompt.test.js`
+- Actual: `tests/grade-prompt.test.js:6` reads `fixtures/scenarios/electrical.json`. Deleting the fixture would fail the file at import (ENOENT), and the test isn't in T07b's Files. · Owner: technical-product-manager
+- **Triage (PM, rev 4.3):** resolved (thread 0005 DECISION). Added to T07b's Files and Changed tests as a path-only edit. T07a's sha256 test proves the bytes are identical. T07b is unblocked.
+
+### F1a-B56 [minor] `README.md` still mentions `fixtures/scenarios/*` and `server/prompts/trades.js`
+- Actual: `README.md:28, 62, 68` will be stale after T07b. This is prose, not an importer. · Owner: technical-product-manager
+- **Triage (PM, rev 4.3):** resolved (thread 0005 DECISION). Left to T18, which already modifies `README.md`. Its README bullet now names these lines. T07b doesn't touch the README.
