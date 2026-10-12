@@ -735,3 +735,17 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - Actual: `tests/prompt-version.test.js:92` keeps its own inline list; `tests/fixtures/deny-list.json` is now the single source. · Expected: read the JSON, or assert the two lists are equal. · Owner: qa-engineer (after T09)
 
 **Risk noted (not a bug):** any bare `demo-trades` literal in engine code is a deny-list hit. T12–T14 must read the pack id from the pack, never hard-code it.
+
+### F1a-B65 [minor] Fake Claude serves a scenario card to any routed `x-prompt-id` that isn't `grade`
+- Steps: `POST /v1/messages` with `x-prompt-id: explain@1` to `tests/helpers/fake-claude.mjs`. · Expected: an unknown prompt fails loudly, the same as a missing header (the 0003 RISK on silent misrouting). · Actual: 200 with `happyScenario()`, logged `kind: 'explain'`, and `assertNoUnroutedCalls` passes. T09's Interfaces define `kind` as `"grade" | "scenario"` but say nothing about other values, so T09 keeps today's default. · Evidence: `tests/helpers/fake-claude.mjs` (`isGrade = kind === 'grade'`, else scenario). · Suggested: 500 `stub: unknown x-prompt-id <value>` with `kind: null` for anything outside `{grade, scenario}`. · Owner: technical-product-manager (contract), then qa-engineer
+
+### F1a-B66 [minor] The `after` hook in `tests/gateway.test.js` sees only the last test's requests
+- Steps: read the "gateway with a real SDK client against fake Claude" describe. · Expected: `assertNoUnroutedCalls` in `after` covers every request the file made (SC-007). · Actual: each test calls `stub.reset()` first, which clears `/__log`, so the hook checks only the final test's calls. An unrouted call in an earlier test would go unnoticed. · Suggested: have `reset()` keep a running count of unrouted requests that `assertNoUnroutedCalls` also checks, or call the assert before each `reset()`. · Owner: qa-engineer (needs a ticket: T09 allowed only an `after` hook in that file)
+
+### F1a-B67 [minor] `tests/acceptance/helpers.mjs` `assertNoUnroutedCalls` keeps a dead pre-T09 fallback
+- Actual: `helpers.mjs:219-224` still reads "until then" and has an in-process fallback branch that can't run now that the export exists. · Suggested: re-export T09's function. · Owner: qa-engineer (next ticket that touches `helpers.mjs`)
+
+### F1a-B68 [minor] The "fake-Claude scripted response queue" has no F1a ticket or interface
+- Actual: the T09 brief asked for a scripted response queue, but T09's Files and Interfaces don't mention one. Thread 0003 (`0003-f1-engine-core-proposal.md:535`) puts it in the F1b W9 scaffold. Today only `mode.times` exists (one mode for the next N requests). T09 did not invent an interface. · Owner: technical-product-manager (scope: F1a ticket or F1b)
+
+*Filed by qa-engineer while building F1a-T09 (2026-10-12).*
