@@ -1,7 +1,11 @@
 #!/usr/bin/env node
-// F1a-T11: `npm run check:ticket <ticketId> [--base <ref>]` compares the files a branch changed
+// F1a-T11: `npm run check:ticket <ticketId> [--base <ref>] [--head <ref>]` compares the files a branch changed
 // with the ticket's `Files:` line in docs/specs/*/tasks.md (CLAUDE.md "Definition of done":
 // only the files listed in the ticket were touched). Not part of `npm test`.
+//
+// Without --head the changed files are `git diff --name-only <base>` plus untracked files (a
+// branch's work in progress). With --head they are exactly `git diff --name-only <base> <head>`,
+// so a certifying commit range on the shared branch ignores later work (F1a-B51, rev 4.2).
 //
 // Exit 0: every changed file is listed (or always allowed). Exit 1: unknown or malformed
 // ticket id, or extra files (each printed). Exit 2: git missing or failing; QA then lists the
@@ -76,24 +80,28 @@ function git(args, cwd) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
 }
 
-function changedFiles(base, cwd) {
+function changedFiles(base, head, cwd) {
   const lines = s => s.split('\n').map(x => x.trim()).filter(Boolean);
+  if (head !== undefined) return lines(git(['diff', '--name-only', base, head], cwd));
   return [...lines(git(['diff', '--name-only', base], cwd)), ...lines(git(['ls-files', '-o', '--exclude-standard'], cwd))];
 }
 
 function parseArgs(argv) {
-  const out = { id: undefined, base: 'main' };
+  const out = { id: undefined, base: 'main', head: undefined };
+  let headGiven = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--base') out.base = argv[++i];
+    else if (argv[i] === '--head') { headGiven = true; out.head = argv[++i]; }
     else if (out.id === undefined) out.id = argv[i];
     else return { error: `unexpected argument: ${argv[i]}` };
   }
   if (!out.base) return { error: '--base needs a ref' };
+  if (headGiven && !out.head) return { error: '--head needs a ref' };
   return out;
 }
 
 export function main(argv, { cwd = process.cwd(), out = console.log, err = console.error } = {}) {
-  const usage = 'usage: check-ticket <ticketId> [--base <ref>]';
+  const usage = 'usage: check-ticket <ticketId> [--base <ref>] [--head <ref>]';
   const args = parseArgs(argv);
   if (args.error) { err(`${args.error}\n${usage}`); return 1; }
   if (!args.id || !TICKET_ID.test(args.id)) {
@@ -104,7 +112,7 @@ export function main(argv, { cwd = process.cwd(), out = console.log, err = conso
   let changed;
   try {
     root = git(['rev-parse', '--show-toplevel'], cwd).trim();
-    changed = changedFiles(args.base, root);
+    changed = changedFiles(args.base, args.head, root);
   } catch {
     err(GIT_UNAVAILABLE);
     return 2;
@@ -113,12 +121,13 @@ export function main(argv, { cwd = process.cwd(), out = console.log, err = conso
   if (listed === undefined) { err(`unknown ticket: ${args.id} (no "### ${args.id}" heading in docs/specs/*/tasks.md)`); return 1; }
   if (!listed.length) { err(`${args.id} has no Files: line`); return 1; }
   const extra = compareFiles(changed, listed);
+  const range = args.head === undefined ? args.base : `${args.base}..${args.head}`;
   if (extra.length) {
-    err(`${args.id}: ${extra.length} file(s) changed against ${args.base} but not in its Files line:`);
+    err(`${args.id}: ${extra.length} file(s) changed in ${range} but not in its Files line:`);
     for (const f of extra) err(`  ${f}`);
     return 1;
   }
-  out(`${args.id}: ok, ${new Set(changed).size} changed file(s) against ${args.base}, all listed`);
+  out(`${args.id}: ok, ${new Set(changed).size} changed file(s) in ${range}, all listed`);
   return 0;
 }
 

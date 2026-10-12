@@ -10,7 +10,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -219,7 +220,6 @@ test('CLAUDE.md ownership table parses', () => {
   }
   // Each parse rule, checked on the real table with hypothetical paths.
   const one = p => ownersOf(p, rows);
-  assert.deepEqual(one('docs/specs/F9-x/tasks.md'), ['technical-product-manager'], 'bare token after a file = sibling');
   assert.deepEqual(one('docs/specs/F9-x/spec.md'), ['technical-product-manager'], '<id> = one segment');
   assert.deepEqual(one('docs/specs/a/b/spec.md'), [], '<id> must not span two segments');
   assert.deepEqual(one('tests/fixtures/recorded/grade@2.json'), ['evals-engineer'], '(except) on tests/**');
@@ -228,13 +228,21 @@ test('CLAUDE.md ownership table parses', () => {
   assert.deepEqual(one('docs/adr/0009-x.md'), ['principal-architect']);
   assert.deepEqual(one('docs/team/threads/0009-x.md'), ['everyone'], 'first word lowercased');
   assert.deepEqual(one('CLAUDE.md'), ['founder']);
-  assert.deepEqual(one('README.md'), ['backend-engineer'], 'bare token after a dir glob is root-relative');
-  assert.deepEqual(one('DEMO.md'), ['founder'], 'bare token after a dir glob is root-relative');
   assert.deepEqual(one('package-lock.json'), ['backend-engineer'], '* inside a segment');
   assert.deepEqual(one('server/prompts/grade.js'), ['backend-engineer'], 'two globs of one row are one owner');
 
   assert.throws(() => parseOwnershipTable('# CLAUDE.md\n\nno table here\n'), /File ownership/);
   assert.throws(() => parseOwnershipTable('## File ownership\n\n| Path | Owner |\n|---|---|\n| no ticks | `x` |\n'), /no backticked path/);
+});
+
+// F1a-B50: the T11 rule on the real table. The literal path.dirname reading would put README.md
+// under packs/ and DEMO.md under docs/team/templates/, leaving both root files unowned.
+test('a bare token after a concrete file is relative to its directory; after packs/** it is a root path (README.md is owned)', () => {
+  const rows = parseOwnershipTable(claudeMd());
+  const one = p => ownersOf(p, rows);
+  assert.deepEqual(one('docs/specs/F9-x/tasks.md'), ['technical-product-manager'], 'bare token after a file = sibling');
+  assert.deepEqual(one('README.md'), ['backend-engineer'], 'bare token after a dir glob is root-relative');
+  assert.deepEqual(one('DEMO.md'), ['founder'], 'bare token after a dir glob is root-relative');
 });
 
 test('every listed path has exactly one owner', t => {
@@ -327,4 +335,52 @@ test('check-ticket compare: extra files are reported; listed, globbed and always
     'tests/fixtures/deny-list-allow.json', 'tests/acceptance/F1a.test.js', 'tests/e2e/F1a.e2e.mjs'], listed), []);
   assert.deepEqual(compareFiles(['server/packs.js', 'server/rogue.js', 'tests/fixtures/golden/runs/x/a.json'], listed),
     ['server/rogue.js', 'tests/fixtures/golden/runs/x/a.json']);
+});
+
+// F1a-B51: T19b's method (a) runs `--base <first>^ --head <last>` on the shared branch, so the
+// working tree and untracked files must not leak into the answer.
+test('check-ticket --base A --head B lists only files changed between A and B', t => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'check-ticket-head-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null',
+    GIT_AUTHOR_NAME: 'qa', GIT_AUTHOR_EMAIL: 'qa@example.invalid', GIT_COMMITTER_NAME: 'qa',
+    GIT_COMMITTER_EMAIL: 'qa@example.invalid', GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z', GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z' };
+  const g = (...args) => execFileSync('git', args, { cwd: dir, env, encoding: 'utf8' }).trim();
+  const put = (f, text) => { mkdirSync(path.dirname(path.join(dir, f)), { recursive: true }); writeFileSync(path.join(dir, f), text); };
+  const tasks = files => `# Tasks\n\n### F1a-T98 only a\n\n- **Files:** ${files}\n`;
+
+  g('init', '-q');
+  put('docs/specs/X/tasks.md', tasks('`a.js`'));
+  put('a.js', '1\n');
+  put('old.js', '1\n');
+  g('add', '-A'); g('commit', '-q', '-m', 'A');
+  const A = g('rev-parse', 'HEAD');
+  put('a.js', '2\n');
+  put('b.js', '1\n');
+  g('add', '-A'); g('commit', '-q', '-m', 'B');
+  const B = g('rev-parse', 'HEAD');
+  put('old.js', 'dirty\n'); // working-tree change after B
+  put('untracked.js', '1\n'); // untracked, not ignored
+
+  const run = args => spawnSync(process.execPath, [CHECK_TICKET, ...args], { cwd: dir, env, encoding: 'utf8', timeout: 30_000 });
+  const extras = r => r.stderr.split('\n').filter(l => l.startsWith('  ')).map(l => l.trim());
+
+  const ranged = run(['F1a-T98', '--base', A, '--head', B]);
+  assert.equal(ranged.status, 1, `stdout: ${ranged.stdout}\nstderr: ${ranged.stderr}`);
+  assert.deepEqual(extras(ranged), ['b.js'], ranged.stderr);
+
+  // Same repo without --head: the working tree and untracked files count (control).
+  const open = run(['F1a-T98', '--base', A]);
+  assert.equal(open.status, 1, open.stderr);
+  assert.deepEqual(extras(open), ['b.js', 'old.js', 'untracked.js'], open.stderr);
+
+  put('docs/specs/X/tasks.md', tasks('`a.js`, `b.js`')); // ticket now lists both of B's files
+  const ok = run(['F1a-T98', '--base', A, '--head', B]);
+  assert.equal(ok.status, 0, `stdout: ${ok.stdout}\nstderr: ${ok.stderr}`);
+  assert.match(ok.stdout, /F1a-T98: ok, 2 changed file\(s\)/);
+
+  const noRef = run(['F1a-T98', '--base', A, '--head']);
+  assert.equal(noRef.status, 1, noRef.stderr);
+  assert.match(noRef.stderr, /--head needs a ref/);
+  assert.match(noRef.stderr, /\[--head <ref>\]/);
 });
