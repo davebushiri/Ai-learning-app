@@ -544,3 +544,140 @@ None. Nothing in Wave 0 breaks an invariant, a contract or an ADR, and every acc
 | R11 | **Fingerprint inputs live in the product prompt modules** (`grade.js` `FP_CARD`, `scenario.js` `FP_ENTRY`). Editing them changes the fingerprint without any prompt change, so it forces a `VERSION` bump and an eval run for nothing. And as the deny-list grows in F2, their synthetic words (wall, pipes, mirror) could start to hit. | M | L | The T05 test already scans them for the seed words. The F1b staleness test should report "inputs changed" separately from "text changed" before anyone bumps `VERSION`. |
 | R12 | **The dynamic-import ordering is a convention, not a check.** A future static import of a route or service in `index.js` silently reads env before `.env` loads. In MOCK it would *look* fine, so `npm test` (all env passed explicitly) wouldn't catch it. | M | M | S3's static test. |
 | R13 | **`res.apiSource` is an untyped expando on Node's response object.** A new route that forgets it logs `-`, and nobody notices, because no test reads `[api]` lines. | M | L | The T12/T13b constraint above. If the `[api]` line becomes a metric source, move it into a tested helper first. |
+
+## Code review: Wave 1
+
+**Reviewer:** principal-architect · **Date:** 2026-10-12 · **Scope:** F1a-T06 (`90f090c` + `620b3fc`, follow-up `1c6cdf8` + `32e7593`), T20 (`6a080e8`), T07a (`d2b18a0` + `4fd1d74`, manifest in thread 0004), T07b (`69acf28`), T08a (`d2b18a0`, manifest in thread 0004), T08b (`4140422`), T09 (`c42454a` + `4d1ac59`), T10 (`7d65254`), T11 (`d2b18a0` + `7054e7e`). Diff base `8cbd300` (end of Wave 0). Checked against the `CLAUDE.md` invariants, ADRs 0001–0007 with every amendment, and each ticket's rev 4.2/4.3 text. The PM's uncommitted rev 4.4 triage of `tasks.md` was read, and is referenced where it already covers a finding.
+
+### Verdicts
+
+| Ticket | Verdict |
+|---|---|
+| F1a-T06 | **APPROVED** |
+| F1a-T20 | **APPROVED.** Its test's two source-text reads (B57) are removed in T13b under rev 4.4, which I confirm |
+| F1a-T07a | **APPROVED.** W1-S2 is non-blocking |
+| F1a-T07b | **APPROVED** |
+| F1a-T08a | **APPROVED.** W1-S1 is non-blocking |
+| F1a-T08b | **APPROVED** |
+| F1a-T09 | **APPROVED** |
+| F1a-T10 | **APPROVED.** W1-S4 is non-blocking |
+| F1a-T11 | **CHANGES REQUESTED** (W1-B1) |
+
+### Evidence (run fresh this round, `TMPDIR=…/scratchpad/arch-w1`)
+
+- **`npm test`** (tree at `4d1ac59`; the only uncommitted file is the PM's `tasks.md`): `# tests 302 / # suites 17 / # pass 239 / # fail 0 / # cancelled 0 / # skipped 0 / # todo 63`, `# duration_ms 6788`, exit 0.
+- **`node tests/golden/run.mjs --replay`:** `replay 1/1: 61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02, 99.2 s`, exit 0. The digest is the same as Wave 0's.
+- **Legacy routes, before and after.** I served `git archive 8cbd300` and HEAD side by side in MOCK and sent the same 9 requests to each: `/api/trades`, `/api/scenario` for all three ids, `source=fixture`, `__proto__`, an unknown id, no id, and one `POST /api/grade`. Bodies and status codes are **identical**. `npm run simulate` output is also byte-identical (T07b, FR-023).
+- **Env load order, live.** I ran a copy of the tree with the process env scrubbed (`env -i`). Its `.env` held a fake key, `ANTHROPIC_BASE_URL` pointing at a server that never answers, `GRADE_DEADLINE_MS=1234`, `DB_PATH` and `PORT`. Results: startup said `LIVE mode: Claude`; grading returned `mock-fallback` after 1259 ms; `/api/health.lastLiveError` read "grade: Claude grade timed out after 1234 ms". The DB file named in `.env` held exactly one `llm_call` row `{pipeline: grade, prompt_version: grade@1, model: claude-opus-5-5, ms: 1240, tokens 0/0, outcome: timeout}` and three `fx_demo-trades_1_*` fixture cards with NULL stamps. So `.env` reaches `ai-client.js`, `ai/models.js`, `db.js` and the SDK client, and the fallback is labelled.
+- **Standing checks.**
+  - `messages.create` appears only at `server/ai/gateway.js:56`, with `AbortSignal.timeout(deadlineMs)` and `maxRetries: 1` at `:69`. `tests/gateway-wiring.test.js` enforces this.
+  - Only `server/db.js` imports `node:sqlite` in product code. Tests open read-only handles, which the ADR allows.
+  - No `UPDATE`, `DELETE`, `OR IGNORE`, `OR REPLACE` or `REPLACE INTO` appears in `server/` outside comments (grep, and `tests/db.test.js`).
+  - `VERSION = 1` in `grade.js:7` and `scenario.js:7`. The frozen fingerprints `4f7d7c35…` and `9de348f4…` are unchanged (FR-027).
+  - Subject words: `tests/deny-list.test.js` is green, and the allow-list matches the tree exactly.
+  - Answer fields: no new public route exists yet. The legacy `/api/scenario` still sends the full card by design until T18.
+- **Ownership.** Every ticket commit touches only its `Files:` line, plus `tasks.md` bug appends and QA's `todo` flips in `tests/acceptance/F1a.test.js`. The exception is in W1-S6. T09's `tests/gateway.test.js` diff is the `after` hook only, as allowed.
+
+### Blocking findings
+
+- **W1-B1 (F1a-T11, qa-engineer): `check:ticket` lacks rev 4.2's `--head <ref>` option and its named test.**
+  - `tests/tools/check-ticket.mjs:84-93` parses only `--base`, and `:79-82` always adds untracked files. T11 (rev 4.2, F1a-B51) requires `--head`, under which the changed files are `git diff --name-only <base> <head>` only, with no untracked files. It also requires the test "check-ticket --base A --head B lists only files changed between A and B". Neither exists.
+  - The likely cause: T11 was certified at `7054e7e`, before rev 4.2 (`ad8e5d4`) added this. But the ticket text is what binds.
+  - **Why it matters:** T19b's method (a) is `check:ticket <id> -- --base <first>^ --head <last>`. Without `--head`, every clean-commit ticket falls back to a hand check, or gets a wrong answer: on the shared branch, a run without `--head` diffs against the working tree and counts every later ticket's files as extra. That is a missing acceptance test.
+  - **Smallest fix:**
+    - in `parseArgs`, accept `--head <ref>`;
+    - in `changedFiles(base, head, cwd)`, run `git diff --name-only <base> <head>` and skip `ls-files -o` when `head` is set;
+    - add the named test (a temp repo with two commits plus an untracked file; assert only commit B's files are listed);
+    - update the usage line.
+  - **Also (same PR):** the F1a-B50 assertions exist (`tests/ownership.test.js:222-232`), but inside "CLAUDE.md ownership table parses". Move them into the named test "a bare token after a concrete file is relative to its directory; after packs/** it is a root path (README.md is owned)", so the T19b evidence can cite it by name. No assertion change.
+  - **Does not block Wave 2.** It blocks T11's closure and T19b.
+
+No other finding breaks an invariant, a contract or an ADR.
+
+### What was checked and holds (by focus area)
+
+- **Storage (T06).**
+  - The migration matches `data-and-evidence.md` §2 column for column. Keys and `source` are `NOT NULL`. The `card` CHECK is ADR 0003 Amendment 4's NULL-safe form. Both append-only triggers are present.
+  - `putCard` and `putPack` use `ON CONFLICT (<key>) DO NOTHING` (`db.js:85, :88`).
+  - Each migration and each `appendEvents` uses the explicit `BEGIN`/`COMMIT`/`ROLLBACK` pattern, and validation runs before `BEGIN`.
+  - Readers copy rows into plain objects.
+  - `Db` exposes exactly seven methods and no handle.
+  - B06 (one shared `exit` listener) is fixed and tested.
+  - The ADR 0001 Amendment 1 grep test also tests its own scanner against comments.
+- **Packs (T20, T07a).**
+  - `validatePack` is pure and never throws (it is wrapped). It caps counts and lengths, and its fixture regex rules out path traversal.
+  - The loader validates each scenario file with `validateScenario` and stores canonical JSON of `pack.json` plus the scenario files. It refuses on `'conflict'` and inserts fixture cards with NULL stamps.
+  - Lookups go through `Map`s, so `__proto__` is safe. Registry objects are deep-frozen, and every response gets a `structuredClone`.
+  - On invariant 5: pack text reaches a prompt only through the legacy scenario route, and only for `demo-trades`. That is the known violation on the ratchet until W7 (ADR 0006). See W1-S3 for the gap this leaves from Wave 2 on.
+- **Gateway (T08a, T08b).** Invariant 3 holds in full:
+  - JSON schema in `output_config.format`;
+  - `AbortSignal.timeout` and `maxRetries: 1`;
+  - a required `fallback` (`TypeError` otherwise);
+  - exactly one `llm_call` row per `run()`, written before `fallback()`, with `{pipeline: promptId, prompt_version, model, ms, input_tokens, output_tokens, cache_read}`;
+  - the outcome comes from typed SDK classes, never from message text.
+  
+  The live-path order `responseText → JSON.parse → normalize → accept` matches ADR 0005 Amendment 2. The request body is `llm.js:35-49` verbatim, plus the header. Service wiring keeps `noteLive`, the warn lines and FR-029's source mapping. `ai-client.js` is the only client constructor. The env order holds (evidence above).
+- **Cards (T07b).** `toPublicCard` (`shared/contract.js:181-190`) is a true allow-list: it builds a new object literal and copies six named keys and `{id, line}` per step. Its test adds non-enumerable and extra keys and scans the serialized output. `validateScenario` dropping `trade` loosens validation, which is backward compatible, and `SCENARIO_SCHEMA` is byte-unchanged.
+- **Test tooling (T09, T10, T11).**
+  - Fake Claude routes on the header. A missing header gets 500 and `kind: null`, and `assertNoUnroutedCalls` is async and rejects with an `AssertionError`.
+  - The generated card is frozen inline (B08). Golden still shows 0 diffs, so the frozen card equals the old fixture.
+  - B09 is fixed with a `realpath` guard.
+  - The deny-list matcher's boundaries and phrases are tested.
+  - The ownership parser follows the B50 rule.
+  - Gaps: W1-B1, W1-S4, and B66 (now T16).
+
+### Should fix (non-blocking)
+
+- **W1-S1 (F1a-T08a follow-up, backend-engineer; PM to place it): `run()` doesn't guard `deadlineMs`, so a missing or bad deadline gives a silent permanent fallback.**
+  - Concrete input: `gateway.run({prompt: gradePrompt, input, live: true, fallback})` with no `deadlineMs` returns `source: 'fallback'`, `outcome: 'fallback'`, and `meta.error` "The "delay" argument must be of type number. Received undefined". It sends **zero** requests. `deadlineMs: -1` (for example `GRADE_DEADLINE_MS=-1` in `.env`; `models.js:9-10` only defaults falsy values) gives the same result with `ERR_OUT_OF_RANGE`. Verified in scratch.
+  - **Why it matters:** `AbortSignal.timeout(deadlineMs)` is evaluated inside the `try` at `gateway.js:55-79`, so a caller bug looks like a flaky model, not a bug. Invariant 3 still holds (no request goes out without a deadline), but the S12 guards exist to make exactly this kind of mistake loud.
+  - **Fix:** in `checkArgs` (`gateway.js:33-40`), when `live` is true, throw `TypeError` unless `Number.isInteger(deadlineMs) && deadlineMs > 0`, and write no row. Add the case to "run with a prompt lacking VERSION rejects with TypeError" or a sibling test. In `models.js`, use the default for any value that isn't a positive integer.
+  - **Ruling on the lead's open question (thread 0004, T08a EVIDENCE): a throwing `fallback()`.** Keep today's behavior: `run()` rejects after its row is written, and the route answers 500. There is no second fallback to fall back to, and the process stays up (invariant 7's "never crash"). The contract is that **a fallback must not throw**. F1a's only known breach is B60, which T13b fixes.
+  - Both points are gateway rules. I will record them as ADR 0005 Amendment 3 in a separate docs change (this change touches only `review.md`).
+- **W1-S2 (F1a-T07a follow-up, backend-engineer; PM to place it, for example with B70 in T18): the loader doesn't tie a pack's `id` to its directory name.**
+  - Concrete input: `packs/a/pack.json` and `packs/b/pack.json`, both `id: "demo-trades"`, versions 1 and 2. Both load. `listSubjects()` returns one entry, and `getPack('demo-trades')` silently serves whichever directory sorts last (`packs.js:102, :111`). Verified in scratch.
+  - **Why it matters:** ADR 0006's layout is `packs/<id>/pack.json`, and events name `<id>@<version>`. Two copies of one id make "which content is behind this name" depend on directory order.
+  - **Fix:** in `loadOne`, `fail('pack id <id> does not match its directory <name>')` when `pack.id !== path.basename(packDir)`. Add a `tests/pack.test.js` case.
+- **W1-S3 (F2 hard rule, qa-engineer; PM to place it in T12 or T19a): nothing structural stops a second pack from reaching the unfenced scenario prompt.**
+  - From T12 on, `POST /api/attempts` takes `subject` from the client, and every directory under `packs/` loads. A second pack's `brief`, `hazardHints`, `criticalHints` and `twists` would go into the system-adjacent prompt unfenced (ADR 0006, "Today's unfenced uses"). The founder's F2 hard rule forbids that until W7 passes the gate, but today the rule is only a convention.
+  - **Fix:** one test, "packs/ holds only demo-trades while the deny-list allow-list has a server/prompts entry". It reads `tests/fixtures/deny-list-allow.json`, so it relaxes by itself when W7 empties the list.
+- **W1-S4 (F1a-T10, qa-engineer): the deny-list scan skips any directory *named* `packs`, `fixtures` or `tests` at any depth** (`tests/deny-list.test.js:12, :33`).
+  - Concrete input: a new `web/fixtures/demo.js` containing "breaker" isn't scanned, and the test stays green.
+  - The top-level `packs/`, `fixtures/` and `tests/` are never under the four scan roots anyway, so the exclusion only ever takes effect at depth, where it is a hole.
+  - **Fix:** exclude only `node_modules`, or compare the path relative to the repo root (`packs/…`). Today's counts don't change.
+- **W1-S5 (constraint for F1a-T13b, backend-engineer): `validatePack` accepts `grading.synonyms` keys such as `__proto__` and `constructor`** (`shared/pack.js:65`). Verified: a pack with a `"__proto__"` synonym term validates with zero problems, because `JSON.parse` makes it an own key.
+  - When T13b moves the lexicon into `mockGrade`, iterate with `Object.entries` or `Object.hasOwn`, never `synonyms[word]` on a word taken from the learner's explanation. Add one `mock-grader.test.js` case with a `constructor` term. No `validatePack` change is needed.
+- **W1-S6 (process, backend-engineer → technical-product-manager):** `69acf28` and `4140422` appended F1a-B57–B62 straight into `tasks.md`. That repeats Wave 0 S2, which said engineers raise bugs through QA or a thread. The bugs are valid, and rev 4.4 has triaged them. **Fix:** the PM ratifies them in place, as with B15, and the lead reminds the backend brief.
+
+### Optional
+
+- **W1-O1 (backend-engineer):**
+  - `migrate()` (`db.js:31-48`) would run two files with the same number, and would never run a `002-b.sql` added after `002-a.sql` had been applied.
+  - It also serves a DB whose `user_version` is above the highest file, which means a newer build migrated it.
+  - Neither can happen while `001-init.sql` is the only file. Add "migration numbers are unique and contiguous" and "user_version above the highest migration refuses to start" when `002-*.sql` arrives.
+
+### Bugs: does anything need the architect?
+
+The PM's rev 4.4 triage (uncommitted at review time) covers every one of these. My technical view on each:
+
+| Bug | Architect ruling |
+|---|---|
+| **B57** | **Concur** with rev 4.4: T13b deletes both source-text reads (`pack-format.test.js:149` `web/app.js`, `:174-177` `mock-grader.js`) and keeps the frozen literals. Both reads broke the "no test compares against something a later ticket deletes" rule. |
+| **B60** | **Concur** (T13b `Array.isArray` guard). It also settles the throwing-fallback question: fallbacks must not throw (W1-S1 ruling). |
+| **B61** | **Concur** (`contract.js:25` → T13b; `index.js:23`, `models.js:2` → T18). If W1-S1 lands in an earlier ticket that touches `models.js`, fix the comment there. |
+| **B62** | **Concur** (T19a, comment only). |
+| **B65** | **Concur with the deferral to F1b.** F1a can't send a third prompt id (FR-027; T08a pins `grade@1`/`scenario@1`). A grade call answered with a scenario body fails `accept`, and every happy-path LIVE test asserts `source: 'live'`. The F1b contract the PM wrote (500 plus `kind: null` for unknown ids) is the right one. |
+| **B66** | **Concur** with `afterEach(() => assertNoUnroutedCalls(stub))` in T16 for `gateway.test.js`, `server.test.js` and `llm-deadline.test.js`. It is simpler than changing the helper, and it runs before the next `reset()`. The negative proof in the PR is required. |
+| **B67** | **Concur** (Later; dead branch, no effect on SC-007). |
+| **B68** | **Concur** (F1b W9). `times` plus `setMode` and injected gateway stubs cover every F1a sequence. |
+| **B70** | **Concur** (T18 comment reword plus removal of the allow-list row; SC-003 needs it). W1-S2 fits in the same `server/packs.js` edit if the PM places it there. |
+| **B71** | **Concur, closed as by design.** The inline seed is a frozen expected value, and the JSON may grow. The seed-present test already catches drift. |
+
+### Risks (devil's advocate on what Wave 1 now freezes)
+
+| # | Failure mode | Likelihood | Impact | Mitigation |
+|---|---|---|---|---|
+| R14 | **Triggers don't cover DDL.** A future migration that does `DROP TABLE event`, or SQLite's 12-step "rebuild the table" ALTER pattern, erases history and the triggers with it. Invariant 6 then rests on review alone. | L | H | When `002-*.sql` arrives, add a migration test: the event row count and both triggers survive every migration, and no migration text matches `DROP TABLE event\b` or `ALTER TABLE event\b`. |
+| R15 | **The row is logged before `fallback()` runs, and a throwing `logCall` is only warned.** If the DB write fails (disk full, a locked file opened by an outside tool), learners still get answers, but `llm_call` under-counts. Cost and fallback-rate metrics then go quietly wrong. | L | M | Accept for F1. In F3, when the cost dashboard reads `llm_call`, count `[gateway] llm_call log failed` warnings in `/api/health` so the gap is visible. |
+| R16 | **An in-place edit of `001-init.sql` never reaches an existing local DB.** ADR 0001 Amendment 1 allows editing 001 until F1a merges. But `npm start` and `npm run mock` now persist to `data/app.db`, and once that file is at `user_version 1` the edited 001 is skipped. A developer's or agent's local server then runs silently on the older schema (for example, one without the NOT NULL keys), while `npm test` (`:memory:`) is green. | M | L | Any change that edits `001-init.sql` says "delete `data/` before the next local run" in its commit message. If it recurs before merge, `migrate()` stores a sha256 of each applied file and refuses to start on a mismatch. |
+| R17 | **`deny-list-allow.json` counts are per file, not per location.** A ticket can remove one hit and add another of the same word in the same file, and the ratchet stays green. | M | L | Accept: review catches it, and the F1 exit needs the allow-list empty outside `server/prompts/*` anyway. If it recurs, store the line text, not just the count. |
