@@ -725,3 +725,13 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B62 [minor] `tests/index-imports.test.js:2` header comment lists `llm.js`
 - Owner: qa-engineer
+
+*Filed by qa-engineer while building F1a-T10 (2026-10-12).*
+
+### F1a-B70 [minor] `server/packs.js:6` has a deny-list hit no remaining F1a ticket can remove
+- Actual: the comment "Events say demo-trades@1" matches `trades` (a hyphen is a word boundary, as intended), and `server/packs.js` is on no Files line after T07a, including T18's. So SC-003 can't be reached. · Suggested fix: add `server/packs.js` to T18's Files to reword the comment. · Owner: technical-product-manager
+
+### F1a-B71 [minor] The FR-038 seed words are written out in two places
+- Actual: `tests/prompt-version.test.js:92` keeps its own inline list; `tests/fixtures/deny-list.json` is now the single source. · Expected: read the JSON, or assert the two lists are equal. · Owner: qa-engineer (after T09)
+
+**Risk noted (not a bug):** any bare `demo-trades` literal in engine code is a deny-list hit. T12–T14 must read the pack id from the pack, never hard-code it.
