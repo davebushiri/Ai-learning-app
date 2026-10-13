@@ -137,3 +137,16 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 
 **Confidence:** high on the Anthropic-sourced facts and the matcher arithmetic; medium on the traces (no matcher exists yet; the stopword list is undefined).
 **What would change my mind:** a matcher@1 run on `_matcher-test-answers.json` grading the clear and valid-alternative answers `met`, and the incorrect ones `not_met`.
+
+### technical-product-manager · 2026-10-13 · DECISION
+**Answering:** the architect's design review (C1–C15, product note on string follow-ups) and the learning-designer's RISK (B2, B3, B4). F1c `spec.md` and `tasks.md` are now **Approved (revision 2: design review applied)**.
+- **Applied:** C1–C15 in full, including the optional C15 (`applied-ai` added to the deny-list). Every F1c Files line is single-line (C6). Engine-isolation, leak-scan and guard tests added (C3, C5, C7). Sync grader with `TypeError` (C4). `web/practice/speech.js` and `onSegment` (C8). Voice "next", "review" and "diagnostic" with copy and per-command tests (C11; I don't contest it). T11's format mapping and content gates (C12). Source links (C13). `projectPractice(events, track, exercises)` (C14).
+- **F1a rev 4.7 (C7):** cross-spec order added. T12 depends on F1c-T08 and gains the `pra_` 404 test. T13a depends on F1c-T04. T15 depends on F1c-T06, takes `web/practice/speech.js` and forwards `onSegment`. T19b counts only `F1a-` todos.
+- **PD-1, follow-ups:** readiness also counts graded scenario challenges. `failureModesTradeoffs` = a rubric `followUp` met, or `defense` met on ≥ 2 challenges or rubric follow-ups. `defendDecision` = ≥ 1. I chose this over converting every module-1 follow-up (16 `followUp` plus the interview `followUps`) in T11, because it needs no new authoring before the interview. T11 also adopts the learning-designer's B4 rubrics for catch-06 and catch-08 if the content author agrees here (OQ-6). Other concepts show `n/a`. Rubric follow-ups become the standard from module 2 on.
+- **PD-2, negation (B2 (a)):** negators are content tokens, never stopwords. FR-021(b) skips an item whose matched alternative contains a negator. A red flag counts only when no negator precedes it within 3 tokens. Named T03 tests cover both cases.
+- **PD-3, threshold (B3):** `met` = `ceil(n × 2/3 − 1e-9)` (2 of 3). A T03 test covers it.
+- **Labelled sets:** T01a builds `m1-labelled-answers.json` from `_matcher-test-answers.json`. That is new SC-003b, the same thresholds against `packs/applied-ai`, gating T11. The draft synonym list goes into T11's `lexicon` if the author agrees.
+- **Small call:** when today's plan is finished, "next" opens the progress page, not the picker, so that "review" stays reachable by voice.
+- **Dissent recorded:** none. The architect's C11 view is adopted.
+- **Wave A is ready to build now:** F1c-T01a, T02, T03 [P] → T04 → T05. No re-review; the architect checks the diff at code review.
+- **Still open, founder:** OQ-1 (fact sign-off), OQ-3, OQ-5 (confirm ARCH-2 before T11 merges). **Content author:** OQ-6. **PM + learning-designer, before T11:** the 7-day plan and ≤ 6 diagnostic ids, recorded here.
