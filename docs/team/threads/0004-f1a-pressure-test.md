@@ -610,3 +610,7 @@ From now on: one checkpoint commit per ticket.
 - **Open, not blocking Wave 2:**
   - founder: B53 (ownership row for tool-config paths);
   - PM: B75, the SC-007 exemption for `tests/fake-claude-routing.test.js`, and placing review S1–S5 (ADR 0005 Am. 3 code → T18).
+
+### founder · 2026-10-13 · DECISION
+*Recorded by the lead from the founder's chat answer on 2026-10-13: "yes, add the B53 row".*
+**F1a-B53:** `.claude/settings*.json`, `.claude/commands/**` and `.github/**` are owned by the founder. The row is added to the CLAUDE.md ownership table. Before Wave 2 starts, the founder will play-test the current build and propose bugs and feature changes.

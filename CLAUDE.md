@@ -80,6 +80,7 @@ Breaking one of these is a blocking review finding.
 | `docs/specs/<id>/qa-report.md` | `qa-engineer` |
 | `docs/specs/README.md` | `technical-product-manager` |
 | `docs/team/INDEX.md`, `.claude/THIRD_PARTY.md` | Everyone, append-only |
+| `.claude/settings*.json`, `.claude/commands/**`, `.github/**` | Founder |
 | `CLAUDE.md`, `.claude/agents/**`, `.claude/skills/**`, `docs/team/README.md`, `docs/team/templates/**`, `DEMO.md`, `PITCH.md`, `docs/research/**`, `docs/brain-backlog.md` | Founder |
 
 Specialists (`evals-engineer`, `learning-designer`) never edit product code. They advise, and the existing deciders decide.

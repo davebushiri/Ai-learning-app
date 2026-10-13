@@ -700,7 +700,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - Actual: d2b18a0 holds T07a, T08a and T11 together (also 7cec5c8 held T04 + T01b, 90f090c held T06). · Expected: one diff per ticket for T19b. · Owner: lead. Mitigation: certifying commits per ticket plus a per-ticket file manifest for T19b; stop mixing tickets in checkpoints from now on.
 - **Triage (PM, rev 4.2):** mitigation accepted; resolved in spec rev 4.2 for the spec side. T19b uses method (b) (the lead's per-ticket file manifest in thread 0004) for every ticket in d2b18a0, 7cec5c8 and 90f090c, and method (a) for tickets with clean certifying commits. Lead action, outside this spec: post the manifests for T04, T01b, T06, T07a, T08a and T11 in thread 0004 before T19b starts, and make one checkpoint commit per ticket from now on. A missing manifest is a blocker for T19b, not a pass.
 
-### F1a-B53 [minor] No ownership row for likely tool-config paths
+### F1a-B53 [minor] (resolved 2026-10-13: founder approved the row; added to CLAUDE.md) No ownership row for likely tool-config paths
 - Actual: adding `.claude/settings.json`, `.claude/commands/**` or `.github/**` would fail the ownership test (nothing hits it today). · Owner: founder, via the PM
 - **Triage (PM, rev 4.2):** founder item; `CLAUDE.md` is not edited by this spec. Proposed row for the `CLAUDE.md` ownership table: Path `.claude/settings*.json`, `.claude/commands/**`, `.github/**`; Owner Founder. Until the founder decides, nobody adds files under these paths; if one is needed, it goes to the founder first. Open (not resolved in rev 4.2): awaits a founder DECISION.
 
