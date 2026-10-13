@@ -1,0 +1,84 @@
+{
+  "id": "m1-catch-07-access-freshness-clean",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Recognize correct access-control, injection, freshness and abstention practice without false alarms.",
+  "prerequisites": [
+    "m1-learn-03-rag-failures"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "access-control",
+    "prompt-injection",
+    "freshness",
+    "abstention"
+  ],
+  "referenceIds": [
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Reduce hallucinations",
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "AWS: How Amazon Bedrock Knowledge Bases works",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-it-works.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": "Which statement would you defend first in a security review, and what evidence would you show?",
+  "transfer": {
+    "scenario": "An auditor asks how you know a contractor can't get salary data through the assistant. Answer.",
+    "rubric": [
+      "permissions enforced at retrieval",
+      "identity from authenticated session",
+      "not reliant on prompt",
+      "tests with contractor accounts",
+      "logs of retrieved chunk IDs"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Most policies are visible to all staff, but salary bands are for HR staff only."
+    },
+    {
+      "id": "s2",
+      "text": "We filter retrieval by the user's groups, taken from their login, before the model sees any text."
+    },
+    {
+      "id": "s3",
+      "text": "Telling the model in the prompt not to reveal HR documents is not enough on its own."
+    },
+    {
+      "id": "s4",
+      "text": "If a document says 'ignore your instructions', the assistant treats that as data, not as a command."
+    },
+    {
+      "id": "s5",
+      "text": "When a policy is replaced, the old version's chunks are removed from the index or excluded from search."
+    },
+    {
+      "id": "s6",
+      "text": "If nothing retrieved answers the question, the assistant says so and points to the HR helpdesk."
+    },
+    {
+      "id": "s7",
+      "text": "Our tests include users from different groups, to check each one sees only what they should."
+    }
+  ],
+  "answerKey": {
+    "planted": [],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7"
+    ]
+  }
+}

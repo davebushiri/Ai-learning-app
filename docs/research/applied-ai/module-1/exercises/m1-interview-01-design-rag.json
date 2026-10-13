@@ -1,0 +1,95 @@
+{
+  "id": "m1-interview-01-design-rag",
+  "module": "m1",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m1-scenario-01-policy-assistant"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "rag-pipeline",
+    "chunking",
+    "embeddings",
+    "access-control",
+    "freshness",
+    "citations",
+    "rag-evaluation"
+  ],
+  "referenceIds": [
+    "m1-ref-07",
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Lewis et al. 2020, Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (NeurIPS)",
+      "url": "https://arxiv.org/abs/2005.11401",
+      "verified": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Es et al. 2023, Ragas: Automated Evaluation of Retrieval Augmented Generation",
+      "url": "https://arxiv.org/abs/2309.15217",
+      "verified": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "AWS: How Amazon Bedrock Knowledge Bases works",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-it-works.html",
+      "verified": "UNVERIFIED"
+    },
+    {
+      "title": "AWS Well-Architected Generative AI Lens",
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": "Tell a short story, from your own work, of a gate or traceability practice you would carry into this design.",
+  "transfer": {
+    "scenario": "Same question, but the knowledge is a supplier-quality archive of PPAP packages and 8D reports.",
+    "rubric": [
+      "scanned documents: parsing risk",
+      "supplier-level access control",
+      "exact part and supplier numbers: hybrid search",
+      "revision freshness",
+      "citations to report and revision"
+    ]
+  },
+  "question": "Walk me through how you would design a RAG system for an internal knowledge assistant. Where would it most likely fail?",
+  "rubric": {
+    "mustCover": [
+      "clarify users, sources, update rate, permissions, success metric",
+      "offline path: ingest, parse, chunk, embed, index with metadata",
+      "online path: query, filtered retrieval, optional rerank, grounded generation",
+      "citations and abstention",
+      "access control at retrieval",
+      "freshness and deletion",
+      "evaluation before launch and monitoring after"
+    ],
+    "strongSignals": [
+      "names concrete chunking trade-off",
+      "hybrid search for exact terms",
+      "logs retrieved chunk IDs",
+      "separates retrieval vs generation metrics",
+      "mentions parsing quality of PDFs and tables",
+      "maps to Bedrock Knowledge Bases while noting what to verify",
+      "relates to release gates with where the analogy breaks"
+    ],
+    "redFlags": [
+      "'just put it in a vector database'",
+      "fine-tuning for knowledge",
+      "no permissions story",
+      "no evaluation plan",
+      "claims zero hallucinations"
+    ]
+  },
+  "followUps": [
+    "How would you choose chunk size?",
+    "What would you log, and why?",
+    "How do you keep a deleted document from being retrieved?",
+    "What would you change if the corpus were 100 pages?"
+  ]
+}

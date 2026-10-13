@@ -1,0 +1,133 @@
+{
+  "id": "m1-learn-03-rag-failures",
+  "module": "m1",
+  "type": "learn",
+  "objective": "Separate retrieval failures from generation failures, and explain freshness, access control, abstention and pre-production evaluation.",
+  "prerequisites": [
+    "m1-learn-02-rag-pipeline"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "retrieval-vs-generation-failure",
+    "freshness",
+    "access-control",
+    "abstention",
+    "rag-evaluation",
+    "faithfulness"
+  ],
+  "referenceIds": [
+    "m1-ref-04",
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Es et al. 2023, Ragas: Automated Evaluation of Retrieval Augmented Generation",
+      "url": "https://arxiv.org/abs/2309.15217",
+      "verified": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Reduce hallucinations",
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Citations",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/citations",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "AWS: Bedrock Guardrails contextual grounding check",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html",
+      "verified": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: Evaluating knowledge bases / RAG in Amazon Bedrock",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": "Pick one past incident from your own release-governance work and map each step of its root-cause analysis onto a RAG failure.",
+  "transfer": {
+    "scenario": "After launch, users report that the assistant sometimes says 'I can't find that' for questions the handbook clearly answers. Describe how you would find the cause.",
+    "rubric": [
+      "over-abstention is a measurable failure",
+      "check retrieved chunks in logs",
+      "if gold chunk missing: retrieval|parsing|chunking|filters too strict",
+      "if gold chunk present: prompt or generation too cautious",
+      "add cases to test set|regression test"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "When an answer is wrong, I first check the logged chunks. Did retrieval bring back the right, current passage?"
+    },
+    {
+      "id": "s2",
+      "text": "If not, it's a retrieval problem. A bigger model can't use evidence it never received."
+    },
+    {
+      "id": "s3",
+      "text": "If the right passage was there and the answer is still wrong, it's a generation problem."
+    },
+    {
+      "id": "s4",
+      "text": "Freshness is separate: the answer can match an old policy perfectly and still be wrong today."
+    },
+    {
+      "id": "s5",
+      "text": "Access control belongs in retrieval, using the user's login groups. A prompt instruction is not a permission check."
+    },
+    {
+      "id": "s6",
+      "text": "If the sources don't answer the question, the right output is to say so and point to a person."
+    },
+    {
+      "id": "s7",
+      "text": "Before launch, we test retrieval and generation separately, on questions that include unanswerable ones."
+    },
+    {
+      "id": "s8",
+      "text": "Faithfulness asks if the answer is supported by the retrieved text. Correctness asks if it is actually true."
+    }
+  ],
+  "teachBack": [
+    {
+      "question": "An answer is wrong. What is your first diagnostic step, and how does its result split the problem?",
+      "rubric": [
+        "inspect retrieved chunks|logs",
+        "gold passage missing: retrieval|ingestion|freshness",
+        "gold passage present: generation",
+        "different fixes for each"
+      ]
+    },
+    {
+      "question": "Why is 'tell the model not to reveal HR files' not access control?",
+      "rubric": [
+        "model can still see the text",
+        "prompts can be overridden or ignored|injection",
+        "filter before model sees it",
+        "identity from authenticated session",
+        "test with different user groups"
+      ]
+    },
+    {
+      "question": "What would you measure before putting a RAG assistant into production?",
+      "rubric": [
+        "retrieval recall@k|hit rate",
+        "context relevance|precision",
+        "faithfulness|groundedness",
+        "answer correctness|relevance",
+        "abstention accuracy",
+        "permission leakage",
+        "latency and cost",
+        "thresholds set in advance"
+      ]
+    }
+  ]
+}

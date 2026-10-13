@@ -1,0 +1,88 @@
+{
+  "id": "m1-interview-04-evaluate-rag",
+  "module": "m1",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m1-learn-03-rag-failures"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "rag-evaluation",
+    "faithfulness",
+    "abstention",
+    "access-control",
+    "freshness"
+  ],
+  "referenceIds": [
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Es et al. 2023, Ragas: Automated Evaluation of Retrieval Augmented Generation",
+      "url": "https://arxiv.org/abs/2309.15217",
+      "verified": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "AWS: Evaluating knowledge bases / RAG in Amazon Bedrock",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb.html",
+      "verified": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: Bedrock Guardrails contextual grounding check",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html",
+      "verified": "UNVERIFIED"
+    },
+    {
+      "title": "AWS Well-Architected Generative AI Lens",
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": "Map your evaluation plan onto a validation plan and gate review you have run, and say where it differs.",
+  "transfer": {
+    "scenario": "The business wants to launch in two weeks with only 30 test questions. What do you recommend?",
+    "rubric": [
+      "30 too few for stable rates|wide uncertainty",
+      "limited pilot with monitoring",
+      "prioritize safety cases: permissions and abstention",
+      "grow test set from pilot logs",
+      "pre-set go/no-go thresholds"
+    ]
+  },
+  "question": "How would you evaluate a RAG system before putting it into production?",
+  "rubric": {
+    "mustCover": [
+      "representative test set with expected answers and supporting passages",
+      "include unanswerable, stale-version and restricted-access cases",
+      "retrieval metrics: recall@k or hit rate, context relevance",
+      "generation metrics: faithfulness, answer relevance, correctness, citation accuracy, abstention accuracy",
+      "latency and cost",
+      "thresholds set before running, used as a release gate",
+      "monitoring and feedback after launch"
+    ],
+    "strongSignals": [
+      "calibrates LLM-as-judge against human labels",
+      "zero tolerance for permission leakage on the test set",
+      "re-runs on every prompt, model, chunking or embedding change",
+      "names RAGAS and what it measures",
+      "baseline against current process (helpdesk)"
+    ],
+    "redFlags": [
+      "only end-to-end 'looks good' demos",
+      "no unanswerable questions in the test set",
+      "trusts automated judge scores without calibration",
+      "no plan after launch"
+    ]
+  },
+  "followUps": [
+    "How large should the test set be?",
+    "How do you keep the test set from going stale?",
+    "What would make you roll back after launch?"
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "id": "m1-catch-06-retrieval-vs-generation",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Catch subtle errors in diagnosing a wrong RAG answer.",
+  "prerequisites": [
+    "m1-learn-03-rag-failures"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "retrieval-vs-generation-failure",
+    "freshness",
+    "faithfulness",
+    "rag-evaluation"
+  ],
+  "referenceIds": [
+    "m1-ref-04",
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Es et al. 2023, Ragas: Automated Evaluation of Retrieval Augmented Generation",
+      "url": "https://arxiv.org/abs/2309.15217",
+      "verified": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Reduce hallucinations",
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+      "verified": "fetched-2026-10-13"
+    }
+  ],
+  "followUp": "Describe a case where retrieval and generation both contribute to one bad answer.",
+  "transfer": {
+    "scenario": "A model upgrade is proposed after users complain about wrong answers. You have one day. What evidence do you collect before agreeing?",
+    "rubric": [
+      "sample failing queries",
+      "inspect retrieved chunks",
+      "classify retrieval vs generation vs freshness",
+      "estimate share of each",
+      "upgrade only helps generation failures",
+      "run test set on both models"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "A user asked about parental leave and got the old twelve-week figure instead of the new sixteen."
+    },
+    {
+      "id": "s2",
+      "text": "First, I pull the logs to see which chunks were retrieved for that question."
+    },
+    {
+      "id": "s3",
+      "text": "The chunks are from the old handbook, so this is a retrieval and freshness problem, not a generation one."
+    },
+    {
+      "id": "s4",
+      "text": "The answer matched those chunks closely, so our faithfulness score for it was high."
+    },
+    {
+      "id": "s5",
+      "text": "A high faithfulness score tells us the answer was correct, so our evaluation worked as intended."
+    },
+    {
+      "id": "s6",
+      "text": "The fix is to upgrade to a larger model, which will know that the leave policy changed."
+    },
+    {
+      "id": "s7",
+      "text": "We'll also remove superseded chunks and filter retrieval to the current policy versions."
+    },
+    {
+      "id": "s8",
+      "text": "Then we'll add this question to the test set, so it's checked on every change."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s5",
+        "misconception": "High faithfulness means the answer is correct.",
+        "whyWrong": "Faithfulness measures whether claims are supported by the retrieved context. Here the context was stale, so a faithful answer was wrong. The evaluation missed it because it lacked a correctness check against current expected answers and freshness cases.",
+        "acceptableCorrections": [
+          "Faithfulness only shows the answer matched the retrieved text; we also need correctness checks against current answers.",
+          "Our evaluation missed this because it had no freshness or correctness cases."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "faithfulness is support by context|groundedness",
+            "stale context: faithful but wrong",
+            "faithfulness is not correctness"
+          ],
+          "correct": [
+            "add correctness against expected answers",
+            "add freshness test cases"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "A bigger model fixes a retrieval or freshness failure.",
+        "whyWrong": "The model answered from the stale chunks it was given. A larger model still receives the same stale evidence; its training data won't reliably contain your internal policy change.",
+        "acceptableCorrections": [
+          "A bigger model won't help; it gets the same stale chunks. Fix the index and the version filtering.",
+          "The fix is in ingestion and retrieval, not the model."
+        ],
+        "exceptions": "If the logs had shown the current chunk was retrieved and ignored, a model or prompt change could be a fix.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "model can't use evidence it never received",
+            "internal changes not in training data"
+          ],
+          "correct": [
+            "fix sync|remove superseded chunks",
+            "filter to current versions"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s7",
+      "s8"
+    ]
+  }
+}

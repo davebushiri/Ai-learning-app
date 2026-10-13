@@ -1,0 +1,141 @@
+{
+  "id": "m1-catch-08-design-tradeoffs",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Catch context-dependent design claims stated as universal rules.",
+  "prerequisites": [
+    "m1-catch-04-embeddings",
+    "m1-catch-06-retrieval-vs-generation"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "chunking",
+    "top-k",
+    "long-context-vs-rag",
+    "system-of-record",
+    "reranking"
+  ],
+  "referenceIds": [
+    "m1-ref-01",
+    "m1-ref-05",
+    "m1-ref-07"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Context windows",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-windows",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Liu et al. 2023, Lost in the Middle: How Language Models Use Long Contexts",
+      "url": "https://arxiv.org/abs/2307.03172",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "AWS: How content chunking works for knowledge bases",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": "For each trade-off here, name the measurement that would settle it for a specific system.",
+  "transfer": {
+    "scenario": "A teammate proposes 2,000-token chunks and top-k of 25 'to be safe'. Respond as the design reviewer.",
+    "rubric": [
+      "trade-off not rule",
+      "large chunks dilute match|use window",
+      "many chunks add noise cost latency",
+      "relevant info in middle can be under-used",
+      "tune with retrieval and answer metrics"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "The client has a forty-page FAQ that changes once a year and is open to all staff."
+    },
+    {
+      "id": "s2",
+      "text": "For that FAQ, putting the whole thing in the prompt with caching is a reasonable option to test against RAG."
+    },
+    {
+      "id": "s3",
+      "text": "For the fifty-thousand-page policy library, we need retrieval."
+    },
+    {
+      "id": "s4",
+      "text": "We'll use large chunks, because each one carries more context for the model and that gives better answers."
+    },
+    {
+      "id": "s5",
+      "text": "We'll retrieve the top twenty chunks for every question, since more evidence gives the model more to work with."
+    },
+    {
+      "id": "s6",
+      "text": "Questions like 'what's the status of my ticket' should go to the ticketing system's API, not vector search."
+    },
+    {
+      "id": "s7",
+      "text": "We'll add a reranker, but only if tests show it improves results enough to justify the extra latency."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s4",
+        "misconception": "Larger chunks give better answers.",
+        "whyWrong": "Chunk size is a trade-off. Larger chunks keep surrounding context but dilute the similarity match and use more of the context window; smaller chunks match precisely but can lose meaning. The right size depends on the documents and is set by evaluation.",
+        "acceptableCorrections": [
+          "Chunk size is a trade-off between context and precise matching; we tune it with retrieval tests.",
+          "Use structure-aware or hierarchical chunking, or attach headings, instead of just making chunks bigger."
+        ],
+        "exceptions": "For documents with long, tightly connected sections, larger chunks may well score better; the error is treating it as a general rule without testing.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "trade-off|depends on documents",
+            "large: more context but diluted match and window cost",
+            "small: precise but loses context"
+          ],
+          "correct": [
+            "tune by evaluation",
+            "headings|hierarchical|parent-child chunks"
+          ]
+        }
+      },
+      {
+        "statementId": "s5",
+        "misconception": "More retrieved chunks can only help.",
+        "whyWrong": "Raising k increases the chance the answer is included, but adds irrelevant text, cost and latency, and models can under-use evidence buried in the middle of long inputs. k is tuned with recall and answer-quality metrics, often with a reranker to keep the best few.",
+        "acceptableCorrections": [
+          "More chunks raise recall but add noise, cost and latency; we pick k from evaluation.",
+          "Retrieve more candidates, then rerank and keep the best few."
+        ],
+        "exceptions": "If recall at a small k is poor and latency budget allows, a larger k can be the right choice; the error is fixing k high without testing the cost.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "higher recall vs more noise",
+            "cost and latency",
+            "middle of long context under-used"
+          ],
+          "correct": [
+            "tune k with metrics",
+            "retrieve then rerank"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s6",
+      "s7"
+    ]
+  }
+}

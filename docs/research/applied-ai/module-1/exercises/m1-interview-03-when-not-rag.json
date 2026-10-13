@@ -1,0 +1,71 @@
+{
+  "id": "m1-interview-03-when-not-rag",
+  "module": "m1",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m1-catch-08-design-tradeoffs"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "prompting-vs-rag-vs-finetuning",
+    "long-context-vs-rag",
+    "system-of-record"
+  ],
+  "referenceIds": [
+    "m1-ref-05",
+    "m1-ref-01"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Glossary",
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Context windows",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-windows",
+      "verified": "fetched-2026-10-13"
+    }
+  ],
+  "followUp": "Give an example from automotive engineering for each case where RAG is the wrong tool.",
+  "transfer": {
+    "scenario": "A team wants RAG over a CSV export of warranty claims to answer 'how many claims last month for part X'.",
+    "rubric": [
+      "aggregate question needs exact query|SQL",
+      "semantic search can't count reliably",
+      "use database or text-to-SQL with validation",
+      "RAG fits narrative claim descriptions"
+    ]
+  },
+  "question": "When would you not use RAG?",
+  "rubric": {
+    "mustCover": [
+      "small, stable knowledge: put it in the prompt (with caching)",
+      "no external knowledge needed: rewriting, formatting, classification",
+      "exact or aggregate data from a system of record: use an API or query",
+      "behavior or style gaps: prompting or fine-tuning",
+      "decide by evaluation, not fashion"
+    ],
+    "strongSignals": [
+      "cites a size heuristic as a starting point to test, not a rule",
+      "notes access control and freshness can still justify retrieval for small sets",
+      "mentions cost and latency",
+      "mentions tool use as an alternative path (Module 2)"
+    ],
+    "redFlags": [
+      "'always use RAG'",
+      "'long context makes RAG obsolete' with no caveats",
+      "fine-tuning to add changing facts"
+    ]
+  },
+  "followUps": [
+    "What if the small document set has mixed permissions?",
+    "How would you decide between long context and RAG for a 300-page manual?"
+  ]
+}

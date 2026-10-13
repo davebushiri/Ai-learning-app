@@ -1,0 +1,125 @@
+{
+  "id": "m1-catch-02-rag-vs-finetune",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Catch errors about what RAG and fine-tuning change.",
+  "prerequisites": [
+    "m1-learn-02-rag-pipeline"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "prompting-vs-rag-vs-finetuning",
+    "freshness",
+    "citations"
+  ],
+  "referenceIds": [
+    "m1-ref-05"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Glossary",
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Lewis et al. 2020, Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (NeurIPS)",
+      "url": "https://arxiv.org/abs/2005.11401",
+      "verified": "abstract-snippet-2026-10-13"
+    }
+  ],
+  "followUp": "Name one task where fine-tuning would be a better fit than RAG, and say why.",
+  "transfer": {
+    "scenario": "A supplier-quality team wants an assistant that knows each supplier's current corrective-action status. Someone suggests fine-tuning a model on last year's reports. Respond.",
+    "rubric": [
+      "status changes|freshness",
+      "fine-tuning bakes in stale facts|retraining needed",
+      "RAG or system-of-record lookup instead",
+      "exact status better from database or API",
+      "citations and permissions"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Our support team wants an assistant that answers from our internal policy documents."
+    },
+    {
+      "id": "s2",
+      "text": "Prompting alone won't work, because the policies run to thousands of pages and change every month."
+    },
+    {
+      "id": "s3",
+      "text": "So we'll use RAG. RAG retrains the model on your company documents, so it learns our policies."
+    },
+    {
+      "id": "s4",
+      "text": "When a policy changes, we update the index, and the next question can use the new text."
+    },
+    {
+      "id": "s5",
+      "text": "Because answers come from retrieved passages, we can show users which document each answer used."
+    },
+    {
+      "id": "s6",
+      "text": "Fine-tuning would also be the best way to keep the assistant current with each month's policy changes."
+    },
+    {
+      "id": "s7",
+      "text": "If we later want a consistent tone and format in replies, fine-tuning is one option to evaluate."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "RAG retrains the model on your company documents.",
+        "whyWrong": "RAG retrieves relevant passages at query time and puts them in the prompt. The model's weights do not change; the knowledge lives in a separate index.",
+        "acceptableCorrections": [
+          "RAG retrieves relevant passages at question time and adds them to the prompt; the model isn't retrained.",
+          "With RAG the model reads our documents per question; it doesn't learn them into its weights."
+        ],
+        "exceptions": "The original 2020 RAG paper fine-tuned its retriever and generator on task examples, but the document knowledge stayed in a swappable index. Typical production RAG on a hosted model involves no training.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "retrieves at query time|runtime",
+            "weights unchanged|no training",
+            "knowledge in index"
+          ],
+          "correct": [
+            "adds passages to prompt",
+            "update index not model"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "Fine-tuning is the way to keep knowledge current.",
+        "whyWrong": "Fine-tuning changes weights, so each policy change would need a new training run, evaluation and release. Facts learned this way can't be cited or permission-filtered. Updating a RAG index is the usual way to stay current.",
+        "acceptableCorrections": [
+          "To stay current we re-sync the RAG index; fine-tuning would need retraining every month.",
+          "Fine-tuning suits style and format; changing facts belong in retrieval."
+        ],
+        "exceptions": "Fine-tuning can complement RAG for tone or format (s7 is correct).",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "retraining needed for each change",
+            "fine-tuned facts can't be cited|filtered by permission"
+          ],
+          "correct": [
+            "update the index for freshness",
+            "fine-tuning for style or behavior"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s5",
+      "s7"
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "id": "m1-catch-01-context-window",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Catch errors about what the context window is and how well models use long inputs.",
+  "prerequisites": [
+    "m1-learn-01-how-llms-answer"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "tokens",
+    "context-window"
+  ],
+  "referenceIds": [
+    "m1-ref-01"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Glossary",
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Context windows",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-windows",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Liu et al. 2023, Lost in the Middle: How Language Models Use Long Contexts",
+      "url": "https://arxiv.org/abs/2307.03172",
+      "verified": "cited-from-memory-not-fetched"
+    }
+  ],
+  "followUp": "Explain why a team might still use retrieval even when all their documents fit in the window.",
+  "transfer": {
+    "scenario": "Your manager says: 'The new model has a million-token window, so we can drop retrieval and send the whole wiki.' Respond.",
+    "rubric": [
+      "window is per-call working memory",
+      "quality degrades with long inputs|context rot",
+      "cost and latency per call",
+      "access control and freshness still needed",
+      "test both approaches"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Our assistant reads text as tokens, which can be whole words, parts of words, or single characters."
+    },
+    {
+      "id": "s2",
+      "text": "The context window is the set of documents the model was trained on, so a bigger window means it knows more."
+    },
+    {
+      "id": "s3",
+      "text": "Everything in a request counts toward the window: the instructions, the history, any documents, and the answer itself."
+    },
+    {
+      "id": "s4",
+      "text": "Our whole handbook fits inside the window, so the model will use every part of it equally well."
+    },
+    {
+      "id": "s5",
+      "text": "When I paste a policy into the prompt, the model can use it for that call but does not keep it afterwards."
+    },
+    {
+      "id": "s6",
+      "text": "Word counts are only rough, so I check token usage with the provider's counter for the model we call."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s2",
+        "misconception": "The context window is the training data.",
+        "whyWrong": "The context window is per-call working memory: what the model can see while answering this request. Training data was learned into the weights beforehand and is not in the window.",
+        "acceptableCorrections": [
+          "The context window is what the model can see during one call, not its training data.",
+          "A bigger window lets one request hold more text; it doesn't mean the model knows more."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "working memory for one call|what it can see now",
+            "training data is separate|learned into weights"
+          ],
+          "correct": [
+            "window holds the current request",
+            "bigger window means more input fits|not more knowledge"
+          ]
+        }
+      },
+      {
+        "statementId": "s4",
+        "misconception": "If it fits in the window, the model uses all of it equally.",
+        "whyWrong": "Accuracy and recall degrade as the input gets longer, and models tend to use information at the start and end of a long input more reliably than the middle.",
+        "acceptableCorrections": [
+          "Fitting in the window doesn't mean the model will use every part well; quality drops with length and position.",
+          "We should send only the relevant parts, or test that long-context answers are accurate."
+        ],
+        "exceptions": "With a short handbook and good tests, sending all of it can work fine; the error is assuming equal use.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "quality degrades with length|context rot",
+            "middle content under-used|position matters"
+          ],
+          "correct": [
+            "send relevant text|retrieve",
+            "test long-context accuracy"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s3",
+      "s5",
+      "s6"
+    ]
+  }
+}

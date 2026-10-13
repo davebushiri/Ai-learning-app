@@ -1,0 +1,96 @@
+{
+  "id": "m1-catch-03-pipeline-clean",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Recognize a correct RAG pipeline description and resist false alarms.",
+  "prerequisites": [
+    "m1-learn-02-rag-pipeline"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "chunking",
+    "embeddings",
+    "retrieval",
+    "grounded-generation",
+    "abstention",
+    "citations"
+  ],
+  "referenceIds": [
+    "m1-ref-06",
+    "m1-ref-07"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Embeddings",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Citations",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/citations",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Reduce hallucinations",
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+      "verified": "fetched-2026-10-13"
+    }
+  ],
+  "followUp": "Which statement here sounded most like a mistake to you? Explain why it is actually correct.",
+  "transfer": {
+    "scenario": "A new engineer asks why the team keeps document titles and section headings attached to every chunk. Explain.",
+    "rubric": [
+      "chunks lose context when split",
+      "titles and headings make chunks self-explanatory",
+      "improves retrieval match",
+      "helps citations point to source"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "We split each policy into chunks, and we attach the document title and section heading to every chunk."
+    },
+    {
+      "id": "s2",
+      "text": "The same embedding model that indexed the documents must also embed the user's question."
+    },
+    {
+      "id": "s3",
+      "text": "Adding a new document doesn't change the model's weights. It only adds chunks to the index."
+    },
+    {
+      "id": "s4",
+      "text": "We fence the retrieved text in the prompt and treat it as data, not as instructions."
+    },
+    {
+      "id": "s5",
+      "text": "Sometimes the right answer is for the assistant to say it can't find the information."
+    },
+    {
+      "id": "s6",
+      "text": "Each answer lists the chunks it relied on, so reviewers can check the claim against the source."
+    },
+    {
+      "id": "s7",
+      "text": "We log the retrieved chunk IDs for every question, because that's how we debug bad answers later."
+    }
+  ],
+  "answerKey": {
+    "planted": [],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7"
+    ]
+  }
+}

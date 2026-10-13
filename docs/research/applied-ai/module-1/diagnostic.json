@@ -1,0 +1,207 @@
+{
+  "id": "m1-diagnostic",
+  "module": "m1",
+  "purpose": "Place the learner at a starting difficulty for Module 1. Ten items mixing explanation, error detection and architecture reasoning.",
+  "items": [
+    {
+      "id": "d01",
+      "kind": "explain",
+      "difficulty": 1,
+      "concepts": [
+        "context-window"
+      ],
+      "referenceIds": [
+        "m1-ref-01"
+      ],
+      "prompt": "In one or two sentences, what is a context window?",
+      "rubric": [
+        "per-call working memory|what model sees in one request",
+        "includes input and output",
+        "not training data"
+      ]
+    },
+    {
+      "id": "d02",
+      "kind": "detect",
+      "difficulty": 1,
+      "concepts": [
+        "prompting-vs-rag-vs-finetuning"
+      ],
+      "referenceIds": [
+        "m1-ref-05"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'With RAG, the model learns our documents during setup, so it no longer needs them at question time.'",
+      "isFlawed": true,
+      "answer": "Wrong. RAG retrieves passages at question time and adds them to the prompt; the weights don't change.",
+      "rubric": [
+        "retrieval at query time",
+        "weights unchanged"
+      ]
+    },
+    {
+      "id": "d03",
+      "kind": "explain",
+      "difficulty": 1,
+      "concepts": [
+        "temperature"
+      ],
+      "referenceIds": [
+        "m1-ref-02"
+      ],
+      "prompt": "What does lowering temperature change, and what doesn't it change?",
+      "rubric": [
+        "less variation|more consistent",
+        "not correctness|not knowledge",
+        "not fully deterministic"
+      ]
+    },
+    {
+      "id": "d04",
+      "kind": "detect",
+      "difficulty": 1,
+      "concepts": [
+        "abstention"
+      ],
+      "referenceIds": [
+        "m1-ref-04",
+        "m1-ref-08"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'If the retrieved passages don't answer the question, the assistant should say it can't find the answer.'",
+      "isFlawed": false,
+      "answer": "Right. Abstention is the desired behavior when evidence is missing.",
+      "rubric": [
+        "correct|right",
+        "abstention avoids unsupported answers"
+      ]
+    },
+    {
+      "id": "d05",
+      "kind": "explain",
+      "difficulty": 2,
+      "concepts": [
+        "embeddings",
+        "vector-similarity"
+      ],
+      "referenceIds": [
+        "m1-ref-06"
+      ],
+      "prompt": "How does an embedding help find a relevant passage, and why isn't a high similarity score proof the passage is right?",
+      "rubric": [
+        "text to vector|similar meaning close",
+        "query embedded same model",
+        "nearest vectors retrieved",
+        "similarity is closeness not truth|relevance"
+      ]
+    },
+    {
+      "id": "d06",
+      "kind": "detect",
+      "difficulty": 2,
+      "concepts": [
+        "structured-outputs"
+      ],
+      "referenceIds": [
+        "m1-ref-03"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'Structured outputs guarantee the JSON matches our schema, so the values inside are correct.'",
+      "isFlawed": true,
+      "answer": "Wrong. Schemas guarantee shape and types, not truth; and refusals or truncation can still break the shape.",
+      "rubric": [
+        "shape not truth",
+        "validate content",
+        "refusal or truncation edge cases"
+      ]
+    },
+    {
+      "id": "d07",
+      "kind": "detect",
+      "difficulty": 2,
+      "concepts": [
+        "bm25",
+        "hybrid-search"
+      ],
+      "referenceIds": [
+        "m1-ref-06"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'For queries full of part numbers, adding keyword search such as BM25 next to embeddings often helps.'",
+      "isFlawed": false,
+      "answer": "Right. Lexical search matches exact identifiers that embeddings can miss; hybrid search combines both.",
+      "rubric": [
+        "correct|right",
+        "exact tokens favor lexical search",
+        "hybrid combines"
+      ]
+    },
+    {
+      "id": "d08",
+      "kind": "architecture",
+      "difficulty": 2,
+      "concepts": [
+        "access-control"
+      ],
+      "referenceIds": [
+        "m1-ref-08"
+      ],
+      "prompt": "Some documents are HR-only. Where in a RAG system do you enforce that, and why not in the prompt?",
+      "rubric": [
+        "filter at retrieval before model sees text",
+        "identity from authenticated session",
+        "prompt can be ignored|injected",
+        "test with different groups"
+      ]
+    },
+    {
+      "id": "d09",
+      "kind": "architecture",
+      "difficulty": 3,
+      "concepts": [
+        "retrieval-vs-generation-failure",
+        "freshness"
+      ],
+      "referenceIds": [
+        "m1-ref-08"
+      ],
+      "prompt": "Users get an outdated answer. The team wants a bigger model. What do you check first and what would change your recommendation?",
+      "rubric": [
+        "check retrieved chunks",
+        "stale chunks: freshness or retrieval fix",
+        "model upgrade only if right chunk retrieved and misused",
+        "add regression case"
+      ]
+    },
+    {
+      "id": "d10",
+      "kind": "architecture",
+      "difficulty": 3,
+      "concepts": [
+        "rag-evaluation",
+        "long-context-vs-rag",
+        "chunking"
+      ],
+      "referenceIds": [
+        "m1-ref-01",
+        "m1-ref-07",
+        "m1-ref-08"
+      ],
+      "prompt": "A 60-page, rarely changing, all-staff manual needs a Q&A assistant. Long context or RAG? How would you decide?",
+      "rubric": [
+        "long context is a reasonable first option|small and stable",
+        "trade-offs: cost, latency, quality with length",
+        "decide by evaluation on test questions",
+        "RAG if permissions, growth or freshness needs"
+      ]
+    }
+  ],
+  "scoring": "Score each item 0 (missing or wrong), 1 (partly right: at least half the rubric phrases, no false claim), or 2 (all key rubric phrases, no false claim). For detect items, a correct verdict with no reason scores 1.",
+  "startingDifficultyRule": {
+    "status": "PROVISIONAL: not validated with learners; revise after the first playtests.",
+    "rule": [
+      "Compute the mean score separately for difficulty-1 items (d01-d04), difficulty-2 items (d05-d08) and difficulty-3 items (d09-d10).",
+      "If the difficulty-1 mean is below 1.5: start at difficulty 1 with all three learn files, then catch-01, catch-02, catch-03.",
+      "Else if the difficulty-2 mean is below 1.5: start at difficulty 2 (learn-03, then catch-04, catch-05, catch-07).",
+      "Else if the difficulty-3 mean is below 1.5: start at difficulty 3 (catch-06, catch-08, then the scenario).",
+      "Else: go straight to the scenario and the four interview questions.",
+      "Override: any 0 on d02 (RAG vs retraining) or d08 (access control) routes the learner to the matching learn file first, whatever the band."
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "id": "m1-catch-05-structured-outputs",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Catch errors about what schemas and temperature guarantee.",
+  "prerequisites": [
+    "m1-learn-01-how-llms-answer"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "structured-outputs",
+    "temperature",
+    "validation"
+  ],
+  "referenceIds": [
+    "m1-ref-02",
+    "m1-ref-03"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Structured outputs",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Glossary",
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary",
+      "verified": "fetched-2026-10-13"
+    }
+  ],
+  "followUp": "List the checks you would still run on a schema-valid answer before showing it to a user.",
+  "transfer": {
+    "scenario": "An integration team says: 'The LLM returns schema-valid JSON, so it can write directly into the supplier quality database.' What gates would you add?",
+    "rubric": [
+      "schema guarantees shape not values",
+      "validate against source data|business rules",
+      "check stop reason|refusal|truncation",
+      "human review for high-impact writes",
+      "fallback path"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Our app needs JSON with fields for the answer, the citations, and whether the assistant abstained."
+    },
+    {
+      "id": "s2",
+      "text": "With structured outputs, the model's response is constrained to match our JSON schema."
+    },
+    {
+      "id": "s3",
+      "text": "Because the JSON always matches the schema, we can skip checking whether the cited policy numbers exist."
+    },
+    {
+      "id": "s4",
+      "text": "We still check the stop reason, because a refusal or hitting the token limit can break the schema."
+    },
+    {
+      "id": "s5",
+      "text": "We set temperature to zero, so every identical question will get an identical answer."
+    },
+    {
+      "id": "s6",
+      "text": "Lower temperature helps consistency, but it does not add knowledge the model is missing."
+    },
+    {
+      "id": "s7",
+      "text": "If parsing fails anyway, we show a plain fallback message instead of crashing."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "Schema-valid means the content is correct.",
+        "whyWrong": "A schema guarantees fields and types, not values. A well-formed citation field can hold a policy number that doesn't exist or doesn't support the claim.",
+        "acceptableCorrections": [
+          "Schema-valid only means the shape is right; we still check that cited policies exist and support the answer.",
+          "We validate content separately from format."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "schema guarantees shape|fields and types",
+            "values can be wrong|fabricated"
+          ],
+          "correct": [
+            "validate citations against index",
+            "content checks separate from format"
+          ]
+        }
+      },
+      {
+        "statementId": "s5",
+        "misconception": "Temperature zero makes outputs perfectly repeatable.",
+        "whyWrong": "Provider documentation states that even at temperature zero, outputs are not fully deterministic; identical inputs can produce different outputs across calls.",
+        "acceptableCorrections": [
+          "Temperature zero makes answers more consistent, but identical questions can still get different answers.",
+          "We design and test as if outputs can vary."
+        ],
+        "exceptions": "None for hosted APIs as documented; local inference setups may differ, but don't assume it.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "not fully deterministic at zero",
+            "documented by provider"
+          ],
+          "correct": [
+            "more consistent not identical",
+            "test over repeated runs"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s6",
+      "s7"
+    ]
+  }
+}
