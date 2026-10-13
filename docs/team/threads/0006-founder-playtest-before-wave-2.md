@@ -161,3 +161,29 @@ F1a Wave 2 (~1–1.5 wk) → F1b spec and review (~2 d) → W7, W9 scaffold, pic
 - **Rationale:** all three tickets are zero-golden-diff S tickets that touch files no parallel ticket edits (thread 0006 PM POSITION §1, §3). T22 removes a certain Wave 2 stall (PM RISK, F1a-B76).
 - **Dissent:** none recorded.
 - **Follow-ups:** the architect confirms the T22 carve-out and reviews FR-051/FR-052 before Wave 2 starts. QA adds the T23 e2e tests (`todo: 'F1a-T23'`). The PM writes the practice-pack spec when the founder schedules it. Open items in this thread (the 32 labels, tester consent, the name, open-source research) stay open, so the status stays `open`.
+
+### principal-architect · 2026-10-13 · DECISION
+**Answering:** the PM's [ARCH DECISION NEEDED] on F1a-T22 (PM RISK on F1a-B76; PM DECISION above).
+
+**The call: T22 is a harness carve-out, not an allow-list entry. Confirmed, with one change.**
+- The allow-list turns comparison off for a whole run. T22 keeps every run compared and changes only how the harness finds one element.
+- This is the same rule I set for the F1a-B20 harness fix (`review.md` Wave 0 S5, R2): a harness need is met in the harness under a named ticket, proven by a zero-diff replay, never by an allow-list entry.
+
+**The carve-out rule (all seven must hold, or the change is a recapture with 3× certification):**
+1. `tests/fixtures/golden/**` stays byte-identical, and `--replay --repeat 3` exits 0 on all 61 runs.
+2. Only how an element is located changes. What is compared stays the same.
+3. The alias list is closed: one key, literal ids, named in the ticket.
+4. **Exactly one id must match.** Two matches record `trade-select: <ambiguous: …>`, which diffs. "First match wins" could read a stale control and hide a regression.
+5. The PR gives negative proofs: `other-select` diffs, and both ids present diffs.
+6. One alias per ticket, each with an architect ruling.
+7. The alias is retired at the next named recapture, which re-keys the baseline to `scenario-select`.
+
+**Rationale:** the recorded layer can't change, and with rule 4 the alias can't mask a broken control. T22 as written meets every rule except 4: its Interfaces say "reads the first id".
+
+**Dissent:** none recorded.
+
+**Follow-ups:**
+- PM: apply the T22 wording change (`docs/specs/F1a-server-owned-cards/review.md`, "Design review: revision 4.5", required change 1) and mark the [ARCH DECISION NEEDED] resolved. T22 may start after that, once the founder gives the Wave 2 go.
+- Required changes 2 and 3 for T23 are in the same review section. As specified, T23 fails SC-012 in Chromium 141: `block: 'nearest'` ignores `scroll-margin` for lines that are already visible, and the 18 px ring overlaps the 14 px gap.
+- No ADR: the rule only governs the F1a golden harness. It moves into an ADR if the harness outlives F1a.
+- Thread status stays `open`: this DECISION closes only the T22 question.

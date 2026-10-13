@@ -681,3 +681,121 @@ The PM's rev 4.4 triage (uncommitted at review time) covers every one of these. 
 | R15 | **The row is logged before `fallback()` runs, and a throwing `logCall` is only warned.** If the DB write fails (disk full, a locked file opened by an outside tool), learners still get answers, but `llm_call` under-counts. Cost and fallback-rate metrics then go quietly wrong. | L | M | Accept for F1. In F3, when the cost dashboard reads `llm_call`, count `[gateway] llm_call log failed` warnings in `/api/health` so the gap is visible. |
 | R16 | **An in-place edit of `001-init.sql` never reaches an existing local DB.** ADR 0001 Amendment 1 allows editing 001 until F1a merges. But `npm start` and `npm run mock` now persist to `data/app.db`, and once that file is at `user_version 1` the edited 001 is skipped. A developer's or agent's local server then runs silently on the older schema (for example, one without the NOT NULL keys), while `npm test` (`:memory:`) is green. | M | L | Any change that edits `001-init.sql` says "delete `data/` before the next local run" in its commit message. If it recurs before merge, `migrate()` stores a sha256 of each applied file and refuses to start on a mismatch. |
 | R17 | **`deny-list-allow.json` counts are per file, not per location.** A ticket can remove one hit and add another of the same word in the same file, and the ratchet stays green. | M | L | Accept: review catches it, and the F1 exit needs the allow-list empty outside `server/prompts/*` anyway. If it recurs, store the line text, not just the count. |
+
+---
+
+## Design review: revision 4.5
+
+**Reviewer:** principal-architect · **Date:** 2026-10-13 · **Reviewed:** spec and tasks rev 4.5 (`0bde41a`): F1a-T22, T23, T24; FR-051, FR-052, SC-012; the FR-034 and FR-036 edits; the rev 4.5 shared-file sequences and [P] collision check. Read against `CLAUDE.md`, ADRs 0001–0007, thread 0006, and the code the tickets touch (`tests/golden/harness.mjs`, `web/speech.js`, `web/app.js:97–106, 125–143`, `web/styles.css`, `web/index.html:31–40`).
+
+### Verdict: APPROVED WITH CHANGES
+
+- **T22: approved** as a harness carve-out, with the exactly-one rule added (change 1).
+- **T24: approved as written.**
+- **T23: changes requested.** As specified it can't meet its own SC-012. I measured two defects in Chromium (change 2).
+- FR-051 needs the matching one-line edit. FR-052, SC-012 and the FR-034 and FR-036 edits are approved. SC-012 is the right test: it catches both T23 defects.
+- **No new ADR.** The carve-out rule only governs the golden harness, which is an F1a artifact, so it is recorded here and in thread 0006. If the harness outlives F1a (the polish-slice recapture), the rule moves into an ADR at that point.
+
+**Evidence (run fresh this round):**
+- `npm test`: `# tests 304`, `# pass 241`, `# fail 0`, `# todo 63`.
+- **T23 geometry:** I ran a Playwright script in the session scratchpad (not committed) on Chromium 141.0.7390.37 with `reducedMotion: 'reduce'`. It uses today's `styles.css` and play-screen markup, appends 12 lines and calls `scrollIntoView` after each one. After each line it applies SC-012's check: line rect vs `#stop-btn` rect grown by 18 px. Results at 390×900, 390×844 and 1280×900:
+
+| Variant | Lines passing SC-012 |
+|---|---|
+| Today | fails from line 2 |
+| **T23 as specified** (`scroll-margin-bottom` + `block: 'nearest'`) | 1 of 12 (390×900) |
+| `scroll-margin-bottom` + `block: 'end'` | 1 of 12 (390×900); every other line overlaps by exactly 4 px |
+| **`scroll-margin-bottom` + `block: 'end'` + `.stop { margin-top: 8px }`** | **12 of 12, all three viewports** |
+| Root `scroll-padding-bottom` + `nearest` + the margin | 12 of 12 (rejected below) |
+
+- Only Chromium is installed here, so WebKit and Firefox are unverified (R19).
+
+### 1. T22 ruling: a harness carve-out, not an allow-list entry
+
+**Confirmed.** The allow-list turns comparison **off** for a whole run. T22 keeps comparison **on** for every run and changes only how the harness *finds* one element. This follows the rule I set for the F1a-B20 harness fix (Wave 0 review, S5) and R2: a harness bug or a harness need is fixed in the harness under a named ticket and proven by a zero-diff replay, never by an allow-list entry.
+
+**The rule: a golden-harness change counts as a carve-out only if all seven of these hold.** If any one fails, the change is a recapture under a named ticket with the 3× certification.
+1. **The recorded layer stays byte-identical.** No edit to `tests/fixtures/golden/**` (run files, `manifest.json`, `allow-list.json`). `--replay --repeat 3` exits 0 on all 61 runs before and after the change.
+2. **It changes how an element is located, never what is compared.** Visibility, the `SELECT` rule, normalization, the recorded key, the diff, the driver's actions and every other layer stay unchanged.
+3. **The alias list is closed.** It maps one baseline key to an explicit list of literal ids, named in the ticket. No patterns, prefixes, `querySelector` fallbacks or "any select". T22 uses `{key: 'trade-select', ids: ['trade-select', 'scenario-select']}` and nothing else.
+4. **Exactly one id must match (change 1).** If more than one id in the list resolves to an element, the harness records `${key}: <ambiguous: id, id>`, so the run diffs. "First match wins" is not allowed. Why: if T17b left a populated `#trade-select` in the DOM next to an empty `#scenario-select`, first-match would read the stale control and hide a regression. If no id matches, nothing is recorded (as T22 says), and the missing line diffs.
+5. **Negative proof in the PR.** T22's `other-select` scratch run shows the alias is not a wildcard. Add one more scratch run with **both** ids present, which must diff on that line in every run.
+6. **One alias, one ticket.** A second alias needs its own ticket and an architect ruling. The alias list never grows silently, just like the allow-list.
+7. **Retirement.** The next named golden recapture (the polish slice's recapture ticket) re-keys the baseline to `scenario-select` and deletes the alias in the same change.
+
+**T22 as written meets 1–3, 5 (first half), 6 and 7.** Its Interfaces say "reads the **first** id … for which `document.getElementById` returns an element", which breaks rule 4.
+
+### 2. T23 and T24 against the invariants
+
+| Check | T23 (scroll) | T24 (voice ranker) |
+|---|---|---|
+| **Inv. 8, voice and text** | Holds. Scrolling doesn't depend on mode. SC-012 runs in both modes. | Holds. It only affects TTS, and text mode never calls `speak` with `enabled`. |
+| **Inv. 9, spoken = displayed** | Holds. No string, class or id changes. Not adding a class to `li` is right (golden records `line N class:`). | Holds. The voice identity is not text. No copy row is needed. |
+| **FR-011, no browser storage** | Holds. No storage is used. | Holds. No stored choice. The source scan bans `localStorage`, `sessionStorage` and `indexedDB` in `voices.js`. See S2 on the wording. |
+| **Inv. 7, degrade** | Holds once change 2 is applied. If an engine ignores `scroll-margin` on `scrollIntoView`, the line falls back to today's position, which is no worse than today. Suggestion: `window.matchMedia?.(…)` (optional O1). | Holds. `rankVoices` never throws and skips bad entries. `null` means the browser's default, which is exactly what happens today with an empty list. Ranking local voices only also lowers exposure to the Chrome network-voice cutoff, which leaves `onend` unfired and `play()` hung. The watchdog stays in the polish slice. That stall is pre-existing, not new. |
+| **T15 facade (FR-034)** | Not touched. | Holds. Only `web/speech/web-speech.js`'s selection lines change. `index.js`, `speak()`'s signature, one utterance per call, `rate`, `cancel`, `wait`, `listen` and `capabilities` stay unchanged. The pure `voices.js` belongs in `web/speech/`, not `shared/`, because only the browser runs it. |
+| **Inv. 1, deny-list** | n/a | Clean. David, Zira, Alex and eSpeak are not subject words. |
+| **Golden (FR-036)** | No diff. Golden records no geometry. | No diff. `browser-stubs.js:45` returns `[]`, and `pickVoice([])` returns `null`, as today's `voices[0] ?? null` does. |
+
+**T23 defects (both measured; see Evidence):**
+- **(a) `block: 'nearest'` doesn't scroll a line whose border box is already inside the viewport, even when its `scroll-margin` box isn't.** Chromium 141 checks visibility with the border box. So every line that is appended into the visible area under the stuck STOP stays under it. That is founder finding #4, unfixed (lines 4–6, 8, 9, 11 and 12 overlap by 36–287 px).
+- **(b) The 18 px ring is wider than the 14 px flex gap** (`.screen { gap: 14px }`, `.stop` `box-shadow … 18px`). So whenever the STOP sits in normal flow right below the last line, its ring covers that line's bottom 4 px. Box-shadow takes no layout space. This happens on every line once the transcript is taller than its 200 px `min-height`.
+
+**Rejected: root `scroll-padding-bottom`.** It also passes, but it applies to every focus scroll on the setup, panel and results screens, which is the PM's stated reason for choosing `scroll-margin`. That reason still holds.
+
+**T24 notes (non-blocking):**
+- The real-browser check must name the device: the founder's "robotic" finding was made on a specific device. On Linux Chrome, the only local voices are often eSpeak, so local-only ranking can sound *worse* than today's network "Google US English" (R20).
+- `MALE_RE` rarely matches real voice names (macOS, iOS and Windows names don't contain "Male"). It's harmless, and today's intent is kept (optional O2).
+
+### 3. File collisions and dependencies (Wave 2)
+
+**Checked and holds:**
+- **T22** edits `tests/golden/harness.mjs` only. T19b edits `run.mjs` only, and no other Wave 2 ticket touches `tests/golden/**`. T22 → T17b is the right edge: T22 is [P] with T12–T17a.
+- **T24** edits `web/speech/web-speech.js` (T15 → T24), creates `voices.js` and creates `tests/web-voices.test.js` (picked up by `npm test`'s `tests/**/*.test.js` glob). T17b–T17d *consume* the facade and never edit `web/speech/*`. T24 is [P] with T16–T18, T22 and T23.
+- **T23** edits `web/app.js` and `web/styles.css` after T17d (sequence T15 → T17b → T17c → T17d → T23). It shares no file with T18 (server, shared, scripts, README, two tests, `deny-list-allow.json`) or T19a (tests only). T19b depending on T23 and T24 is right.
+- **Owners:** T22 (qa-engineer, `tests/**`) and T23 and T24 (frontend-engineer, `web/**` plus its own unit test) all match the `CLAUDE.md` table.
+
+**Two gaps:**
+- **(i) T23's e2e tests are owned but not scheduled (change 3).** They are "added by qa-engineer … never by T23", but no ticket or step says *when*. They must exist as `todo: 'F1a-T23'` before T23 starts. That lets the engineer run them red → green, and they would have caught defects (a) and (b).
+- **(ii) A stale follow-up contradicts rev 4.5 (S1).** F1a-B20 (`tasks.md:745`) still says "Follow-up at T17b: recapture the two complete-aborted runs". Rev 4.5 says "`tests/fixtures/golden/**` is edited by no ticket after T03b", and B59's triage says "No Wave 2 ticket recaptures". **Ruling: no recapture in F1a.** The complete-aborted runs stay allow-listed, and the polish-slice recapture refreshes them.
+
+### 4. iOS home-screen PWAs: "API present but silent" (recommendation to the PM; no scope change)
+
+**Recommendation: F2, with a gate, and nothing in F1a.**
+- **It can't happen in F1a.** `web/index.html` has no web manifest and no `apple-mobile-web-app-capable` meta, so iOS doesn't launch the app standalone, and recognition works in Safari tabs (research §1, row 1). The failure needs an installable PWA, which F1a doesn't ship.
+- **F1a is behavior-neutral.** A start timeout changes the mic flow and needs copy-table rows. That belongs in the F2 `mode-fallback` work (`voice-first.md:63`: "permission is denied, or 3 recognitions fail in a row").
+- **The T15 facade already fits, with no shape change.** `listen()` returns `{result, stop}`, and `result` can reject with a reason such as `'no-start'` after a deadline. `capabilities.canListen` stays a static capability flag. F1a needs no contract work to keep the option open.
+- **Gate:** the ticket that adds a web manifest with `display: standalone` (or the apple meta) must not merge before "silent" detection lands. The rule: `start()` called and no `start` or `audiostart` event within a deadline (proposal: 3 s) counts as a failed recognition toward the `mode-fallback` rule, with visible copy.
+- **Residual today, any browser:** if a recognizer never fires `end`, `game.mic` never clears and the mic button stays "■ Done talking" for the session (`web/app.js:125–138`). Text still works, because Submit doesn't await the mic (`:141–143`). So inv. 8 holds for text and nothing stalls. PM: log it under "Non-goals / Later" for F2 so it isn't lost.
+- **My follow-up:** when F2 is specced, I'll add "detected but silent counts as a failure" to `voice-first.md`.
+
+### Required changes (PM; before T22 and T23 start)
+
+1. **T22 Interfaces:** replace "reads the **first** id in `ids` for which `document.getElementById` returns an element" with "exactly one id in `ids` must resolve to an element. If two or more do, record `${key}: <ambiguous: …>` (a diff). If none does, record nothing." Add to Tests: "a scratch copy with both `id="trade-select"` and `id="scenario-select"` present reports a diff on that line in every run." Mark the [ARCH DECISION NEEDED] on T22 and in the spec's edge case as resolved by this section.
+2. **T23 Interfaces and FR-051:**
+   - The call becomes `li.scrollIntoView({ behavior: REDUCED_MOTION.matches ? 'auto' : 'smooth', block: 'end' })`. (`'end'` honors `scroll-margin-bottom`; `'nearest'` doesn't when the line is already visible.)
+   - Add `.stop { margin-top: 8px; }`. With the 14 px gap that gives 22 px, which clears the 18 px ring by 4 px.
+   - Update the "Cause" bullet with defect (b).
+   - FR-051 adds "with `block: 'end'`".
+   - SC-012 is unchanged.
+3. **Schedule T23's e2e tests:** state who adds them and when. My recommendation: QA, in the same change that verifies T17d, as `todo: 'F1a-T23'` tests. T23 starts only after they exist.
+
+### Should fix (non-blocking)
+
+- **S1 (PM):** strike or annotate F1a-B20's "Follow-up at T17b: recapture …" per the §3 (ii) ruling.
+- **S2 (PM):** FR-011 is the answer-leak rule. It says nothing about browser storage, yet FR-052, the polish slice ("needs an FR-011 exception") and the e2e test all cite it for "storage stays empty". Add one clause, in FR-011 or a new FR: "the browser writes nothing to `localStorage`, `sessionStorage` or IndexedDB". Then the polish slice's exception has something exact to amend.
+
+### Optional
+
+- **O1 (frontend-engineer, T23):** `const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)')` and `REDUCED_MOTION?.matches`. Every target browser has `matchMedia`; this only removes a theoretical load-time throw.
+- **O2 (frontend-engineer, T24):** add a comment that `MALE_RE` rarely matches real voice names. Keep it; it fixes the regex bug, and nothing depends on it.
+
+### Risks (devil's advocate on rev 4.5)
+
+| # | Failure mode | Likelihood | Impact | Mitigation |
+|---|---|---|---|---|
+| R18 | **The alias becomes a precedent.** Every later rename gets "just one more alias", and the harness drifts from "frozen" to "adjusted until green". | M | H | §1 rules 3, 6 and 7: a closed list, one ticket per alias with an architect ruling, and retirement at the next recapture. Reject any alias that isn't caused by a ticketed rename. |
+| R19 | **T23 is proven in one engine.** The e2e suite and my measurements run Chromium only. WebKit (iOS Safari, the mobile end goal) may treat `scroll-margin` on `scrollIntoView` differently. | M | M | Degrades to today's position, no worse. The T23 real-browser check adds iOS Safari or desktop Safari if one is available, with a screenshot. If not, record it as unverified in the PR. |
+| R20 | **Local-only ranking sounds worse on some platforms.** On Linux Chrome the local voices are often eSpeak, while today's pick there may be a network Google voice. The founder's "robotic" finding could get worse, not better. | M | M | The T24 PR quotes `getVoices()` and the pick **on the founder's device**. If the pick is eSpeak or David, the PM decides before merge whether to wait for the polish slice's splitting plus network voices. |
+| R21 | **Golden is blind to both T23 and T24,** so a later CSS or speech change can silently undo them. | M | M | SC-012's e2e test and `tests/web-voices.test.js` stay in the suites permanently. The polish-slice recapture must keep both green. |
+| R22 | **`block: 'end'` pulls a learner who scrolled up to reread back down** on every new line. | L | L | `'nearest'` does the same for any line outside the viewport, so this isn't new. Accept. The polish slice can add "follow only when at bottom". |
