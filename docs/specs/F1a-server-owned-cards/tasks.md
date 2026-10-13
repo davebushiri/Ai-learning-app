@@ -799,3 +799,8 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
   1. Always allow `tasks.md` when its diff only adds lines.
   2. T19b checks those appends by hand.
 - Lead: from now on, bug filings go in their own commit. · Owner: technical-product-manager (choose 1 or 2; option 1 changes the T11 contract)
+
+*Filed by the lead from the PM's roadmap review (thread 0006, 2026-10-13).*
+
+### F1a-B76 [major] The golden harness will fail at T17b: it reads `#trade-select`, which T17b renames
+- Actual: T17b renames `#trade-select` to `#scenario-select` (tasks.md, T17b), but the frozen harness reads `'trade-select'` (`tests/golden/harness.mjs:231`; baseline `perfect-electrical-text.json:9`). That's a diff in all 57 runs that aren't allow-listed. · Expected: a one-line harness fix, sequenced before T17b, that finds the control either way without changing the recorded layer. · Owner: qa-engineer; principal-architect to confirm it's a harness carve-out, not an allow-list entry. **Blocks T17b.**
