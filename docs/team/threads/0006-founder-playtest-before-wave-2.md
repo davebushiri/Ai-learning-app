@@ -62,3 +62,12 @@ Tell the lead in chat, or append below. One entry per finding:
 - **Why these:** both are immediately usable, and the founder's network is in the same situations, so they can test and catch bugs.
 
 The lead is running research on all of the above. The PM then sorts each item into Wave 2, F1b, F2 or later.
+
+### founder · 2026-10-13 · DECISION
+*Recorded by the lead from the founder's chat answers on 2026-10-13.*
+1. **Name:** explore further. No pick yet.
+2. **Order** (content now → Wave 2 + scroll fix → polish slice → F1b → PMP pack → F2): agreed in principle, but research further before taking any steps.
+3. **PMP content:** yes, in parallel with Wave 2. Research free online papers and material first, then help the founder create scenarios that teach the material.
+4. **New request:** learn from Lathoa (a working "spot the AI's mistake" product). Find whether it, or something similar, is open source and could be adapted, so we don't reinvent the wheel.
+
+**Wave 2 stays on hold** until the research is in and the founder says go.
