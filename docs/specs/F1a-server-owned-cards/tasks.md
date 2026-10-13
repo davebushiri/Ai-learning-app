@@ -631,7 +631,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 ### F1a-T19b F1a exit evidence and `qa-report.md`
 - **Owner:** qa-engineer
 - **Size:** M
-- **Depends on:** F1a-T19a, F1a-T11, F1a-T01b
+- **Depends on:** F1a-T19a, F1a-T11, F1a-T01b, F1a-T23, F1a-T24 (rev 4.5: the exit evidence covers the Wave 2 additions; T22 is covered through T17b)
 - **Files:** create `tests/perf/stop-latency.mjs`, `docs/specs/F1a-server-owned-cards/qa-report.md`; modify `tests/golden/run.mjs` (one line; rev 4.4, F1a-B59)
 - **Interfaces:**
   - Changes (`tests/golden/run.mjs:83`, F1a-B59, rev 4.4): `treeSha256()` walks `['server', 'shared', 'web', 'packs']` instead of `['server', 'shared', 'web', 'fixtures']`, so the capture-time provenance stamp covers scenario content again. Nothing else in the harness changes. `tests/fixtures/golden/manifest.json` is **not** edited and no run is recaptured: the stamp is capture-time metadata, never read at replay, and is refreshed by the next capture under a named ticket.
@@ -665,20 +665,23 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 | 2 | F1a-T21 [P] | backend-engineer | S | T07b |
 | 2 | F1a-T14 | backend-engineer | M | T13b, T21 |
 | 2 | F1a-T15 [P] | frontend-engineer | S | T03b |
+| 2 | F1a-T24 [P] | frontend-engineer | S | T15 (rev 4.5) |
 | 2 | F1a-T16 [P] | qa-engineer | M | T14 |
 | 2 | F1a-T17a [P] | frontend-engineer | S | T03b |
-| 2 | F1a-T17b | frontend-engineer | M | T14, T15, T17a |
+| 2 | F1a-T22 [P] | qa-engineer | S | T03b (rev 4.5; must merge before T17b) |
+| 2 | F1a-T17b | frontend-engineer | M | T14, T15, T17a, T22 |
 | 2 | F1a-T17c | frontend-engineer | M | T17b |
 | 2 | F1a-T17d | frontend-engineer | S | T17c |
+| 2 | F1a-T23 [P] | frontend-engineer | S | T17d (rev 4.5) |
 | 2 | F1a-T18 | backend-engineer | M | T16, T17d |
 | 2 | F1a-T19a | qa-engineer | M | T18, T01a |
-| 2 | F1a-T19b | qa-engineer | M | T19a, T11, T01b |
+| 2 | F1a-T19b | qa-engineer | M | T19a, T11, T01b, T23, T24 |
 
-30 tickets (revision 3 had 21), all S or M; the scope is unchanged apart from the thread-0004 additions (failure matrix, timing contract, join, accessibility, stale-response guards, empty-list copy). Backend critical path: T04 → T06 → T07a → T07b → T08b → T09/T10 → T12 → T13b → T14 → T18. T08a, T13a, T20 and T21 come off it. The backend engineer may build T08a while T07a/T07b are in review, and T13a while T08b–T12 are.
+33 tickets (revision 4.4 had 30; rev 4.5 adds T22, T23 and T24, founder DECISION in thread 0006), all S or M; the scope is unchanged apart from the thread-0004 additions (failure matrix, timing contract, join, accessibility, stale-response guards, empty-list copy). Backend critical path: T04 → T06 → T07a → T07b → T08b → T09/T10 → T12 → T13b → T14 → T18. T08a, T13a, T20 and T21 come off it. The backend engineer may build T08a while T07a/T07b are in review, and T13a while T08b–T12 are.
 
-**What can start now (thread 0004):** T01a and T02 at once; T03a after T02; T01b after T01a and T03a; everything else when its `Depends on` merges and, except T01a, T01b, T02 and T03a, after T03b (merge gate). T15 and T17a may start any time after T03b. The architect verifies the thread-0004 rulings in code review against the tests they name.
+**What can start now (thread 0004):** T01a and T02 at once; T03a after T02; T01b after T01a and T03a; everything else when its `Depends on` merges and, except T01a, T01b, T02 and T03a, after T03b (merge gate). T15 and T17a may start any time after T03b. Rev 4.5: T22 may start any time after T03b and the architect's carve-out confirmation; T24 after T15; T23 after T17d. All three wait for the founder's go on Wave 2 (thread 0006). The architect verifies the thread-0004 rulings in code review against the tests they name.
 
-**[P] collision check:** T01a ∥ T02 (tests/acceptance vs. prompts/scenario.js). T04 ∥ T05 ∥ T20 (index.js, routes, services vs. prompts vs. packs/pack.json, shared/pack.js, tests/pack-format). T08a ∥ T07a, T07b, T11, T20 (server/ai/*, tests/gateway.test.js vs. packs, server/packs.js, index.js, content.js, contract.js, tests vs. ownership files vs. pack.json). T07a → T07b → T08b sequential (`server/services/content.js`, test files). T09 ∥ T10 ∥ T11 (fake-claude.mjs and gateway.test.js `after` hook vs. deny-list files vs. ownership files). T13a ∥ T08b, T09, T10, T11, T12, T21 (shared/events.js, server/services/stop-plan.js, tests/events.test.js, tests/stop-plan.test.js, tests/mock-verdicts.test.js, the verdict fixture vs. their files; T13a starts after T07b). T21 ∥ T12, T13a, T13b (shared/scoring.js vs. server, events.js, mock-grader.js, contract.js). T15 ∥ T17a ∥ T12–T14, T21 (web/speech, web/app.js vs. web/copy.js vs. server and shared). T16 ∥ T17a–T17d (tests vs. web). Split parts never run in parallel: T01a → T01b, T03a → T03b, T07a → T07b, T08a → T08b, T13a → T13b, T17a → T17b → T17c → T17d, T19a → T19b. The `web/app.js` edits run T15 → T17b → T17c → T17d.
+**[P] collision check:** T01a ∥ T02 (tests/acceptance vs. prompts/scenario.js). T04 ∥ T05 ∥ T20 (index.js, routes, services vs. prompts vs. packs/pack.json, shared/pack.js, tests/pack-format). T08a ∥ T07a, T07b, T11, T20 (server/ai/*, tests/gateway.test.js vs. packs, server/packs.js, index.js, content.js, contract.js, tests vs. ownership files vs. pack.json). T07a → T07b → T08b sequential (`server/services/content.js`, test files). T09 ∥ T10 ∥ T11 (fake-claude.mjs and gateway.test.js `after` hook vs. deny-list files vs. ownership files). T13a ∥ T08b, T09, T10, T11, T12, T21 (shared/events.js, server/services/stop-plan.js, tests/events.test.js, tests/stop-plan.test.js, tests/mock-verdicts.test.js, the verdict fixture vs. their files; T13a starts after T07b). T21 ∥ T12, T13a, T13b (shared/scoring.js vs. server, events.js, mock-grader.js, contract.js). T15 ∥ T17a ∥ T12–T14, T21 (web/speech, web/app.js vs. web/copy.js vs. server and shared). T16 ∥ T17a–T17d (tests vs. web). **Rev 4.5:** T22 ∥ every Wave 2 ticket up to T17b (`tests/golden/harness.mjs` only; T19b edits `run.mjs` only; no ticket edits `tests/fixtures/golden/**`), and T22 → T17b. T24 ∥ T12–T14, T16, T17a–T17d, T18, T22, T23 (`web/speech/voices.js`, `web/speech/web-speech.js`, `tests/web-voices.test.js` vs. their files; no other ticket edits `web/speech/*` after T15). T23 ∥ T18, T19a, T24 (`web/styles.css`, `web/app.js` vs. server, shared, scripts, README and tests); T23 is sequenced after T17d because both edit `web/app.js` and `web/styles.css`. T23's e2e tests go into `tests/e2e/F1a.e2e.mjs` through QA's verification, which is already sequential. Split parts never run in parallel: T01a → T01b, T03a → T03b, T07a → T07b, T08a → T08b, T13a → T13b, T17a → T17b → T17c → T17d, T19a → T19b. The `web/app.js` edits run T15 → T17b → T17c → T17d → T23; `web/styles.css` T17c → T17d → T23; `web/speech/web-speech.js` T15 → T24.
 
 ## Bugs (QA appends)
 
@@ -886,3 +889,4 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 
 ### F1a-B76 [major] The golden harness will fail at T17b: it reads `#trade-select`, which T17b renames
 - Actual: T17b renames `#trade-select` to `#scenario-select` (tasks.md, T17b), but the frozen harness reads `'trade-select'` (`tests/golden/harness.mjs:231`; baseline `perfect-electrical-text.json:9`). That's a diff in all 57 runs that aren't allow-listed. · Expected: a one-line harness fix, sequenced before T17b, that finds the control either way without changing the recorded layer. · Owner: qa-engineer; principal-architect to confirm it's a harness carve-out, not an allow-list entry. **Blocks T17b.**
+- **Triage (rev 4.5):** scheduled as **F1a-T22** (qa-engineer, S), approved by the founder (thread 0006, founder DECISION item 5). T17b depends on T22. The architect's confirmation is recorded on T22 as [ARCH DECISION NEEDED].

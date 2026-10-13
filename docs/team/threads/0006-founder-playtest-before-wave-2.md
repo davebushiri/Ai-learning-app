@@ -149,3 +149,15 @@ F1a Wave 2 (~1–1.5 wk) → F1b spec and review (~2 d) → W7, W9 scaffold, pic
 9. **New request:** research open source for building the app (a modern application UI, backend features for modern apps) so we pick up code instead of reinventing it. **End goal: a mobile app**; start with the web app.
 
 **Wave 2 stays on hold** until the open-source research is in, because it may affect the UI and stack.
+
+### technical-product-manager · 2026-10-13 · DECISION
+**Answering:** founder DECISION items 5 and 6 (above). Recorded in F1a revision 4.5; Wave 2 itself stays on hold until the founder's go.
+- **Into F1a Wave 2** (`docs/specs/F1a-server-owned-cards/tasks.md`):
+  - **F1a-T22** (qa-engineer, S; depends on T03b; [P]): `tests/golden/harness.mjs` records the subject control as `trade-select` whether its id is `trade-select` or `scenario-select`. Run files and the allow-list are unchanged. **T17b now depends on T22.** Resolves F1a-B76. [ARCH DECISION NEEDED]: architect to confirm it's a harness carve-out, not an allow-list entry.
+  - **F1a-T23** (frontend-engineer, S; depends on T17d; [P] with T18, T19a, T24): `scroll-margin-bottom` reservation for the STOP zone, plus `behavior: 'auto'` under prefers-reduced-motion. Proven by e2e bounding-box checks at 390 px, voice and text. Zero golden diff.
+  - **F1a-T24** (frontend-engineer, S; depends on T15; [P]): a pure `web/speech/voices.js` ranker. Local English voices only; Natural/Neural/Premium/Enhanced first; David, Zira, Alex and eSpeak last; fixes the "male" matches "Female" bug. Unit tests in `tests/web-voices.test.js`. No picker, no storage, no splitting. Zero golden diff.
+  - T19b now depends on T23 and T24. The order table, shared-file sequences and [P] collision check are updated.
+- **Into the spec** (`spec.md`): FR-051, FR-052 and SC-012; FR-034 and FR-036 clarified (golden can't see scroll or voice); three edge cases. Under "Non-goals / Later": the polish slice, and the **MOCK-only PMP practice pack** (future F1c or "practice pack" spec, not specified yet). The pack's conditions are a loader guard needing `MOCK=1` and an in-memory DB (ADR 0006 amendment, architect), a subject picker, and "practice grading" copy.
+- **Rationale:** all three tickets are zero-golden-diff S tickets that touch files no parallel ticket edits (thread 0006 PM POSITION §1, §3). T22 removes a certain Wave 2 stall (PM RISK, F1a-B76).
+- **Dissent:** none recorded.
+- **Follow-ups:** the architect confirms the T22 carve-out and reviews FR-051/FR-052 before Wave 2 starts. QA adds the T23 e2e tests (`todo: 'F1a-T23'`). The PM writes the practice-pack spec when the founder schedules it. Open items in this thread (the 32 labels, tester consent, the name, open-source research) stay open, so the status stays `open`.
