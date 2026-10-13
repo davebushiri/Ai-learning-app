@@ -130,3 +130,22 @@ F1a Wave 2 (~1–1.5 wk) → F1b spec and review (~2 d) → W7, W9 scaffold, pic
 ### learning-designer · 2026-10-13 · CHALLENGE
 *Appended by the lead.*
 `validateScenario()` in `shared/contract.js` rejects zero-mistake runs: it requires exactly one critical, one major and one minor mistake. But `user-flow.md`, `ai-flow.md` and `data-and-evidence.md` all plan clean control runs. Verified: the draft control `pmp-control-sprint-review-01.json` fails with "needs at least one mistake". The other 9 drafts pass. **Decider:** principal-architect + PM, before any clean-run card ships (F2).
+
+### founder · 2026-10-13 · DECISION
+*Recorded by the lead from the founder's chat answers on 2026-10-13, replying to the PM's questions.*
+1. **API key (F-3):** held until we're ready for beta testers. So F1b's W7 live gate, and live PMP grading, wait for beta.
+2. **The 32 grader labels:** the founder asked what this is. The lead explains it in chat. Still open.
+3. **PMP reviewer:** the founder has a PMP-certified reviewer. The lead prepares a reviewer brief and a way to forward it.
+4. **Exam date:** none registered yet.
+5. **Wave 2 additions approved:** the golden-harness fix for F1a-B76, the scroll fix (founder finding #4) and the local-only voice ranker.
+6. **Practice-only PMP pack: exception granted.** A MOCK-only, in-memory PMP pack for local play is allowed before F1b's gate. The PM's conditions apply:
+   - a loader guard that refuses the pack unless `MOCK=1` and an in-memory database (ADR 0006 amendment);
+   - a subject picker;
+   - "practice grading" copy.
+
+   This is an exception to the F2 hard rule, scoped to local MOCK play only.
+7. **Tester consent:** yes. Research first how others run consent for beta and playtest data.
+8. **Name:** waits until a public pilot. Keep brainstorming.
+9. **New request:** research open source for building the app (a modern application UI, backend features for modern apps) so we pick up code instead of reinventing it. **End goal: a mobile app**; start with the web app.
+
+**Wave 2 stays on hold** until the open-source research is in, because it may affect the UI and stack.
