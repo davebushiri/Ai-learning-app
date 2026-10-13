@@ -1,0 +1,94 @@
+{
+  "id": "scenario-workshop",
+  "module": "k1",
+  "prerequisites": [],
+  "difficulty": 2,
+  "sources": [
+    {
+      "title": "Kite Craft field notes (fictional)",
+      "url": "https://example.org/kite-craft/notes",
+      "verified": true
+    },
+    {
+      "title": "Kite Craft club handbook (fictional)",
+      "url": "https://example.org/kite-craft/handbook",
+      "verified": false,
+      "note": "draft source, not yet checked"
+    }
+  ],
+  "type": "scenario",
+  "objective": "Plan a kite-building workshop for children.",
+  "concepts": [
+    "site-planning"
+  ],
+  "referenceIds": [
+    "sites"
+  ],
+  "brief": "A library wants a kite-building workshop for 20 children in one afternoon.",
+  "constraints": [
+    "one room with six tables",
+    "one adult volunteer per table"
+  ],
+  "clarifications": [
+    {
+      "askAbout": [
+        "age|how old"
+      ],
+      "reveal": "The children are eight to ten years old."
+    }
+  ],
+  "acceptableArchitectures": [
+    {
+      "id": "indoor-build",
+      "summary": "Build at tables indoors, then a short test flight outside.",
+      "mustInclude": [
+        "build at tables|indoor build",
+        "short test flight|test outside"
+      ]
+    },
+    {
+      "id": "outdoor-build",
+      "summary": "Build on the field with weighted tables.",
+      "mustInclude": [
+        "build on the field|outdoor build",
+        "weights on materials|weighted tables"
+      ],
+      "strengths": [
+        "fly as soon as built"
+      ],
+      "tradeoffs": [
+        "wind scatters materials"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "question": "What if it rains?",
+      "rubric": [
+        "indoor plan|stay inside",
+        "fly next week|reschedule"
+      ]
+    }
+  ],
+  "rubric": {
+    "mustCover": [
+      "kit for each child|materials per child",
+      "adult at every table|supervision",
+      "time to decorate|decoration"
+    ],
+    "strongSignals": [
+      "pre-cut sticks"
+    ],
+    "redFlags": [
+      "children use craft knives"
+    ]
+  },
+  "followUp": "What is hard about running this with only six tables?",
+  "transfer": {
+    "scenario": "A museum wants the same workshop for 40 adults.",
+    "rubric": [
+      "kit for each person|materials per person",
+      "more tables|bigger room"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "format": "practice-v1",
+  "id": "kite-craft",
+  "version": 1,
+  "title": "Kite Craft",
+  "modules": [
+    {
+      "id": "k1",
+      "title": "Lines, wind and launch sites",
+      "exercises": [
+        "catch-lines",
+        "catch-clean",
+        "learn-wind",
+        "interview-launch",
+        "scenario-festival",
+        "scenario-workshop"
+      ]
+    }
+  ],
+  "lexicon": {
+    "synonyms": {
+      "helper": [
+        "friend",
+        "assistant"
+      ]
+    }
+  },
+  "provenance": {
+    "builtBy": "qa-engineer, F1c-T01a acceptance fixture (fictional subject)"
+  }
+}

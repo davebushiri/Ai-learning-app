@@ -1,0 +1,111 @@
+{
+  "id": "scenario-festival",
+  "module": "k1",
+  "prerequisites": [],
+  "difficulty": 3,
+  "sources": [
+    {
+      "title": "Kite Craft field notes (fictional)",
+      "url": "https://example.org/kite-craft/notes",
+      "verified": true
+    },
+    {
+      "title": "Kite Craft club handbook (fictional)",
+      "url": "https://example.org/kite-craft/handbook",
+      "verified": false,
+      "note": "draft source, not yet checked"
+    }
+  ],
+  "type": "scenario",
+  "objective": "Plan a safe kite display for a town festival.",
+  "concepts": [
+    "site-planning"
+  ],
+  "referenceIds": [
+    "sites"
+  ],
+  "brief": "A town festival wants a kite display for 200 visitors on a field next to a road.",
+  "constraints": [
+    "the field is 80 metres wide",
+    "the display lasts two hours"
+  ],
+  "clarifications": [
+    {
+      "askAbout": [
+        "wind forecast|weather"
+      ],
+      "reveal": "The forecast says steady wind from the west all afternoon."
+    },
+    {
+      "askAbout": [
+        "budget|money"
+      ],
+      "reveal": "There is money for ten display kites."
+    }
+  ],
+  "acceptableArchitectures": [
+    {
+      "id": "single-line-show",
+      "summary": "Large single-line kites flown from the far end of the field.",
+      "strengths": [
+        "easy to staff"
+      ],
+      "tradeoffs": [
+        "less movement in the sky"
+      ]
+    },
+    {
+      "id": "stunt-team",
+      "summary": "A small stunt team flies dual-line kites in turns.",
+      "strengths": [
+        "an exciting display"
+      ],
+      "tradeoffs": [
+        "needs skilled fliers"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "question": "What if the wind drops halfway through?",
+      "rubric": [
+        "spare light wind kites|backup kites",
+        "pause the display|short break"
+      ]
+    },
+    {
+      "question": "How do you keep the road safe?",
+      "rubric": [
+        "fly away from the road|keep kites over the field",
+        "marshals at the edge|barrier tape"
+      ]
+    }
+  ],
+  "rubric": {
+    "mustCover": [
+      "spectators behind a barrier|crowd zone",
+      "fly away from the road|keep kites over the field",
+      "safety briefing for fliers|brief the team"
+    ],
+    "strongSignals": [
+      "check the forecast"
+    ],
+    "redFlags": [
+      "fly over the crowd"
+    ]
+  },
+  "followUp": {
+    "question": "What do you give up with a bigger display?",
+    "rubric": [
+      "more tangles|lines cross",
+      "more fliers needed|more staff"
+    ]
+  },
+  "transfer": {
+    "scenario": "A school asks for a display on a playground next to a car park.",
+    "rubric": [
+      "keep kites away from cars|away from the car park",
+      "children behind a barrier|crowd zone"
+    ]
+  }
+}

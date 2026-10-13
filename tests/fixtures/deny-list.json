@@ -3,6 +3,8 @@
     "trade", "trades", "journeyman", "electrical", "electrician", "hvac", "automotive",
     "receptacle", "breaker", "gfci", "gfi", "backstab", "nitrogen", "nitro", "refrigerant",
     "braze", "brazing", "extinguisher", "caliper", "jack stand", "jackstand",
-    "de-energized", "deenergized", "nec", "osha", "epa", "jobsite", "got hurt"
+    "de-energized", "deenergized", "nec", "osha", "epa", "jobsite", "got hurt",
+    "rag", "embedding", "embeddings", "vector", "vectors", "bedrock", "aws", "sagemaker", "opensearch",
+    "kendra", "chunking", "reranker", "reranking", "hallucination", "hallucinations", "fine-tuning", "applied-ai"
   ]
 }

@@ -1,0 +1,58 @@
+{
+  "days": 2,
+  "minutesPerDay": 60,
+  "diagnostic": [
+    "catch-lines",
+    "interview-launch"
+  ],
+  "plan": [
+    {
+      "day": 1,
+      "blocks": [
+        {
+          "kind": "diagnostic",
+          "minutes": 15
+        },
+        {
+          "kind": "learn",
+          "minutes": 15,
+          "exercises": [
+            "learn-wind"
+          ]
+        },
+        {
+          "kind": "catch",
+          "minutes": 30,
+          "exercises": [
+            "catch-lines",
+            "catch-clean"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "blocks": [
+        {
+          "kind": "scenario",
+          "minutes": 30,
+          "exercises": [
+            "scenario-festival",
+            "scenario-workshop"
+          ]
+        },
+        {
+          "kind": "interview",
+          "minutes": 20,
+          "exercises": [
+            "interview-launch"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 10
+        }
+      ]
+    }
+  ]
+}

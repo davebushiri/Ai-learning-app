@@ -1,0 +1,477 @@
+[
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "A thicker line is heavier and has more drag, so it pulls the kite lower in the sky. Use a thinner line and the kite climbs higher.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "stop"
+    ]
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s5",
+    "answer": "Check for frays before every flight, because sunlight and rubbing weaken the line over time and its rating does not last.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "stop",
+      "negated-item"
+    ],
+    "note": "correct item 'rating does not last' contains a negator, so the 'not' before 'last' must not make it uncertain (PD-2)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s5",
+    "answer": "Sunlight and rubbing weaken the line, so check for frays before you fly: its strength is not permanent.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "stop",
+      "negated-item",
+      "pipe-alt"
+    ],
+    "note": "matched alternative 'strength is not permanent' contains a negator (PD-2)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "The heavier line adds weight that pulls the kite lower. A thinner line climbs higher in the same wind.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "stop",
+      "two-of-three"
+    ],
+    "note": "explain: 2 of 3 items is met (PD-3)"
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "First I check the wind direction, clear an open area around me, and have a helper hold the kite while I let out line.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "Check the wind direction, keep an open space around me and get a helper to hold the kite. I wouldn't sprint downwind.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "rejected-red-flag",
+      "pipe-alt"
+    ],
+    "note": "names and rejects the red flag (FR-022, PD-2)"
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:0",
+    "answer": "Steady wind gives even lift, but gusts cause dives and sudden drops that are hard to control.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:1",
+    "answer": "Stand with the wind at your back in an open space so the kite can catch the breeze as you let it go.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "two-of-three"
+    ],
+    "note": "2 of 3 items is met (PD-3)"
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "challenges:0",
+    "answer": "Keep a few spare light wind kites ready, and if it gets too calm, pause the display while we wait.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "design",
+    "answer": "Put spectators behind a barrier, fly away from the road, and hold a safety briefing for fliers before we start. I'd check the forecast too.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "no-must-include"
+    ],
+    "note": "no architecture has mustInclude, so design equals mustCover (FR-043)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "Thicker line is fine, it just looks nicer to the crowd.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "stop"
+    ]
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s5",
+    "answer": "The reel should be painted a bright colour so you can see it.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "stop"
+    ]
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "Tie the kite to a bench and wait for the wind to lift it by itself.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:0",
+    "answer": "Gusty wind is better because it is more exciting to watch.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:1",
+    "answer": "Stand under the tall trees so the kite stays sheltered and calm.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "challenges:1",
+    "answer": "Ask drivers to slow down and hope for the best.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "design",
+    "answer": "Let everyone fly wherever they like and sell snacks.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "transfer",
+    "answer": "Paint the kites in school colours so the children like them.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "followUps:0",
+    "answer": "Run after it and grab the tail.",
+    "class": "incorrect",
+    "expect": "not_met",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "The heavier line adds weight.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "stop"
+    ],
+    "note": "explain 1 of 3, correct 0 of 2: overall partial (FR-011)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s5",
+    "answer": "Rubbing on rocks can wear it down.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "stop"
+    ]
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "I would check the wind direction and then let it fly.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:1",
+    "answer": "Find an open space to stand in.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "design",
+    "answer": "Put spectators behind a barrier and enjoy the show.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer",
+      "no-must-include"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "followUp",
+    "answer": "There will be more tangles with lots of kites.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer"
+    ],
+    "note": "1 of 2 items: partial (met needs 2 of 2)"
+  },
+  {
+    "exercise": "scenario-workshop",
+    "part": "design",
+    "answer": "Build at tables indoors with a kit for each child.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer",
+      "must-include"
+    ],
+    "note": "mustCover partial, best architecture partial: min is partial (FR-043)"
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "challenges:1",
+    "answer": "Station marshals at the edge of the field.",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer"
+    ]
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "Heavier line drags the kite lower. Use a slim cord and the kite gains altitude.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "stop",
+      "acceptable-correction"
+    ],
+    "note": "correction matches acceptableCorrections[1], not rubric.correct (FR-020)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s5",
+    "answer": "Abrasion and sun damage weaken it over time, so replace the cord when it looks worn.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "stop",
+      "acceptable-correction",
+      "pipe-alt"
+    ]
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "Check the wind direction, find an open space, and ask a friend to hold the kite up for you.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "lexicon"
+    ],
+    "note": "'friend' satisfies 'helper' through lexicon.synonyms"
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:0",
+    "answer": "Constant lift from steady air keeps it stable, while sudden drops come from gusts.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "pipe-alt"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "challenges:0",
+    "answer": "Have backup kites for light air, and take a short break until the wind returns.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "pipe-alt"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "design",
+    "answer": "Put spectators behind a barrier, keep kites over the field, and brief the team on safety.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "pipe-alt",
+      "no-must-include"
+    ]
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "transfer",
+    "answer": "Check which way the wind blows off the water, and expect a steady sea breeze that keeps the kite up all afternoon.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "pipe-alt"
+    ]
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "followUps:0",
+    "answer": "Let the line go slack and turn away from people so it lands safely.",
+    "class": "valid-alternative",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "pipe-alt"
+    ]
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "Kites are colourful toys that families enjoy at beaches and parks during long summer holidays, and many people collect unusual designs from different countries around the world, then decorate their walls with bright ribbons, paper tails and painted dragons.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "stop",
+      "long-unmatched"
+    ],
+    "note": "FR-021(a)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "The weight doesn't matter and it never pulls the kite lower, so thicker line is fine.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "stop",
+      "negation"
+    ],
+    "note": "FR-021(b): negator before matched tokens of an item with no negator"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s5",
+    "answer": "A line rated for twice the kite's pull never wears out, that is what the label says.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "stop",
+      "echo"
+    ],
+    "note": "FR-021(c)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "Thicker line always lets a kite fly higher because it is stronger, I think.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "stop",
+      "echo"
+    ],
+    "note": "FR-021(c)"
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "I'd sprint downwind to get it up fast, after I check the wind direction and clear an open area.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "answer",
+      "asserted-red-flag"
+    ],
+    "note": "FR-022"
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "Launch near the road where there is the most room, check the wind direction and have a helper hold the kite.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "answer",
+      "asserted-red-flag"
+    ]
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "design",
+    "answer": "Fly over the crowd so everyone gets a close view, with spectators behind a barrier.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "answer",
+      "asserted-red-flag"
+    ]
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:0",
+    "answer": "I really enjoyed the story about the colourful festival and the music, the food stalls, the painted faces, the dancing children, the bright banners and the friendly volunteers who handed out free lemonade all day long.",
+    "class": "should-flag",
+    "expect": "uncertain",
+    "tags": [
+      "answer",
+      "long-unmatched"
+    ],
+    "note": "FR-021(a)"
+  }
+]

@@ -325,7 +325,7 @@ test('check-ticket finds the Files line of a suffixed ticket (F1a-T07a) and reje
   assert.match(bare.stderr, /unknown ticket/);
   const malformed = runCheckTicket(['F1a-T7']);
   assert.equal(malformed.status, 1, malformed.stderr);
-  assert.match(malformed.stderr, /\^F1a-T\\d\\d\[a-d\]\?\$/);
+  assert.match(malformed.stderr, /\^F1\[ac\]-T\\d\\d\[a-d\]\?\$/);
 });
 
 test('check-ticket compare: extra files are reported; listed, globbed and always-allowed files pass', async () => {

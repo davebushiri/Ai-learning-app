@@ -1,0 +1,61 @@
+{
+  "id": "interview-launch",
+  "module": "k1",
+  "prerequisites": [],
+  "difficulty": 2,
+  "sources": [
+    {
+      "title": "Kite Craft field notes (fictional)",
+      "url": "https://example.org/kite-craft/notes",
+      "verified": true
+    },
+    {
+      "title": "Kite Craft club handbook (fictional)",
+      "url": "https://example.org/kite-craft/handbook",
+      "verified": false,
+      "note": "draft source, not yet checked"
+    }
+  ],
+  "type": "interview",
+  "objective": "Explain a safe launch in a busy place.",
+  "concepts": [
+    "launching"
+  ],
+  "referenceIds": [
+    "wind",
+    "sites"
+  ],
+  "question": "How would you launch a kite safely in a busy park?",
+  "rubric": {
+    "mustCover": [
+      "check wind direction|wind at your back",
+      "clear open area|open space",
+      "helper holds the kite|assistant holds it"
+    ],
+    "strongSignals": [
+      "watch for power cables"
+    ],
+    "redFlags": [
+      "sprint downwind",
+      "launch near the road"
+    ]
+  },
+  "followUps": [
+    {
+      "question": "What do you do if the kite dives toward people?",
+      "rubric": [
+        "release line tension|let the line go slack",
+        "steer it sideways|turn away from people"
+      ]
+    },
+    "What would you change on a gusty day?"
+  ],
+  "followUp": "What could still go wrong with your launch plan?",
+  "transfer": {
+    "scenario": "You must launch from a narrow beach with people on both sides.",
+    "rubric": [
+      "check wind direction|wind at your back",
+      "helper holds the kite|assistant holds it"
+    ]
+  }
+}

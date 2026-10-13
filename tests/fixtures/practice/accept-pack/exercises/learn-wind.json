@@ -1,0 +1,72 @@
+{
+  "id": "learn-wind",
+  "module": "k1",
+  "prerequisites": [],
+  "difficulty": 1,
+  "sources": [
+    {
+      "title": "Kite Craft field notes (fictional)",
+      "url": "https://example.org/kite-craft/notes",
+      "verified": true
+    },
+    {
+      "title": "Kite Craft club handbook (fictional)",
+      "url": "https://example.org/kite-craft/handbook",
+      "verified": false,
+      "note": "draft source, not yet checked"
+    }
+  ],
+  "type": "learn",
+  "objective": "Understand how wind lifts a kite and where to launch.",
+  "concepts": [
+    "wind-reading"
+  ],
+  "referenceIds": [
+    "wind"
+  ],
+  "narration": [
+    {
+      "id": "s1",
+      "text": "A kite rises when wind pushes against its sail and the line holds it at an angle."
+    },
+    {
+      "id": "s2",
+      "text": "Steady wind gives even lift, while gusts make the kite dive and climb suddenly."
+    },
+    {
+      "id": "s3",
+      "text": "Launch with the wind at your back in an open space with no trees nearby."
+    }
+  ],
+  "teachBack": [
+    {
+      "question": "Why is steady wind better than gusty wind for flying?",
+      "rubric": [
+        "even lift|constant lift",
+        "gusts cause dives|sudden drops"
+      ]
+    },
+    {
+      "question": "Where should you stand when you launch?",
+      "rubric": [
+        "wind at your back|back to the wind",
+        "open space|clear of trees",
+        "clear of people"
+      ]
+    }
+  ],
+  "followUp": {
+    "question": "What do you give up by flying only on calm days?",
+    "rubric": [
+      "fewer flying days|less practice",
+      "light wind kites|special kites"
+    ]
+  },
+  "transfer": {
+    "scenario": "You are flying at a beach where the wind comes off the sea.",
+    "rubric": [
+      "wind direction|which way the wind blows",
+      "steady sea breeze|even lift"
+    ]
+  }
+}

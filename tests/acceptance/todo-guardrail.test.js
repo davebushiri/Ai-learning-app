@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 const TESTS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIRS = ['acceptance', 'e2e'].map(d => path.join(TESTS, d));
-const TICKET = /^F1a-T\d\d[a-d]?$/;
+const TICKET = /^F1[ac]-T\d\d[a-d]?$/; // F1c-T01a: F1c todos map to F1c tickets the same way
 const WORD = 'to' + 'do'; // spelled in two parts so this file's own source has no match
 
 // Reads the string literal that starts at src[i] (', " or `); null if there isn't one.
@@ -72,7 +72,7 @@ function sourceFiles(dir) {
   });
 }
 
-test('every todo reason in tests/acceptance and tests/e2e matches /^F1a-T\\d\\d[a-d]?$/', t => {
+test('every todo reason in tests/acceptance and tests/e2e matches /^F1[ac]-T\\d\\d[a-d]?$/', t => {
   const files = DIRS.flatMap(sourceFiles);
   assert.ok(files.some(f => f.endsWith(path.join('acceptance', 'F1a.test.js'))), 'tests/acceptance/F1a.test.js is scanned');
   const problems = [];
@@ -88,10 +88,10 @@ test('every todo reason in tests/acceptance and tests/e2e matches /^F1a-T\\d\\d[
 });
 
 test('guardrail scanner: accepts ticket IDs with and without a suffix', () => {
-  const src = `test('a', { ${WORD}: 'F1a-T12' }, f);\ntest('b', { ${WORD}: "F1a-T13b" }, f);\nt.${WORD}('F1a-T17d');`;
+  const src = `test('a', { ${WORD}: 'F1a-T12' }, f);\ntest('b', { ${WORD}: "F1a-T13b" }, f);\nt.${WORD}('F1a-T17d');\ntest('c', { ${WORD}: 'F1c-T04' }, f);`;
   const { reasons, violations } = scanTodos(src);
   assert.deepEqual(violations, []);
-  assert.deepEqual(reasons.map(r => r.reason), ['F1a-T12', 'F1a-T13b', 'F1a-T17d']);
+  assert.deepEqual(reasons.map(r => r.reason), ['F1a-T12', 'F1a-T13b', 'F1a-T17d', 'F1c-T04']);
 });
 
 test('guardrail scanner: flags a bad reason, a non-literal reason, shorthand, and test.todo without a reason', () => {
@@ -101,7 +101,7 @@ test('guardrail scanner: flags a bad reason, a non-literal reason, shorthand, an
     `test('a', { ${WORD}: true }, f);`,
     `test('a', { ${WORD}: 'F1a-T7' }, f);`,
     `test('a', { ${WORD}: 'F1a-T13e' }, f);`,
-    `test('a', { ${WORD}: 'F1b-T01' }, f);`,
+    `test('a', { ${WORD}: 'F1d-T01' }, f);`,
     `test('a', { ${WORD}: 'F1a-T12 and more' }, f);`,
     `test('a', { ${WORD}: \`F1a-\${n}\` }, f);`,
     `const ${WORD} = 'F1a-T12'; test('a', { ${WORD} }, f);`,

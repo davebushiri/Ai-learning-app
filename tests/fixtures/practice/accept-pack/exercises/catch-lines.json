@@ -1,0 +1,115 @@
+{
+  "id": "catch-lines",
+  "module": "k1",
+  "prerequisites": [],
+  "difficulty": 2,
+  "sources": [
+    {
+      "title": "Kite Craft field notes (fictional)",
+      "url": "https://example.org/kite-craft/notes",
+      "verified": true
+    },
+    {
+      "title": "Kite Craft club handbook (fictional)",
+      "url": "https://example.org/kite-craft/handbook",
+      "verified": false,
+      "note": "draft source, not yet checked"
+    }
+  ],
+  "type": "catch",
+  "objective": "Spot the wrong statements about kite line and say what it should be.",
+  "concepts": [
+    "line-care"
+  ],
+  "referenceIds": [
+    "lines"
+  ],
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Before each flight, wind the kite line neatly onto a reel."
+    },
+    {
+      "id": "s2",
+      "text": "Braided line stretches less than twisted line under the same load."
+    },
+    {
+      "id": "s3",
+      "text": "Thicker line always lets a kite fly higher because it is stronger."
+    },
+    {
+      "id": "s4",
+      "text": "Gloves protect your hands when a strong gust pulls on the line."
+    },
+    {
+      "id": "s5",
+      "text": "A line rated for twice the kite's pull never wears out."
+    },
+    {
+      "id": "s6",
+      "text": "After landing, wind the line back evenly so it does not tangle."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "Thicker line makes a kite fly higher.",
+        "whyWrong": "Thicker line is heavier and catches more wind, so its weight and drag pull the kite lower.",
+        "acceptableCorrections": [
+          "A thinner, lighter line lets a kite climb higher because it adds less weight and drag.",
+          "slim cord gains altitude"
+        ],
+        "exceptions": "In a very strong wind a heavier line may be needed so it does not snap.",
+        "kind": "overgeneralization",
+        "rubric": {
+          "explain": [
+            "heavier line|more weight",
+            "more drag|catches more wind",
+            "pulls the kite lower|limits height"
+          ],
+          "correct": [
+            "thinner line|lighter line",
+            "climbs higher|flies higher"
+          ]
+        }
+      },
+      {
+        "statementId": "s5",
+        "misconception": "A strongly rated line lasts for ever.",
+        "whyWrong": "Sunlight and rubbing weaken a line over time, so its real strength drops below the rating.",
+        "acceptableCorrections": [
+          "Even a highly rated line must be checked for frays before each flight because wear lowers its strength.",
+          "replace the cord when it looks worn"
+        ],
+        "exceptions": "",
+        "kind": "permanence",
+        "rubric": {
+          "explain": [
+            "sunlight weakens the line|sun damage",
+            "rubbing|abrasion",
+            "strength drops below the rating|loses strength"
+          ],
+          "correct": [
+            "rating does not last|strength is not permanent",
+            "check for frays|inspect for wear"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s6"
+    ]
+  },
+  "followUp": "When would a heavier line be the better choice?",
+  "transfer": {
+    "scenario": "A friend wants to fly a tiny kite in a light breeze.",
+    "rubric": [
+      "thin light line|lighter line",
+      "less drag|less weight"
+    ]
+  }
+}

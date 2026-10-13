@@ -17,14 +17,16 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const TICKET_ID = /^F1a-T\d\d[a-d]?$/;
+export const TICKET_ID = /^F1[ac]-T\d\d[a-d]?$/; // F1c-T01a widened it for F1c
 export const GIT_UNAVAILABLE = 'git unavailable: list changed files by hand in the QA report';
 
-// Edits any ticket may make (F1a-T11 Interfaces): the deny-list ratchet and QA's todo removals.
+// Edits any ticket may make (F1a-T11 Interfaces, F1c-T01a): the deny-list ratchet and QA's todo removals.
 export const ALWAYS_ALLOWED = [
   'tests/fixtures/deny-list-allow.json',
   'tests/acceptance/F1a.test.js',
   'tests/e2e/F1a.e2e.mjs',
+  'tests/acceptance/F1c.test.js', // F1c-T01a: QA's F1c todo removals
+  'tests/e2e/F1c.e2e.mjs',
 ];
 
 // `[{file, text}]` for every docs/specs/*/tasks.md under `root`.

@@ -1,0 +1,62 @@
+{
+  "id": "catch-clean",
+  "module": "k1",
+  "prerequisites": [],
+  "difficulty": 1,
+  "sources": [
+    {
+      "title": "Kite Craft field notes (fictional)",
+      "url": "https://example.org/kite-craft/notes",
+      "verified": true
+    },
+    {
+      "title": "Kite Craft club handbook (fictional)",
+      "url": "https://example.org/kite-craft/handbook",
+      "verified": false,
+      "note": "draft source, not yet checked"
+    }
+  ],
+  "type": "catch",
+  "objective": "Listen to a set that may have no errors and judge it.",
+  "concepts": [
+    "line-care"
+  ],
+  "referenceIds": [
+    "lines"
+  ],
+  "narration": [
+    {
+      "id": "s1",
+      "text": "A reel with a brake lets you stop the line paying out."
+    },
+    {
+      "id": "s2",
+      "text": "Line left wet on the reel can rot or grow mould."
+    },
+    {
+      "id": "s3",
+      "text": "A swivel at the kite end stops the line from twisting."
+    },
+    {
+      "id": "s4",
+      "text": "Bright line is easier for other fliers to see."
+    }
+  ],
+  "answerKey": {
+    "planted": [],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s4"
+    ]
+  },
+  "followUp": "What is the cost of a reel with a brake?",
+  "transfer": {
+    "scenario": "You fly on a damp, misty morning.",
+    "rubric": [
+      "dry the line|let it dry",
+      "store it dry|dry storage"
+    ]
+  }
+}
