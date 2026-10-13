@@ -1,0 +1,41 @@
+{
+  "id": "pmp-timezone-team-01",
+  "trade": "pmp",
+  "title": "Two cities, one team",
+  "setting": "Agile payments team split between Lisbon and Manila, seven hours apart, in two-week sprints. The team sets its own working agreements, and company policy says all overtime must be logged and approved.",
+  "apprentice": "Kofi",
+  "steps": [
+    { "id": 1, "line": "I'm Kofi, Scrum Master for a payments team. Four developers are in Lisbon, and three are in Manila, seven hours ahead.", "error": null },
+    { "id": 2, "line": "Bea is the product owner. The team sets its own working agreements. Company policy says all overtime must be logged and approved.", "error": null },
+    { "id": 3, "line": "Sprint review and planning both start at three in the afternoon, Lisbon time. That's ten at night in Manila.", "error": null },
+    { "id": 4, "line": "Carlo, in Manila, messages me privately. He's exhausted, and he feels the Lisbon side doesn't care.", "error": null },
+    { "id": 5, "line": "Before talking with the team, I email both line managers and ask them to settle the meeting times between them.", "error": {
+      "severity": "minor",
+      "summary": "Escalated to line managers before working it out with the team",
+      "why": "Bringing in managers is reasonable if the team can't resolve it, but it comes too early. Meeting times are a working agreement the team can set. Listen first and try the lowest level before escalating.",
+      "correctAction": "Talk with Carlo first to understand the problem, then bring the time-zone issue to the whole team to agree a fairer rhythm. Escalate only if they can't.",
+      "consequence": "The managers swapped emails for a week and then imposed a time nobody liked. Carlo felt his private message had been passed up the chain.",
+      "keywords": ["team first", "lowest level", "escalat", "too early", "facilitat", "listen", "working agreement", "talk", "premature", "together"]
+    } },
+    { "id": 6, "line": "I ask Carlo for ten minutes to hear more, and thank him for telling me directly.", "error": null },
+    { "id": 7, "line": "In a short call with everyone, I share a chart of working hours. There are only two hours a day when both cities overlap.", "error": null },
+    { "id": 8, "line": "I write up a new meeting schedule myself and post it in the channel as the team's final working agreement.", "error": {
+      "severity": "major",
+      "summary": "Imposed a working agreement instead of facilitating one",
+      "why": "A working agreement only works if the team makes it. Posting a final schedule takes the decision away from a self-managing team and skips the people most affected.",
+      "correctAction": "Bring two or three options to the team, such as rotating times or recorded demos, and help them choose one and try it for a sprint.",
+      "consequence": "Two Lisbon developers ignored the new times, the Manila side still felt unheard, and integration bugs from a missed planning session cost the team its next sprint goal.",
+      "keywords": ["team decide", "self-manag", "self-organ", "facilitat", "empower", "working agreement", "option", "together", "impose", "dictat"]
+    } },
+    { "id": 9, "line": "I suggest we try recorded demos, so Manila can watch the review the next morning and add comments.", "error": null },
+    { "id": 10, "line": "For this Friday, I ask the Manila developers to join the ten p.m. review anyway, and keep it off their timesheets since it's only an hour.", "error": {
+      "severity": "critical",
+      "summary": "Asked the team to work unlogged overtime",
+      "why": "Company policy says overtime must be logged and approved, and labour law protects working hours. Asking people to hide hours misreports their work and treats them unfairly.",
+      "correctAction": "Don't ask for hidden hours. Move or record Friday's review, or get the overtime approved and logged through the normal route.",
+      "consequence": "An HR audit found unlogged late-night hours on the team. The company had to back-pay overtime, and Kofi was formally warned for breaching policy.",
+      "keywords": ["overtime", "log", "timesheet", "policy", "labour", "labor", "fair", "honest", "complian", "hours", "hide"]
+    } },
+    { "id": 11, "line": "At the next retrospective, we'll check whether the new rhythm is working for both cities.", "error": null }
+  ]
+}

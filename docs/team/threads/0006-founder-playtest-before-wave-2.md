@@ -122,3 +122,11 @@ F1a Wave 2 (~1–1.5 wk) → F1b spec and review (~2 d) → W7, W9 scaffold, pic
 
 ### technical-product-manager · 2026-10-13 · RISK
 **Voice changes stall narration or pass golden with no real evidence.** If the ranker prefers network voices, Chrome cuts off long utterances, `onend` may never fire and `play()` hangs (inv. 7). The golden replay is blind to voice and geometry, so an empty diff proves nothing about voice changes. · L: M · I: H · Mitigation: the Wave 2 ranker uses local voices only. The polish slice adds splitting plus a per-utterance watchdog. Evidence comes from unit tests on a fake voice list, e2e geometry checks and a real-browser check, not from golden.
+
+### learning-designer · 2026-10-13 · RISK
+*Appended by the lead from the learning-designer's report on the PMP scenario drafts.*
+**Failure mode:** the founder labels the PMP playtest answers. Labelling means reading the answer key, which teaches all 10 mistake types before the trained-vs-held-out experiment runs. The held-out arm needs those types to appear only in probes (`data-and-evidence.md` §4). · **L:** H · **I:** H. · **Mitigation:** the founder plays all 10 cases blind as a tester, from `TESTER-COPY.md`. The PMP-certified reviewer plus one other experienced person label.
+
+### learning-designer · 2026-10-13 · CHALLENGE
+*Appended by the lead.*
+`validateScenario()` in `shared/contract.js` rejects zero-mistake runs: it requires exactly one critical, one major and one minor mistake. But `user-flow.md`, `ai-flow.md` and `data-and-evidence.md` all plan clean control runs. Verified: the draft control `pmp-control-sprint-review-01.json` fails with "needs at least one mistake". The other 9 drafts pass. **Decider:** principal-architect + PM, before any clean-run card ships (F2).

@@ -1,0 +1,41 @@
+{
+  "id": "pmp-regulator-date-01",
+  "trade": "pmp",
+  "title": "The regulator moves the deadline",
+  "setting": "Predictive project to put new allergen labels on every product at a food manufacturer. Baselines are approved, and a change board of the PM, the quality lead and the sponsor decides baseline changes.",
+  "apprentice": "Theo",
+  "steps": [
+    { "id": 1, "line": "I'm Theo, assistant PM on the allergen-label project at a food plant. Leah is the PM, and we run a predictive plan with approved baselines.", "error": null },
+    { "id": 2, "line": "Changes to the baselines go to our change board: Leah, Marco from quality, and Nadia, our sponsor. I keep the schedule up to date.", "error": null },
+    { "id": 3, "line": "News this morning: the regulator has brought its labelling deadline forward six weeks. Our current plan finishes four weeks after the new date.", "error": null },
+    { "id": 4, "line": "Before anything else, I email Nadia and ask her to approve weekend overtime and two contract designers.", "error": {
+      "severity": "minor",
+      "summary": "Asked the sponsor for resources before assessing the change",
+      "why": "Telling the sponsor early is good, but asking for resources before anyone has read the notice or looked at options is premature. A sponsor needs facts, impact and options to make a sound call.",
+      "correctAction": "Give Nadia a short heads-up that the date moved and an impact assessment is under way, then analyse the notice and options and bring her a recommendation.",
+      "consequence": "Nadia approved overtime that turned out not to be needed for the design work, then questioned the team's later estimates because the first ask had been a guess.",
+      "keywords": ["assess", "analy", "impact", "option", "first", "premature", "facts", "before", "recommend", "understand"]
+    } },
+    { "id": 5, "line": "I read the regulator's notice in full, and confirm with Marco exactly which products and label details are affected.", "error": null },
+    { "id": 6, "line": "The team and I list options: run artwork and printing in parallel, label the top sellers first, or add a second print supplier.", "error": null },
+    { "id": 7, "line": "Running in parallel looks best, so I update the schedule baseline myself and send the new dates out to the team.", "error": {
+      "severity": "major",
+      "summary": "Changed the schedule baseline without the change board",
+      "why": "Even a mandatory change goes through change control. The board must weigh cost, risk and quality impacts, approve the new baseline, and own the decision. An assistant PM can't re-baseline alone.",
+      "correctAction": "Write up the parallel option with its cost, risk and quality impacts and send it to the change board, asking for a fast decision because of the regulatory date.",
+      "consequence": "Marco found that parallel printing skipped a proof check he needed. The team reworked a week of artwork, and the board had to re-baseline twice.",
+      "keywords": ["change board", "ccb", "change control", "approv", "baseline", "authority", "impact", "process", "mandatory", "decide"]
+    } },
+    { "id": 8, "line": "Leah asks me to log the label-printer delivery as a risk. I add it with Marco as owner and a backup supplier as the response.", "error": null },
+    { "id": 9, "line": "The new printers will arrive a week after the deadline. I tell the plant to keep shipping with old labels that week and relabel stock later.", "error": {
+      "severity": "critical",
+      "summary": "Planned to ship products with non-compliant labels",
+      "why": "Shipping after the deadline with old labels breaks the regulation, and allergen labels protect people's health. Missing a legal requirement isn't a schedule trade-off the project can make on its own.",
+      "correctAction": "Treat it as a compliance issue: raise it with Leah and the change board now, use the backup supplier or interim compliant labels, and let the sponsor and quality decide with legal advice.",
+      "consequence": "A batch went out without the new allergen warning. A customer with an allergy reacted, the company recalled the batch, and the regulator opened an investigation.",
+      "keywords": ["complian", "regulat", "law", "legal", "allergen", "safety", "recall", "escalat", "quality", "breach", "ship"]
+    } },
+    { "id": 10, "line": "I prepare a one-page summary for the board: the new date, the options, costs, risks and my recommendation.", "error": null },
+    { "id": 11, "line": "Once the board decides, I'll update the plan and brief the plant supervisors on the new order of work.", "error": null }
+  ]
+}

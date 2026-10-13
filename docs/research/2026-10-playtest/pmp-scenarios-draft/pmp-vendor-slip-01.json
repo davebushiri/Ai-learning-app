@@ -1,0 +1,40 @@
+{
+  "id": "pmp-vendor-slip-01",
+  "trade": "pmp",
+  "title": "A vendor slips on a fixed-price contract",
+  "setting": "Predictive project to fit out a new customer call centre for a regional water utility. Headsets and phone switches come from one vendor on a fixed-price contract with dated milestones and a written change-order clause.",
+  "apprentice": "Alex",
+  "steps": [
+    { "id": 1, "line": "I'm Alex, assistant PM on the call-centre fit-out. Grace is the PM. Our schedule and cost baselines were approved last month.", "error": null },
+    { "id": 2, "line": "The equipment vendor is on a fixed-price contract. Any change to price or scope needs a written change order signed by both sides.", "error": null },
+    { "id": 3, "line": "Victor, the vendor's account lead, calls. The headset and switch install will be two weeks late because a part is back-ordered.", "error": null },
+    { "id": 4, "line": "I message the training lead straight away and ask her to push all the agent training sessions back two weeks to match.", "error": {
+      "severity": "major",
+      "summary": "Moved training dates before checking what the delay affects",
+      "why": "The delay's real impact isn't known yet. Before changing any dates, check the schedule: is the install on the critical path, is there float, and what actually depends on it? Reacting first can create a slip that wasn't there.",
+      "correctAction": "Hold the training dates, check the install's float and dependencies in the schedule, then agree any date change with Grace through the normal process.",
+      "consequence": "The install had three weeks of float, so training never needed to move. The trainers were rebooked at a cancellation fee, and go-live slipped a week for no reason.",
+      "keywords": ["assess", "impact", "float", "critical path", "schedule", "dependen", "analy", "check first", "before", "baseline"]
+    } },
+    { "id": 5, "line": "I ask Victor to send a written recovery plan with the new dates, as the contract asks for when a milestone is late.", "error": null },
+    { "id": 6, "line": "Victor offers to air-freight the part for an extra fee. I tell him yes, go ahead, and we'll sort out the paperwork afterwards.", "error": {
+      "severity": "critical",
+      "summary": "Agreed a price change on a fixed-price contract verbally",
+      "why": "The contract says price changes need a signed change order, and an assistant PM has no authority to commit extra money. A verbal yes can bind the company, breaks the contract's own process, and skips the impact check.",
+      "correctAction": "Thank Victor, ask him to put the offer in writing, and take it to Grace and the contracts officer to assess against the schedule and decide through a change order.",
+      "consequence": "The vendor invoiced the air freight, citing Alex's call. Procurement refused to pay without a change order, the dispute went to legal, and the final milestone payment was frozen for two months.",
+      "keywords": ["contract", "change order", "authority", "writing", "written", "procurement", "approv", "fixed price", "commit", "legal"]
+    } },
+    { "id": 7, "line": "I log the delay in the issue log with Victor's reason, the dates, and the contract clause, so the facts are clear later.", "error": null },
+    { "id": 8, "line": "I put the vendor delay at the bottom of my weekly status email, under other notes, below the good news.", "error": {
+      "severity": "minor",
+      "summary": "Buried bad news at the bottom of the status report",
+      "why": "Bad news should be easy to see. Hiding a delay under other notes means Grace and the sponsor may miss it and lose time to respond. Status should lead with what needs attention.",
+      "correctAction": "Put the delay at the top of the status update with its impact and next steps, and tell Grace directly before the email goes out.",
+      "consequence": "The sponsor skimmed the email and told the board everything was on track. When the delay surfaced a week later, she asked why she hadn't been told.",
+      "keywords": ["status", "hid", "buri", "visible", "transparen", "top", "tell", "inform", "bad news", "communicat", "report"]
+    } },
+    { "id": 9, "line": "I book thirty minutes with Grace and the contracts officer to go through Victor's recovery plan and our options.", "error": null },
+    { "id": 10, "line": "I add a risk for vendor supply problems, with Grace as owner, to be reviewed at every remaining milestone.", "error": null }
+  ]
+}

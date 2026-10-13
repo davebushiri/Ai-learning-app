@@ -1,0 +1,40 @@
+{
+  "id": "pmp-retro-voice-01",
+  "trade": "pmp",
+  "title": "One loud voice in the retrospective",
+  "setting": "Agile team of six building a mobile banking app in two-week sprints. The narrator is the Scrum Master in training. The team owns its working agreements; the product owner owns the backlog.",
+  "apprentice": "Mina",
+  "steps": [
+    { "id": 1, "line": "I'm Mina, Scrum Master in training on the mobile banking team. Six developers, two-week sprints, and Ade is our product owner.", "error": null },
+    { "id": 2, "line": "Today is the sprint retrospective. The team owns its working agreements. My job is to facilitate, not to decide for them.", "error": null },
+    { "id": 3, "line": "Ten minutes in, Raf, our most senior developer, has answered every question himself. Joy and Tam, our newest developers, haven't spoken.", "error": null },
+    { "id": 4, "line": "Raf cuts Joy off mid-sentence. I let it go; I don't want things to get awkward in front of everyone.", "error": {
+      "severity": "minor",
+      "summary": "Let a team member be talked over without stepping in",
+      "why": "As facilitator, saying nothing tells the quieter people their voice doesn't count. A light, neutral move in the moment keeps the space fair. A deeper talk with Raf belongs in private, later.",
+      "correctAction": "Step in calmly, for example: let's let Joy finish, then hear from Raf. Then plan a private one-to-one with Raf after the retro.",
+      "consequence": "Joy stopped contributing for the rest of the session. Two sprints later she told her manager she didn't feel heard on the team.",
+      "keywords": ["facilitat", "interrupt", "talk over", "let her finish", "voice", "speak", "safe", "fair", "private", "one-to-one", "step in"]
+    } },
+    { "id": 5, "line": "I switch to silent, anonymous writing. Everyone adds sticky notes for five minutes before anyone speaks, then we group them.", "error": null },
+    { "id": 6, "line": "Most notes say code reviews take three days. I ask the team why, and they spot that most pull requests are huge.", "error": null },
+    { "id": 7, "line": "I settle the fix for them: from now on, Raf approves every pull request, so quality stays high.", "error": {
+      "severity": "major",
+      "summary": "Decided the team's fix instead of letting them choose",
+      "why": "The team found the cause, so the team should choose how to fix it. A Scrum Master facilitates; deciding for a self-managing team removes ownership, and here it makes one person a bottleneck.",
+      "correctAction": "Ask the team to propose a few fixes, such as smaller pull requests or review pairs, and let them pick one experiment to try next sprint.",
+      "consequence": "Pull requests queued up behind Raf, review time went from three days to five, and the team missed its sprint goal. They dropped the rule two sprints later.",
+      "keywords": ["team decide", "self-manag", "self-organ", "facilitat", "empower", "ownership", "bottleneck", "dictat", "their choice", "experiment"]
+    } },
+    { "id": 8, "line": "I post the agreed actions on the team board, where everyone can see them during the sprint.", "error": null },
+    { "id": 9, "line": "After the retro, Raf's line manager asks who wrote the note about being talked over. I tell her it was Joy.", "error": {
+      "severity": "critical",
+      "summary": "Revealed who wrote an anonymous retro note",
+      "why": "The notes were collected as anonymous. Naming the author breaks that promise, exposes Joy to blame, and damages trust in every future retro. Respect and keeping confidences are basic professional duties.",
+      "correctAction": "Politely decline to name anyone, explain that the notes were anonymous, and offer to share the themes and the actions the team agreed.",
+      "consequence": "Raf's manager mentioned it to him, Raf confronted Joy, and she asked to move teams. The next retros produced almost no honest notes.",
+      "keywords": ["anonym", "confiden", "trust", "safe", "respect", "privacy", "promise", "ethic", "psychological", "name"]
+    } },
+    { "id": 10, "line": "I invite Raf for a private coffee to share what I saw in the meeting and hear his side.", "error": null }
+  ]
+}

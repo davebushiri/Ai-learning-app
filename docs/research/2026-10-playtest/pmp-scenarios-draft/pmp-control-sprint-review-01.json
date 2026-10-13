@@ -1,0 +1,19 @@
+{
+  "id": "pmp-control-sprint-review-01",
+  "trade": "pmp",
+  "title": "Sprint review at the food bank",
+  "setting": "Agile team building a volunteer-scheduling app for a food bank, in two-week sprints. The narrator is the Scrum Master; the product owner owns the backlog.",
+  "apprentice": "Ben",
+  "steps": [
+    { "id": 1, "line": "I'm Ben, Scrum Master for a small team building a volunteer-scheduling app for a food bank. Zara is our product owner.", "error": null },
+    { "id": 2, "line": "It's sprint review day. Managers from three food bank sites are joining to see what we built and give feedback.", "error": null },
+    { "id": 3, "line": "We won't demo the reminder texts. They didn't meet the definition of done, so I'll say so plainly and they go back to the backlog.", "error": null },
+    { "id": 4, "line": "A site manager asks for a printable rota. I don't promise anything. I tell her Zara will look at it with her.", "error": null },
+    { "id": 5, "line": "Zara adds the rota idea to the product backlog on the spot, and says she'll order it after hearing from the other sites.", "error": null },
+    { "id": 6, "line": "A developer says the sign-up page feels slow. We don't try to fix it here; we note it to look into after the review.", "error": null },
+    { "id": 7, "line": "Kemi, from the largest site, talks over the others. I let her finish her point, then ask the other two sites for their view.", "error": null },
+    { "id": 8, "line": "We finish ten minutes early. I don't fill the time. I thank everyone and let them go.", "error": null },
+    { "id": 9, "line": "I send a short summary: what we showed, what wasn't done and why, and the new backlog ideas.", "error": null },
+    { "id": 10, "line": "Tomorrow is the retrospective. The team will pick one thing to improve, and I'll facilitate.", "error": null }
+  ]
+}

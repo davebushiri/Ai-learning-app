@@ -1,0 +1,40 @@
+{
+  "id": "pmp-closure-benefits-01",
+  "trade": "pmp",
+  "title": "Closing out, and the benefits nobody tracks",
+  "setting": "Predictive project replacing the self-checkout machines in a city's twelve libraries. Every machine is installed and the project is in closure. The business case promised shorter queues and freed-up staff time.",
+  "apprentice": "Lena",
+  "steps": [
+    { "id": 1, "line": "I'm Lena, assistant PM on replacing the self-checkout machines in the city's twelve libraries. Marta is the PM, and the plan is predictive.", "error": null },
+    { "id": 2, "line": "Every machine is in, and we're in closure. The business case promised shorter queues and freed-up staff time, measured over six months.", "error": null },
+    { "id": 3, "line": "Marta asks me to put together the closure pack: acceptance, contract closeout, lessons learned, and the handover to operations.", "error": null },
+    { "id": 4, "line": "I check every machine against the acceptance criteria. Two branches still have failing card readers, so I log them as open defects.", "error": null },
+    { "id": 5, "line": "Benefits get measured after we close, by operations, so I leave benefits tracking out of the handover pack.", "error": {
+      "severity": "major",
+      "summary": "Left benefits tracking out of the handover",
+      "why": "The project exists to deliver the benefits, not just the machines. If nobody is named to measure them after closure, nobody will. The handover should give operations the measures, the baseline and an owner.",
+      "correctAction": "Add a benefits handover to the pack: the measures, today's baseline queue times, who owns tracking, and when the review happens. Confirm the owner accepts it.",
+      "consequence": "Nobody measured queue times. Six months later the council asked whether the machines had paid off, nobody could say, and funding for phase two was paused.",
+      "keywords": ["benefit", "value", "outcome", "measure", "owner", "handover", "business case", "track", "realiz", "baseline"]
+    } },
+    { "id": 6, "line": "Procurement asks me to sit on the panel scoring bids for the five-year maintenance contract. Our installer is one of the bidders.", "error": null },
+    { "id": 7, "line": "The installer's rep offers me two cup-final tickets as a thank-you. I accept, since the project's closing anyway.", "error": {
+      "severity": "critical",
+      "summary": "Accepted a gift from a bidder while scoring its bid",
+      "why": "Lena is scoring this vendor's bid, so a valuable gift creates a conflict of interest, real or perceived. It must be declined or disclosed under policy, and she may need to step off the panel.",
+      "correctAction": "Politely decline the tickets, tell procurement about the offer, and follow the gifts policy, stepping off the panel if procurement asks.",
+      "consequence": "A losing bidder challenged the award after seeing photos from the match. The award was frozen and re-run, delaying maintenance cover by three months.",
+      "keywords": ["conflict of interest", "gift", "disclos", "declin", "ethic", "fair", "procurement", "bid", "policy", "integrity"]
+    } },
+    { "id": 8, "line": "I run a lessons-learned session with the branch staff and the installers, and file the notes where future projects can find them.", "error": null },
+    { "id": 9, "line": "The old machines are collected on Monday. I'll let the removal crew tell each branch when they arrive.", "error": {
+      "severity": "minor",
+      "summary": "Left branches to hear about removals from the crew",
+      "why": "Branch staff need to plan for machines disappearing during opening hours. Letting the crew announce it on the day surprises them and makes the project look disorganised.",
+      "correctAction": "Send each branch manager the removal times a few days ahead, with a contact for questions.",
+      "consequence": "Two branches had queues out the door when machines vanished mid-morning, and a branch manager complained to the head of libraries.",
+      "keywords": ["notice", "inform", "tell", "ahead", "surprise", "stakeholder", "communicat", "plan", "advance", "schedule"]
+    } },
+    { "id": 10, "line": "I send Marta the closure pack to review before it goes to the sponsor for sign-off.", "error": null }
+  ]
+}

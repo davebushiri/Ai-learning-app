@@ -1,0 +1,40 @@
+{
+  "id": "pmp-kiosk-risk-01",
+  "trade": "pmp",
+  "title": "The risk nobody owned",
+  "setting": "Hybrid project opening a new health clinic. The building fit-out follows a fixed plan; the booking app is built in two-week sprints. Patient data is covered by health privacy law.",
+  "apprentice": "Rosa",
+  "steps": [
+    { "id": 1, "line": "I'm Rosa, assistant PM for a new clinic opening. The fit-out follows a fixed plan, and the booking app is built in sprints.", "error": null },
+    { "id": 2, "line": "Kwame is the PM, Ines is the product owner. We review the risk register on Thursdays, and every risk should have an owner.", "error": null },
+    { "id": 3, "line": "The kiosk supplier emails: our check-in kiosks are held at customs, and they can't give a release date yet.", "error": null },
+    { "id": 4, "line": "I check the register. Kiosk shipping delay is listed, but the owner is blank and the response just says monitor.", "error": null },
+    { "id": 5, "line": "It's already on the register, so I leave it for Thursday's review and carry on with today's tasks.", "error": {
+      "severity": "major",
+      "summary": "Left a triggered risk with no owner until the weekly review",
+      "why": "The risk has happened, so it's now an issue that needs action. With no owner and no real response, waiting three days loses time to act. Someone must own it today.",
+      "correctAction": "Tell Kwame today, get an owner agreed, and start a response: chase the customs reference, and check loan kiosks or a staffed desk for opening day.",
+      "consequence": "By Thursday the customs hold had grown into a two-week delay. The clinic opened with paper sign-in sheets, and the opening inspection noted long queues.",
+      "keywords": ["owner", "response", "now", "today", "wait", "issue", "trigger", "act", "risk register", "escalat", "plan"]
+    } },
+    { "id": 6, "line": "The developers ask for help with test data. Their booking tests need realistic names, dates of birth and appointment reasons.", "error": null },
+    { "id": 7, "line": "I export a copy of real patient records from the old system and put it on the team drive for testing.", "error": {
+      "severity": "critical",
+      "summary": "Shared real patient records as test data",
+      "why": "Health records are protected by privacy law. Copying them to a shared drive for testing widens access without a lawful reason and risks a reportable breach. Test data should be made up or properly anonymised.",
+      "correctAction": "Don't use live records. Ask the team to generate synthetic test data, or get the data protection officer's approval for a properly anonymised set.",
+      "consequence": "A contractor's laptop with the drive synced was stolen. The clinic had to report a data breach to the regulator and write to every affected patient.",
+      "keywords": ["privacy", "patient data", "personal data", "anonym", "synthetic", "complian", "law", "breach", "consent", "data protection", "confiden"]
+    } },
+    { "id": 8, "line": "I remind the team that the definition of done includes accessibility checks on every booking screen.", "error": null },
+    { "id": 9, "line": "I don't mention the kiosks to Dr. Osei, the clinic manager, before Friday's review; she can hear it there with everyone.", "error": {
+      "severity": "minor",
+      "summary": "Let the clinic manager hear bad news first in a group meeting",
+      "why": "A key stakeholder shouldn't learn about a problem that affects her opening day in front of a room. A short private heads-up lets her prepare and keeps her trust.",
+      "correctAction": "Call Dr. Osei before the review, explain the kiosk delay, what's being done, and when she'll get the next update.",
+      "consequence": "Dr. Osei heard about the kiosks in the review, felt blindsided in front of her staff, and asked Kwame to route all updates through her from then on.",
+      "keywords": ["heads-up", "stakeholder", "surprise", "blindsid", "tell", "inform", "before", "private", "communicat", "expectation"]
+    } },
+    { "id": 10, "line": "At the review, Ines walks stakeholders through the new booking screens and asks for feedback on the waiting list.", "error": null }
+  ]
+}

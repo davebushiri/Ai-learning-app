@@ -1,0 +1,41 @@
+{
+  "id": "pmp-status-amber-01",
+  "trade": "pmp",
+  "title": "Paint it amber",
+  "setting": "Hybrid rollout of a new finance system at a furniture maker. Data migration follows a fixed plan; screen setup runs in two-week sprints. The communication plan sets clear rules for red, amber and green status.",
+  "apprentice": "Ivy",
+  "steps": [
+    { "id": 1, "line": "I'm Ivy, assistant PM on a finance system rollout at a furniture maker. Data migration follows a fixed plan; screen setup runs in sprints.", "error": null },
+    { "id": 2, "line": "Paul is the PM and Mei is the product owner. Our communication plan says status goes red if a milestone forecast slips over two weeks.", "error": null },
+    { "id": 3, "line": "Paul is on leave this week. He's asked me to prepare Thursday's steering committee report, and to call him if anything big comes up.", "error": null },
+    { "id": 4, "line": "Migration trial two failed overnight. Anna, the data lead, says about a third of supplier records didn't load.", "error": null },
+    { "id": 5, "line": "I forward Anna's message straight to the whole steering committee, so nobody can say we hid anything.", "error": {
+      "severity": "minor",
+      "summary": "Forwarded raw bad news to the committee before assessing it",
+      "why": "Transparency is right, but forwarding a raw message before knowing the cause or impact causes alarm without answers, and skips Paul and the agreed reporting route. Assess quickly, then report through the plan.",
+      "correctAction": "Call Paul as agreed, work out the cause and impact with Anna, then report it in Thursday's update, or sooner through the agreed route if it can't wait.",
+      "consequence": "Three committee members phoned Anna directly that morning, pulling her away from the fix. The chair asked Paul why the committee was getting unfiltered emails.",
+      "keywords": ["assess", "impact", "cause", "first", "channel", "communication plan", "paul", "route", "premature", "analy", "alarm"]
+    } },
+    { "id": 6, "line": "Anna and I go through the logs. Supplier tax codes are in the wrong format. Fixing and re-running will move the milestone three weeks.", "error": null },
+    { "id": 7, "line": "Mid-sprint, the finance director's deputy asks for a new cash-flow report. It's small, so I add it to the current sprint myself.", "error": {
+      "severity": "major",
+      "summary": "Added work to the sprint without the product owner",
+      "why": "The sprint's work is the team's forecast toward its goal, and the product owner decides what goes in the backlog. Adding work mid-sprint, past Mei, puts the sprint goal at risk.",
+      "correctAction": "Thank the deputy, pass the request to Mei for the product backlog, and let her decide its priority for a coming sprint.",
+      "consequence": "The report took four days, not one. The team missed the sprint goal, and Mei had to explain to the finance director why approved screens were late.",
+      "keywords": ["product owner", "mei", "backlog", "sprint goal", "mid-sprint", "scope", "priorit", "bypass", "forecast", "team"]
+    } },
+    { "id": 8, "line": "Gavin, the sponsor, calls. The board meets Friday, and he asks me to show the migration as amber this month, not red.", "error": null },
+    { "id": 9, "line": "Gavin knows the board best, so I mark the migration amber and describe the failed trial as a minor delay.", "error": {
+      "severity": "critical",
+      "summary": "Reported a red milestone as amber under sponsor pressure",
+      "why": "The agreed rule makes a three-week slip red. Softening it misleads the committee and the board, who need accurate status to decide. Honest reporting is an ethical duty, even under pressure from a senior person.",
+      "correctAction": "Report it red with the cause and recovery plan, explain respectfully to Gavin why, and call Paul. If the pressure continues, raise it through the governance route.",
+      "consequence": "The board approved the go-live date based on amber. When the migration slipped again, auditors found the earlier report, and the board lost confidence in the project team.",
+      "keywords": ["honest", "red", "status", "report", "mislead", "ethic", "truth", "transparen", "rule", "pressure", "integrity"]
+    } },
+    { "id": 10, "line": "I add the tax-code problem to the issue log with Anna as owner and a target date for the re-run.", "error": null },
+    { "id": 11, "line": "When Paul is back, I'll walk him through what went to the committee and why, so nothing surprises him.", "error": null }
+  ]
+}

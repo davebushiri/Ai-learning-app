@@ -1,0 +1,41 @@
+{
+  "id": "pmp-permit-form-01",
+  "trade": "pmp",
+  "title": "The bonus feature on the permit form",
+  "setting": "Predictive project building an online permit-application form for a town council. Requirements and the test plan are signed off. Council policy requires a signed data-processing agreement before any outside service handles residents' data.",
+  "apprentice": "Nia",
+  "steps": [
+    { "id": 1, "line": "I'm Nia, assistant PM on a town council's new online permit form. The plan is predictive, with signed-off requirements and a test plan.", "error": null },
+    { "id": 2, "line": "Ravi is the PM. Council policy says any outside service that handles residents' data needs a signed data-processing agreement first.", "error": null },
+    { "id": 3, "line": "The build finished two days early. This morning the testers start acceptance testing against the signed requirements.", "error": null },
+    { "id": 4, "line": "Testers log a date bug on the application screen. Dates typed day-first are read as month-first.", "error": null },
+    { "id": 5, "line": "The same date bug turns up on the renewal and payment screens. I log both, linked to the first, so the pattern is visible.", "error": null },
+    { "id": 6, "line": "To keep testers moving, I ask the developers to patch each screen as the bug shows up.", "error": {
+      "severity": "major",
+      "summary": "Patched each instance instead of finding the root cause",
+      "why": "The same bug on three screens points to a shared cause, likely one date-handling component. Patching screen by screen treats symptoms, invites more repeats, and means retesting again and again.",
+      "correctAction": "Ask the developers to find the root cause first, fix it once in the shared code, and have testers retest every screen that handles dates.",
+      "consequence": "The bug kept reappearing on new screens. The team patched seven screens over two weeks, and testing ran past the plan.",
+      "keywords": ["root cause", "symptom", "shared", "pattern", "underlying", "patch", "analy", "fix once", "why", "component", "rework"]
+    } },
+    { "id": 7, "line": "Ravi asks for a quality summary. I pull defect counts by severity and the pass rate against the acceptance criteria.", "error": null },
+    { "id": 8, "line": "Since we're ahead, I ask the developers to add address lookup through a free online map service, as a bonus for residents.", "error": {
+      "severity": "critical",
+      "summary": "Added an unrequested feature that sends residents' data outside",
+      "why": "It isn't in the signed requirements, which makes it gold-plating. Worse, the map service would receive residents' addresses with no data-processing agreement, which breaks council policy and data-protection rules.",
+      "correctAction": "Stick to the signed requirements. If address lookup seems valuable, raise it as a change request, with a privacy check and a data-processing agreement first.",
+      "consequence": "The privacy officer found residents' addresses going to the map service. The feature was pulled, the council reported it to its data regulator, and go-live slipped while it was removed and retested.",
+      "keywords": ["gold plat", "requirement", "scope", "not asked", "change request", "data", "privacy", "agreement", "policy", "complian", "third party"]
+    } },
+    { "id": 9, "line": "I check that the accessibility tests cover screen readers, since the requirements name them.", "error": null },
+    { "id": 10, "line": "Testing will now run two days past the plan. I'll mention it to the council's service manager at next week's go-live meeting.", "error": {
+      "severity": "minor",
+      "summary": "Held back a schedule slip until a meeting next week",
+      "why": "The service manager may be planning publicity and staff around the date. Waiting a week to mention a known slip takes away her time to adjust and surprises her.",
+      "correctAction": "Tell Ravi, and with his agreement let the service manager know now, with the new date and the reason.",
+      "consequence": "The council had already announced the launch date in the local paper. The service manager had to issue a correction and asked why she heard so late.",
+      "keywords": ["tell", "now", "inform", "early", "surprise", "stakeholder", "schedule", "communicat", "delay", "heads-up"]
+    } },
+    { "id": 11, "line": "I add date handling to the lessons-learned log, so the next project tests it early.", "error": null }
+  ]
+}

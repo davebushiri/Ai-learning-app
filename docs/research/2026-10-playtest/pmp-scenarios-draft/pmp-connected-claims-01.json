@@ -1,0 +1,42 @@
+{
+  "id": "pmp-connected-claims-01",
+  "trade": "pmp",
+  "title": "Two lines you have to connect",
+  "setting": "Hybrid project for an insurer's new claims portal. Regulatory reporting follows a fixed plan; the claim screens are built in two-week sprints. The client contract and the risk register set rules early on.",
+  "apprentice": "Omar",
+  "steps": [
+    { "id": 1, "line": "I'm Omar, assistant PM on an insurer's new claims portal. Regulatory reporting follows a fixed plan, and the screens are built in sprints.", "error": null },
+    { "id": 2, "line": "Hana is the PM, and Ines is the product owner. I coordinate the release plan and keep the risk and issue logs up to date.", "error": null },
+    { "id": 3, "line": "A contract note I keep pinned: the client must approve in writing any change to the claim data fields, because their auditors rely on them.", "error": null },
+    { "id": 4, "line": "Top line of the risk register: if the regulator's test gateway is down for over a day, Sofia, our integration lead, switches us to the backup route.", "error": null },
+    { "id": 5, "line": "Sprint planning went well. The team set its own goal: claimants can upload photos and track their claim status.", "error": null },
+    { "id": 6, "line": "Monday morning. The regulator's test gateway has been down since Saturday night. I'll try it again tomorrow; these outages usually clear.", "error": {
+      "severity": "major",
+      "summary": "Didn't trigger the planned risk response when the trigger was hit",
+      "why": "The risk register says an outage of over a day triggers Sofia's backup route. The outage is already past that point, so the planned response should start now, not after another day of waiting.",
+      "correctAction": "Tell Sofia now that the trigger has been met, so she can switch to the backup route as planned, and update the risk log.",
+      "consequence": "The gateway stayed down until Wednesday. Sofia only heard on Wednesday, the reporting tests missed their window, and the regulatory submission slipped a week.",
+      "keywords": ["trigger", "risk register", "response", "plan", "owner", "sofia", "backup", "now", "wait", "escalat", "contingen"]
+    } },
+    { "id": 7, "line": "Ines asks me to check the photo upload against the accessibility checklist before the sprint review. I book a slot with our tester.", "error": null },
+    { "id": 8, "line": "In refinement, a developer suggests merging the two claim status fields into one, to make the tracking screen simpler.", "error": null },
+    { "id": 9, "line": "Ines likes it and the team has room this sprint, so I tell them to go ahead and note it in the release log.", "error": {
+      "severity": "critical",
+      "summary": "Approved a data field change the contract says the client must sign off",
+      "why": "The contract requires the client's written approval for any change to claim data fields. Merging two status fields is exactly that, however small it looks on screen. Going ahead breaches the contract and can break the client's audit trail.",
+      "correctAction": "Pause the change, raise a change request with the client under the contract clause, and only build it once the client approves in writing.",
+      "consequence": "The client's auditors found claims reported under a status that no longer matched their records. The client cited breach of contract and withheld the milestone payment.",
+      "keywords": ["contract", "client approv", "written", "change request", "change control", "data field", "audit", "breach", "sign off", "clause"]
+    } },
+    { "id": 10, "line": "I update the burndown and flag that photo upload may not finish this sprint.", "error": null },
+    { "id": 11, "line": "I post the at-risk note in the team channel. The client's claims lead isn't in that channel, but she'll see it in next month's report.", "error": {
+      "severity": "minor",
+      "summary": "Sent a key update where the client lead won't see it",
+      "why": "The client's claims lead needs to know the feature may slip, through a channel she actually reads. A note she can't see, and a report a month away, leave her to be surprised.",
+      "correctAction": "Send the claims lead a short direct note on the at-risk feature, what it means for her, and when she'll hear more, using the channel the communication plan agreed.",
+      "consequence": "The claims lead had promised photo upload to her own managers. She found out at the demo and asked for weekly calls with Hana from then on.",
+      "keywords": ["communicat", "channel", "stakeholder", "inform", "tell", "direct", "surprise", "plan", "update", "heads-up"]
+    } },
+    { "id": 12, "line": "Before the review, I walk Hana through the open risks and the contract items we're tracking.", "error": null }
+  ]
+}
