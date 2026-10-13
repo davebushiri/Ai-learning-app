@@ -1,7 +1,7 @@
 # F1a: Tickets
 
-**Status:** Approved (revision 4.4: Wave 1 bug triage)
-**Revision history:** revision 4.4: Wave 1 bug triage. F1a-B57, B60 and B61 (`shared/contract.js`) → T13b; B66 → T16; B61 (`server/index.js`, `server/ai/models.js`) and B70 → T18; B58 and B62 → T19a; B59 → T19b; B65, B67 and B68 deferred (spec "Non-goals / Later"); B71 closed as by design. Files, Changed tests, Tests and the shared-file sequences updated to match; no new ticket, no requirement or threshold changed. Revision 4.3: F1a-B55 and B56 resolved ([thread 0005](../../team/threads/0005-f1a-t07b-file-list-gap.md) DECISION). Revision 4.2: F1a-B30, B31 (architect's ruling: ADR 0001 Amendment 1, ADR 0003 Amendment 4, ADR 0006 Amendment 2; T06 text) and B50–B52, B54 (T11, T19b, spec Later) resolved; B53 proposed to the founder. Revision 4.1: Wave 0 bug triage. review.md "Code review: Wave 0" S2 (B15 ratified) and S4 (T07b Files) applied; B01–B05, B21–B23 resolved in spec rev 4.1; B06–B09 assigned to T06 and T09. Revision 4: the pressure test in [thread 0004](../../team/threads/0004-f1a-pressure-test.md) applied: the architect's rulings, ADR 0003 Amendment 3, ADR 0005 Amendment 2, and the PM's splits. T01, T03, T07, T08, T13, T17 and T19 are split into sequential parts; `projectAttempt` moved from T06 to T13a. Revision 3: [`review.md`](review.md) "Re-review (round 2)" changes 1–4, S12, S13 and O3). Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0007 including Amendment 1 of 0002, 0003, 0005 and 0006, Amendment 2 of 0002, 0003 and 0005, Amendment 3 of 0003, and Amendment 1 of 0004 (the ADR wins over this file), and the DECISIONs in [thread 0003](../../team/threads/0003-f1-engine-core-proposal.md) and [thread 0004](../../team/threads/0004-f1a-pressure-test.md).
+**Status:** Approved (revision 4.5: founder-approved Wave 2 additions)
+**Revision history:** revision 4.5: founder-approved Wave 2 additions ([thread 0006](../../team/threads/0006-founder-playtest-before-wave-2.md), founder DECISION items 5 and 6). New tickets F1a-T22 (golden harness alias for the subject control; resolves F1a-B76; T17b now depends on it), F1a-T23 (transcript scroll reservation for the STOP zone; founder finding #4) and F1a-T24 (local-only voice ranker). T19b depends on T23 and T24. Shared-file sequences, the order table and the [P] collision check updated. Spec FR-051, FR-052 and SC-012 added; FR-034 and FR-036 clarified; no threshold changed. Wave 2 stays on hold until the founder's go (thread 0006). Revision 4.4: Wave 1 bug triage. F1a-B57, B60 and B61 (`shared/contract.js`) → T13b; B66 → T16; B61 (`server/index.js`, `server/ai/models.js`) and B70 → T18; B58 and B62 → T19a; B59 → T19b; B65, B67 and B68 deferred (spec "Non-goals / Later"); B71 closed as by design. Files, Changed tests, Tests and the shared-file sequences updated to match; no new ticket, no requirement or threshold changed. Revision 4.3: F1a-B55 and B56 resolved ([thread 0005](../../team/threads/0005-f1a-t07b-file-list-gap.md) DECISION). Revision 4.2: F1a-B30, B31 (architect's ruling: ADR 0001 Amendment 1, ADR 0003 Amendment 4, ADR 0006 Amendment 2; T06 text) and B50–B52, B54 (T11, T19b, spec Later) resolved; B53 proposed to the founder. Revision 4.1: Wave 0 bug triage. review.md "Code review: Wave 0" S2 (B15 ratified) and S4 (T07b Files) applied; B01–B05, B21–B23 resolved in spec rev 4.1; B06–B09 assigned to T06 and T09. Revision 4: the pressure test in [thread 0004](../../team/threads/0004-f1a-pressure-test.md) applied: the architect's rulings, ADR 0003 Amendment 3, ADR 0005 Amendment 2, and the PM's splits. T01, T03, T07, T08, T13, T17 and T19 are split into sequential parts; `projectAttempt` moved from T06 to T13a. Revision 3: [`review.md`](review.md) "Re-review (round 2)" changes 1–4, S12, S13 and O3). Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0007 including Amendment 1 of 0002, 0003, 0005 and 0006, Amendment 2 of 0002, 0003 and 0005, Amendment 3 of 0003, and Amendment 1 of 0004 (the ADR wins over this file), and the DECISIONs in [thread 0003](../../team/threads/0003-f1-engine-core-proposal.md) and [thread 0004](../../team/threads/0004-f1a-pressure-test.md).
 
 Legend: [P] = can run in parallel with other [P] tickets in the same group (no shared files). Tickets without [P] run in the order of their `Depends on`. **Split tickets** keep the original number with a letter suffix (T07a, T07b). The parts of one split always run in letter order, never in parallel, and each part has its own PR, tests and review.
 
@@ -18,8 +18,9 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
   - `shared/contract.js` T07b → T13b; `shared/scoring.js` T21 → T18; `shared/events.js` T06 → T13a; `shared/mock-grader.js` T13b only.
   - `server/index.js` T04 → T07a → T12 → T18; `server/routes/scenarios.js` T04 → T07b → T12 → T18; `server/services/content.js` T04 → T07b → T08b → T12 → T18; `server/services/assessment.js` T04 → T08b → T13b → T18; `server/services/ai-client.js` T04 → T08b; `server/routes/attempts.js` T12 → T13b → T14; `server/services/session.js` T12 → T13b → T14; `server/packs.js` T07a → T18 (rev 4.4, F1a-B70); `server/ai/models.js` T08a → T18 (rev 4.4, F1a-B61).
   - `scripts/simulate.js` T07b → T18.
-  - `tests/helpers/fake-claude.mjs` T03a → T07b → T09; `tests/golden/**` and `tests/fixtures/golden/**` T03a → T03b, then `tests/golden/run.mjs` only → T19b (rev 4.4, F1a-B59); `tests/prompt-version.test.js` T05 → T07b → T19a (rev 4.4, F1a-B58); `tests/index-imports.test.js` → T19a (rev 4.4, F1a-B62); `tests/scenario-prompt-rng.test.js` T02 → T07b; `tests/pack-format.test.js` T20 → T07b → T13b (rev 4.4, F1a-B57); `tests/events.test.js` T06 → T13a; `tests/mock-grader.test.js` T07b → T13b; `tests/gateway.test.js` T08a → T09 (the `after` hook only) → T16 (an `afterEach` hook only; rev 4.4, F1a-B66); `tests/scoring.test.js` T07b → T18; `tests/game-balance.test.js` T07b → T18; `tests/helpers/http.mjs` T07b → T16; `tests/llm-deadline.test.js` T08b → T16; `tests/acceptance/F1a.test.js` T01a → QA's verification of each ticket (`todo` removals); `tests/e2e/F1a.e2e.mjs` T01b → QA's verification of each ticket.
-  - `web/api.js` T17b only; `web/copy.js` T17a only; `web/app.js` T15 → T17b → T17c → T17d; `web/index.html` T17b → T17c → T17d; `web/styles.css` T17c → T17d.
+  - `tests/helpers/fake-claude.mjs` T03a → T07b → T09; `tests/golden/**` and `tests/fixtures/golden/**` T03a → T03b, then `tests/golden/harness.mjs` only → T22 (the subject-control alias; rev 4.5, F1a-B76), then `tests/golden/run.mjs` only → T19b (rev 4.4, F1a-B59); `tests/fixtures/golden/**` is edited by no ticket after T03b; `tests/prompt-version.test.js` T05 → T07b → T19a (rev 4.4, F1a-B58); `tests/index-imports.test.js` → T19a (rev 4.4, F1a-B62); `tests/scenario-prompt-rng.test.js` T02 → T07b; `tests/pack-format.test.js` T20 → T07b → T13b (rev 4.4, F1a-B57); `tests/events.test.js` T06 → T13a; `tests/mock-grader.test.js` T07b → T13b; `tests/gateway.test.js` T08a → T09 (the `after` hook only) → T16 (an `afterEach` hook only; rev 4.4, F1a-B66); `tests/scoring.test.js` T07b → T18; `tests/game-balance.test.js` T07b → T18; `tests/helpers/http.mjs` T07b → T16; `tests/llm-deadline.test.js` T08b → T16; `tests/acceptance/F1a.test.js` T01a → QA's verification of each ticket (`todo` removals); `tests/e2e/F1a.e2e.mjs` T01b → QA's verification of each ticket.
+  - `web/api.js` T17b only; `web/copy.js` T17a only; `web/app.js` T15 → T17b → T17c → T17d → T23 (rev 4.5); `web/index.html` T17b → T17c → T17d; `web/styles.css` T17c → T17d → T23 (rev 4.5); `web/speech/index.js` T15 only; `web/speech/web-speech.js` T15 → T24 (rev 4.5); `web/speech/voices.js` T24 only (rev 4.5).
+  - `tests/web-voices.test.js` T24 only (rev 4.5). The F1a-T23 e2e tests are added to `tests/e2e/F1a.e2e.mjs` by QA under the existing "→ QA's verification of each ticket" rule, never by T23.
   - (Review round 2, O3, and thread 0004: these are already sequenced by `Depends on`; listed so a re-plan can't parallelise them.)
 - **No prompt text, template or schema change anywhere in F1a** (FR-027). A diff that changes a frozen fingerprint (T05) fails review.
 - **Ownership:** per the `CLAUDE.md` table (founder DECISION on OI-8, thread 0003). `package.json`, `.gitignore`, `packs/**`, `README.md` are `backend-engineer`'s. Recorded helper exceptions (review S10): T06 edits `tests/helpers/server.mjs`, T07b edits the path in `tests/helpers/fake-claude.mjs`; QA acknowledges both in T09's PR.
@@ -428,6 +429,44 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - **Tests that prove it:** `node tests/golden/run.mjs --replay` empty (all 48 MOCK runs, voice and text); real-browser check in Chrome, voice and text, at 390 and 1280 px, zero console errors (screenshots in the PR).
 - **Notes:** may run any time after T03b, in parallel with T12–T14, T21 and T17a (`web/speech.js` has no deny-list hits). Must merge before T17b.
 
+### F1a-T24 [P] Local-only voice ranker (founder DECISION, thread 0006; rev 4.5)
+- **Owner:** frontend-engineer
+- **Size:** S
+- **Depends on:** F1a-T15
+- **Files:** create `web/speech/voices.js`, `tests/web-voices.test.js`; modify `web/speech/web-speech.js` (the voice-selection lines only). No other file. `web/speech/index.js`, `web/app.js`, `web/index.html` and `web/styles.css` are not touched.
+- **Interfaces:**
+  - Consumes: `web/speech/web-speech.js` as produced by T15 (today's `web/speech.js:4–17`: module-level `voice`, `pickVoice()` called at load and on `synth.onvoiceschanged`).
+  - Produces (`web/speech/voices.js`; pure: imports nothing; no `window`, `document`, `navigator`, `speechSynthesis`, `localStorage`, `sessionStorage` or `indexedDB` reference; never throws):
+    - `type VoiceLike = {name: string, lang: string, localService: boolean, default?: boolean}` (the fields of `SpeechSynthesisVoice` it reads; it reads no other field).
+    - `rankVoices(voices: ArrayLike<VoiceLike> | null | undefined) → VoiceLike[]`: returns a new array of the **same objects** (never copies), in this order:
+      1. **Filter:** keep only voices with `localService === true` whose `lang`, lower-cased with `_` replaced by `-`, starts with `en`. Everything else is dropped (network voices such as Chrome's "Google …" and Edge's "… Online (Natural)" report `localService: false`; Chrome cuts off long network utterances, thread 0006 RISK). A `null`/`undefined` input, a non-array-like input or an entry that isn't an object with string `name` and `lang` is skipped, never an exception.
+      2. **Language tier:** `lang` normalized equal to `en-us` (tier 0) before any other `en-*` or bare `en` (tier 1).
+      3. **Quality:** within a tier, `QUALITY_RE = /\b(natural|neural|premium|enhanced)\b/i` on `name` scores +1; `OLD_RE = /\b(david|zira|alex)\b|espeak/i` on `name` scores −1 (a name matching both scores 0); others 0. Higher first.
+      4. **Male tie-break** (keeps today's intent, fixes the bug): `MALE_RE = /\b(male|guy)\b/i` on `name` first. `"Female"`, `"female"` and `"Guyana"` don't match (today's `/male|guy|david|alex/i` at `web/speech.js:9` matches "Female").
+      5. `default === true` first; then input order (stable).
+    - `pickVoice(voices) → VoiceLike | null` = `rankVoices(voices)[0] ?? null`.
+    - Exported constants `QUALITY_RE`, `OLD_RE`, `MALE_RE` (so the tests name them).
+  - Changes (`web/speech/web-speech.js`): `import { pickVoice } from './voices.js'`; the selection becomes `voice = pickVoice(synth?.getVoices() ?? [])`, still run at load and on `synth.onvoiceschanged`. When it returns `null`, `u.voice` is not set (the browser's default voice, exactly as today with an empty list). `u.rate`, `speak()`'s signature, one `SpeechSynthesisUtterance` per `speak()` call, `cancel()`, `wait()`, `listen()` and `capabilities` are unchanged.
+- **Acceptance:** FR-052 (local-only ranking, regex fix, no UI, no storage, no splitting); FR-034 (the facade is unchanged; only the provider's choice changes); FR-036 and SC-001 (golden output unchanged: the stub's `getVoices()` returns `[]`, `tests/golden/browser-stubs.js:45`, so `pickVoice` returns `null` as today); FR-011 (no storage). No displayed or spoken string is added or changed (inv. 9), so there is no copy row.
+- **Tests that prove it:** `tests/web-voices.test.js` (this ticket's unit tests, written by the frontend engineer, on fake voice lists; precedent `tests/web-copy.test.js`):
+  - "pickVoice returns null for [], null, undefined, 'x' and a list with only network voices";
+  - "rankVoices drops localService false and non-English voices";
+  - "rankVoices returns the same objects, never copies";
+  - "en-US is ranked before en-GB and en-AU; en_US and EN-us count as en-US";
+  - "Natural, Neural, Premium and Enhanced local voices rank before plain local voices";
+  - "Microsoft David Desktop, Microsoft Zira Desktop, Alex and eSpeak English rank after plain local voices; Alexandra is not penalised";
+  - "a Natural voice that is not local is never picked" (`{name: 'Microsoft Aria Online (Natural) - English (United States)', lang: 'en-US', localService: false}` with one local plain voice → the local voice);
+  - "MALE_RE matches 'Male' and 'Guy' but not 'Female', 'female' or 'Guyana'" (regression for `web/speech.js:9`);
+  - "a female voice name is not preferred as male" (`[{name: 'Samantha Female', …}, {name: 'Daniel Male', …}]`, both local en-US, no quality markers → `Daniel Male`);
+  - "ties keep default first, then input order";
+  - "a realistic Windows list picks Microsoft Mark over David and Zira"; "a realistic macOS list picks 'Ava (Premium)' over Samantha and Alex"; "a realistic Chrome list with Google voices and local voices picks a local voice";
+  - "voices.js has no import statement and no window, document, navigator, speechSynthesis, localStorage, sessionStorage or indexedDB reference" (source scan);
+  - "web-speech.js imports pickVoice from ./voices.js and contains no other getVoices().find" (source scan).
+  - `node tests/golden/run.mjs --replay`: empty diff except the 4 allow-listed runs (`--expect-aborts` once T17d has merged).
+  - `node tests/e2e/F1a.e2e.mjs`: passes unchanged, including "edge: localStorage and sessionStorage stay empty through a run (FR-011)".
+  - Real-browser check (CLAUDE.md DoD), voice and text, at 390 and 1280 px, zero console errors: in Chrome on the engineer's machine, the PR quotes `speechSynthesis.getVoices()` (name, lang, localService), the voice `pickVoice` chose, and confirms a full run narrates to the end in voice mode.
+- **Notes:** no picker UI, no stored choice (FR-011), no network voices, no sentence splitting, no `rate` change: those are the polish slice (spec "Non-goals / Later"). Runs in parallel with T12–T14, T16, T17a–T17d, T18 and T23: no other ticket edits `web/speech/*` after T15. Golden can't see the voice, so an empty diff proves only that nothing else changed; the unit tests and the real-browser check are the evidence (thread 0006 RISK).
+
 ### F1a-T16 [P] Port the legacy server tests to the attempt routes
 - **Owner:** qa-engineer
 - **Size:** M
@@ -463,10 +502,29 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - **Acceptance:** FR-033 (one builder per new string), FR-046; every new row of the spec's copy table. Nothing imports `web/copy.js` yet; golden replay empty.
 - **Tests that prove it:** `tests/web-copy.test.js` (this ticket's unit tests, written by the frontend engineer): "graderErrorText(false) and (true) equal the copy table", "resultsNote(0) is null; 1, 2 and 3 equal the copy table", "runEndLine picks the critical truly missed item", "runEndLine picks the first truly missed item when no critical is missed", "runEndLine never picks a notGraded item and returns null when only notGraded items remain", "runEndLine returns cleanRunLine when nothing is missed", "feedbackText appends the fix only when caught and verdict is not correct" (4 cases), "RESULTS_ERROR_TEXT and NO_JOBS_TEXT equal the copy table", "copy.js has no import statement and no document or window reference" (source scan).
 
+### F1a-T22 [P] Golden harness: record the subject control as `trade-select` under either id (F1a-B76; rev 4.5)
+- **Owner:** qa-engineer
+- **Size:** S
+- **Depends on:** F1a-T03b
+- **[ARCH DECISION NEEDED]:** architect to confirm this is a harness carve-out, not an allow-list entry. The recorded layer, every run file and `allow-list.json` stay byte-identical; only how the harness finds one element changes.
+- **Files:** modify `tests/golden/harness.mjs` (the `visibleTexts` function and the one call at `:231`). No other file: `tests/golden/run.mjs`, `scripts.mjs`, `browser-stubs.js`, `tests/fixtures/golden/**` (run files, `manifest.json`, `allow-list.json`) and every `web/` file are untouched.
+- **Interfaces:**
+  - Changes (`tests/golden/harness.mjs`): `visibleTexts(entries: Array<string | {key: string, ids: string[]}>) → string[]`.
+    - A string entry behaves exactly as today (`harness.mjs:117–127`).
+    - An object entry reads the **first** id in `ids` for which `document.getElementById` returns an element, then applies today's rules unchanged (skip if `!checkVisibility()`; a `SELECT` gives its option labels joined with `" | "`; otherwise normalized `innerText`). The line is prefixed with `key`, never with the id that was found. If no id matches, nothing is recorded (as today for a missing id), so the replay reports the missing line as a diff.
+    - The call at `:231` becomes `texts(['mode-badge', {key: 'trade-select', ids: ['trade-select', 'scenario-select']}, 'setup-msg', 'score'])`. Every other call is unchanged.
+  - Lookups by label (`getByLabel('Job')`, `'Read aloud'`, `'Use cached scenario (demo safe)'`, `:229–234`) are unchanged; T17b keeps the "Job" label (spec "Non-goals / Later").
+- **Acceptance:** SC-001 and FR-036: before T17b the `trade-select:` line of all 61 runs is recorded exactly as in the baseline (e.g. `perfect-electrical-text.json:9`), and after T17b's rename to `#scenario-select` the same line is recorded under the same key with the same text. The allow-list doesn't grow (T03a: "This file never grows").
+- **Tests that prove it:**
+  - `node tests/golden/run.mjs --replay --repeat 3` exits 0 on all 61 runs on the current tree (output and time quoted in the PR); `git diff tests/fixtures/golden/` is empty.
+  - Scratch proof, not committed (precedent T16's scratch edit): in a scratch working copy, rename `id="trade-select"` → `id="scenario-select"` in `web/index.html:23` and the two `$('trade-select')` lookups in `web/app.js:50, 64`; `--replay` exits 0 on all 61 runs. Then rename it to `id="other-select"` (and the lookups); `--replay` reports a diff on the `trade-select:` line of every run, proving the alias is not a wildcard. Both outputs are quoted in the PR, and the scratch copy is discarded.
+  - `tests/golden-isolation.test.js` stays green (`'scenario-select'` is not a product path); full `npm test` green with no assertion changes.
+- **Notes:** filed as F1a-B76 from the PM's RISK in thread 0006. It must merge before T17b; T17b's golden evidence ("the 57 runs that aren't allow-listed are unchanged") depends on it. It runs in parallel with every other Wave 2 ticket: no other ticket edits `tests/golden/harness.mjs` (T19b edits `run.mjs` only).
+
 ### F1a-T17b Web switch-over: attempt API, happy path and results error
 - **Owner:** frontend-engineer
 - **Size:** M
-- **Depends on:** F1a-T14, F1a-T15, F1a-T17a
+- **Depends on:** F1a-T14, F1a-T15, F1a-T17a, F1a-T22 (rev 4.5, F1a-B76: the golden harness must find `#scenario-select`)
 - **Files:** modify `web/app.js`, `web/api.js`, `web/index.html`
 - **Interfaces:**
   - Consumes: `GET /api/subjects`, `GET /api/scenarios?subject=`, `POST /api/attempts`, `POST /api/attempts/:attemptId/stops`, `POST /api/attempts/:attemptId/complete` (T12–T14); everything in `web/copy.js` (T17a).
@@ -513,6 +571,30 @@ Legend: [P] = can run in parallel with other [P] tickets in the same group (no s
 - **Acceptance:** FR-044, FR-046, FR-049 (`role="status"`), FR-050 (token between the two `speak()` calls); US2.5–US2.10 in voice and text mode; SC-011. By the end of this ticket every deny-list hit in `web/` is gone (`deny-list-allow.json` has zero `web/` entries; each T17 part lowers the counts it removes).
 - **Tests that prove it:** `node tests/e2e/F1a.e2e.mjs`: US2.5–US2.10 (voice and text), "no speechSynthesis.speak after #again-btn", "role=status on #results-note", the full suite passes in ≤ 10 min; `node tests/golden/run.mjs --replay --expect-aborts`: empty diff except the 4 allow-listed runs, and every allow-listed run fired its abort; zero console errors at 390 and 1280 px (screenshots in the PR). QA removes the `F1a-T17d` todos when verifying.
 - **Notes:** the two failure states (grader unreachable, results unreachable) are the only intended learner-visible changes outside failure runs.
+
+### F1a-T23 [P] Keep the newest transcript line clear of the STOP button (founder finding #4; rev 4.5)
+- **Owner:** frontend-engineer
+- **Size:** S
+- **Depends on:** F1a-T17d
+- **Files:** modify `web/styles.css`, `web/app.js` (the `scrollIntoView` call in `appendLine`, today `web/app.js:105`, plus one module-level constant). No other file; `web/index.html` is not touched.
+- **Cause (read from the code):** `#stop-btn` is `position: sticky; bottom: 16px` with a `min(260px, 70vw)` square and an 18 px `box-shadow` ring (`styles.css:61–70`). `appendLine` calls `li.scrollIntoView({behavior: 'smooth', block: 'nearest'})`, which puts the new line's bottom edge at the viewport's bottom edge, under the sticky button.
+- **Interfaces:**
+  - `web/styles.css`:
+    - `:root` gains `--stop-size: min(260px, 70vw);` and `--stop-reserve: calc(var(--stop-size) + 16px + 18px + 16px);` (button size, sticky `bottom` offset, shadow ring, a 16 px gap).
+    - `.stop { width: var(--stop-size); }` replaces the literal `min(260px, 70vw)` (same computed value, so the button renders identically).
+    - `.transcript li { scroll-margin-bottom: var(--stop-reserve); }`. Chosen over `scroll-padding-bottom` on the root scroller because it applies only when a transcript line is scrolled into view, so focus scrolling on the setup, panel and results screens is unchanged.
+    - No other rule changes; no new class.
+  - `web/app.js`: `const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');` at module level; the call becomes `li.scrollIntoView({ behavior: REDUCED_MOTION.matches ? 'auto' : 'smooth', block: 'nearest' })` (`.matches` read on every call, so a setting change mid-run applies to the next line). No other line changes; no class is added to `li` (a new class would show up in golden's `line N class:`, thread 0006 §1).
+  - Copy: none. No displayed or spoken string is added or changed (inv. 9).
+  - Events: none.
+- **Acceptance:** FR-051 and SC-012 (voice and text, 390 px); FR-036 and SC-001 (golden output unchanged: the harness records no scroll or geometry, and it runs with `reducedMotion: 'reduce'`, `harness.mjs:162`); SC-010 (0 console errors).
+- **Tests that prove it:**
+  - `node tests/e2e/F1a.e2e.mjs` (tests added to that file by qa-engineer, declared `{ todo: 'F1a-T23' }` until QA verifies this ticket; the suite's context is 900 px tall with `reducedMotion: 'reduce'`, `F1a.e2e.mjs:240`):
+    - "edge: at 390 px the newest transcript line never intersects the STOP button (voice)" and its text-mode twin, pinned to `width: 390`. Electrical card, `never-stop` script, then a second run with one STOP on the major line followed by "Back to work". After each "line N appended" (DOM state, timing contract), with no panel open: let `L = #transcript li:last-child` rect and `S = #stop-btn` rect grown by 18 px on every side; assert `L` and `S` don't intersect, `L.top ≥ 0` and `L.bottom ≤ innerHeight`. Every line of the card is checked, and the test fails if fewer lines than the card's step count were checked.
+    - "edge: transcript scrollIntoView uses behavior auto under prefers-reduced-motion: reduce and smooth otherwise" (text mode, 390 px): an init script wraps `Element.prototype.scrollIntoView` and records its argument for `#transcript li` targets; with the suite's `reduce` context every call has `behavior: 'auto'`; in a second context with `reducedMotion: 'no-preference'`, every call has `behavior: 'smooth'`.
+  - `node tests/golden/run.mjs --replay --expect-aborts`: empty diff except the 4 allow-listed runs, and every allow-listed run fired its abort.
+  - Real-browser check (CLAUDE.md DoD), voice and text, Chrome at 390 × 844 and 1280 × 900, zero console errors: screenshots in the PR of a transcript longer than the viewport, with the newest line fully above the STOP ring.
+- **Notes:** the explain and feedback panels (`position: fixed`, `styles.css:74`) cover the transcript by design while open; the check runs only while narrating. A viewport shorter than `--stop-reserve` plus one line (a phone in landscape) is not fixed here: the STOP size is unchanged in F1a, and that layout is the polish slice (spec "Non-goals / Later"). Runs in parallel with T18, T19a and T24 (no shared files). Must merge before T19b.
 
 ### F1a-T18 Remove the legacy routes, finish the engine-code sweep, update the README
 - **Owner:** backend-engineer
