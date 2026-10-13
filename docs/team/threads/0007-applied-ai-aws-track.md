@@ -64,3 +64,16 @@ There is no job description or rubric. **Confirmed:** the quote above and the 60
 - **The existing game screen stays untouched,** so F1a's golden replay and Wave 2 are unaffected. The PMP drafts can move to the new engine later as a second pack.
 - **Assessment is offline-first:** a rubric-concept matcher, plus a self-rating against the reference after each attempt. Low confidence is flagged for review, not scored. A live LLM grader joins through the gateway once there is a key.
 - **F1a Wave 2 stays on hold** while this ships.
+
+### technical-product-manager · 2026-10-13 · DECISION
+*Appended by the lead from the PM's report; the spec is at `docs/specs/F1c-practice-engine/`.*
+**Scope:** the F1c practice engine, 12 tickets in 3 waves.
+- **Wave A** ships first: a usable text-mode catch-and-correct loop (T01a, T02, T03, T04, T05).
+- **Wave B:** voice, the learn, interview and scenario API, progress and mastery, and the content move.
+- **Wave C:** the remaining screens.
+
+The existing game, its routes and the golden replay stay untouched. **Pre-registered:** SC-003 (matcher functional gate) and SC-004 (κ ≥ 0.6 against self-ratings over 7 days, reported, not a gate). All thresholds are provisional. **Next:** principal-architect design review of ARCH-1 to ARCH-8; learning-designer review LR-1 to LR-8.
+
+### lead · 2026-10-13 · EVIDENCE
+- **OQ-2 (interview date):** unknown, "this week or next". So Wave A ships first whatever the answer.
+- **ARCH-2:** practice packs never enter a prompt, so the reason behind ADR 0006's F2 hard rule (unfenced pack text in prompts) doesn't apply. The architect rules. If the rule is applied literally, the founder's 2026-10-13 direction making this track the immediate priority is the request for an exception, to be confirmed by the founder.

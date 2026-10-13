@@ -412,11 +412,11 @@ All events are server-written through `db.appendEvents`. Each passes `validateEv
 
 ## Assumptions
 - One learner (`learner_1`), one server process per DB file (ADR 0003 Amendment 3).
-- Content arrives as drafts in `docs/research/applied-ai/module-1/` (founder-owned; not present at revision 1) and is moved by F1c-T10 only after review (OQ-1).
+- Content arrives as drafts in `docs/research/applied-ai/module-1/` (founder-owned; not present at revision 1) and is moved by F1c-T11 only after review (OQ-1).
 - The practice page runs in both `npm run mock` and `npm start`, because it makes no AI call.
 
 ## Open questions
-- **OQ-1** [NEEDS CLARIFICATION: founder] Who signs off module-1 content accuracy before F1c-T10 moves it: the founder, the learning-designer, or both? The proposal is that the learning-designer reviews pedagogy and the founder confirms the facts, both recorded in thread 0007.
+- **OQ-1** [NEEDS CLARIFICATION: founder] Who signs off module-1 content accuracy before F1c-T11 moves it: the founder, the learning-designer, or both? The proposal is that the learning-designer reviews pedagogy and the founder confirms the facts, both recorded in thread 0007.
 - **OQ-2** [NEEDS CLARIFICATION: founder] Is the interview date known? If it is under 4 days away, the PM proposes shipping Wave A only (F1c-T02–T05: text catch) and doing the rest after.
 - **OQ-3** [NEEDS CLARIFICATION: founder] Is "configurable schedule" satisfied by `schedule.json` alone in F1c? A UI setting is listed under Later.
 - **OQ-4** [NEEDS CLARIFICATION: content author] The formalized shapes for `followUp`, `acceptableArchitectures`, `challenges`, `followUps` and the scenario `rubric` differ from the draft. Can the author use them?
