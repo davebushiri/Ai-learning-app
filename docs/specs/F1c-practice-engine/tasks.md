@@ -479,3 +479,21 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 - **Wave B:** T06 touches `web/practice/*`, `web/speech.js` and its new test. T07 touches `server/services/practice.js`, `server/routes/practice.js` and its new test. T08 touches the new `practice-progress` files, `server/index.js`, `server/db.js` and `tests/db.test.js`. T11 touches `packs/applied-ai/**` and its new test. T01b touches its one new file. No overlap.
 
 ## Bugs (QA appends)
+
+## Bugs
+
+*Filed by backend-engineer while building F1c-T03 (2026-10-13).*
+
+### F1c-B10 [minor] catch-01's correction rubric repeats the flawed statement
+- Its first alternative ("bigger window means more input fits") nearly matches the misconception, so an incorrect answer earns correction partial. · Owner: content author (T11)
+
+### F1c-B11 [major] FR-021(a) "uncertain" applies per dimension, so one missed dimension makes the whole answer uncertain
+- This causes most valid-alternative answers to come out uncertain (catch-01, catch-04, catch-06, catch-08). · Owner: technical-product-manager, with principal-architect
+
+### F1c-B12 [major] Lexicon and rubric gaps fail valid alternative wordings
+- E.g. "faithful" vs "faithfulness", "old", "near", "junk", "pricier". Only 1 of 6 valid alternatives in module 1 is met today, against SC-003's ≥ 75%. · Owner: content author + learning-designer (T11 lexicon)
+
+### F1c-B13 [minor] Prefix-only matching: "faithful" doesn't hit "faithfulness"
+- Accepted limit; fix through the lexicon. · Owner: content author
+
+**Matcher rules the spec didn't spell out** (principal-architect to confirm at code review): the negation window counts every word and stops at `. ; : ! ?`; the PD-2 exception covers red flags and strong signals; red flags and echoes make every dimension uncertain; lexicon lookups go one way; 4-letter plurals are stripped.
