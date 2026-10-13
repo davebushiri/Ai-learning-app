@@ -65,39 +65,6 @@ There is no job description or rubric. **Confirmed:** the quote above and the 60
 - **Assessment is offline-first:** a rubric-concept matcher, plus a self-rating against the reference after each attempt. Low confidence is flagged for review, not scored. A live LLM grader joins through the gateway once there is a key.
 - **F1a Wave 2 stays on hold** while this ships.
 
-### learning-designer · 2026-10-13 · RISK
-**The matcher rules in F1c will misgrade the module-1 content systematically.** Full detail is in `docs/research/applied-ai/module-1/REVIEW.md` (B1–B3). Hand traces are in `exercises/_matcher-test-answers.json`.
-- **Failure mode 1:** rubric items use `|` for alternatives, but FR-017 doesn't define `|`. Alternatives then merge, and learners must say both phrasings.
-- **Failure mode 2:** FR-021(b) negation and FR-022 red flags ignore polarity. Correcting a misconception *is* a negation, so the textbook answer to catch-05 s5 ("not fully deterministic") is predicted uncertain. If `not` is a stopword, wrong answers match negative items. Strong interview answers that reject a red flag get flagged.
-- **Failure mode 3:** `ceil(0.67 × 3) = 3`, so every 2- or 3-item dimension needs 100% for met.
-- **Likelihood:** H · **Impact:** H (SC-003 valid-alternative ≥ 75% met and SC-004 uncertain ≤ 10% are both likely to fail; learner gets "can't score" when right).
-- **Mitigation (PM/architect decide):**
-  - (1) Split items on `|`, any alternative matches.
-  - (2) Skip the negation check when the rubric item itself contains a negator; a red flag counts only when not negated.
-  - (3) `metRatio = 2/3` with epsilon.
-  - (4) Adopt the draft lexicon in `_matcher-test-answers.json`, and add the 24 answers to the QA labelled set.
-
-### learning-designer · 2026-10-13 · EVIDENCE
-**Answering:** OQ-1 (content accuracy, pedagogy half)
-- I checked the portable claims against Anthropic docs fetched today: glossary, context windows, structured outputs, citations, reduce-hallucinations, embeddings and contextual retrieval (**verified**). arXiv and the OWASP pages were unreachable, so Lewis, Liu and RAGAS rely on secondary summaries and prior knowledge (**secondary**).
-- I made 11 fixes, logged in REVIEW.md:
-  - two contestable lines in zero-error controls (catch-03 s2, catch-07 s4 prompt-injection overclaim);
-  - a dated "different embedding models never compatible" claim (Voyage 4 shared space; **secondary**);
-  - catch-08 s5, whose own cited source recommends top-20;
-  - the missing caveat that Citations and structured outputs can't be combined;
-  - a temperature misconception that contradicted its own file;
-  - Lewis et al. wording.
-- No AWS claim looks wrong; all stay UNVERIFIED. `docs/research/**` is founder-owned, so the founder should accept or revert these edits at sign-off.
-- **Pedagogy:** learn and planted modes are separate, zero-error controls exist, and every analogy states where it breaks down. Gaps:
-  - tone tells (planted lines carry the absolutes);
-  - catch-06 isn't subtle at d3;
-  - one item per concept, so spaced review can only replay (Later: parallel sets);
-  - the scenario (~25 min) and diagnostic (~20 min) need splitting for focus-friendly sittings.
-- **Interview fit:** strong RAG; embeddings and production are thin; agents are absent. Recommend the PM schedule M2 (agents) immediately after M1.
-
-**Confidence:** high on the Anthropic-sourced facts and the matcher arithmetic; medium on the matcher traces (no implementation exists yet, and the stopword list is undefined).
-**What would change my mind:** a matcher@1 run on `_matcher-test-answers.json` showing clear and valid-alternative answers graded met.
-
 ### technical-product-manager · 2026-10-13 · DECISION
 *Appended by the lead from the PM's report; the spec is at `docs/specs/F1c-practice-engine/`.*
 **Scope:** the F1c practice engine, 12 tickets in 3 waves.
@@ -132,3 +99,41 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 **Content check (T11):** the drafts are structurally sound: valid partitions, no planted text in the references. They need format-only mapping (C12). Two gaps are hidden work for the PM: `practice.json` and `schedule.json` don't exist, and `diagnostic.json` is items, not exercises.
 **Dissent recorded:** none yet. The PM may contest C11 (inv. 8 voice "next" / "review") on scope. My view is that the invariant requires it.
 **Follow-ups:** the PM applies C1–C15 to `spec.md` and `tasks.md`, and adds the F1a sequencing and test lines (C7). The founder confirms ARCH-2. ADR 0008, ADR 0002 Am. 3 and ADR 0006 Am. 3 are written, and `decisions.md` has D24.
+
+### learning-designer · 2026-10-13 · RISK
+**The matcher will misgrade correct corrections, even after C1.** Detail: `docs/research/applied-ai/module-1/REVIEW.md` B2–B3. Hand traces: `exercises/_matcher-test-answers.json`.
+- **Failure mode 1 (polarity):** the FR-021(b) negation rule and FR-022 red flags ignore polarity. Correcting a misconception usually *is* a negation, so the textbook answer to catch-05 s5 ("still not fully deterministic") is predicted `uncertain`.
+  - If `not`/`no` are stopwords, wrong answers match negative rubric items: "consistent and identical every time" matches `more consistent not identical`.
+  - A strong interview answer that names and rejects a red flag ("I wouldn't fine-tune for knowledge") becomes `uncertain`.
+- **Failure mode 2 (arithmetic):** `ceil(0.67 × 3) = 3` and `ceil(0.67 × 2) = 2`, so every catch dimension in module 1 needs 100% for `met`.
+- **Likelihood:** H · **Impact:** H. SC-003 (valid-alternative ≥ 75% met) and SC-004 (uncertain ≤ 10%) are both likely to fail, and the learner hears "can't score" when right, days before the interview.
+- **Mitigation (PM/architect decide):**
+  - (1) Skip the negation check when the rubric item itself contains a negator. Count a red flag only when no negator precedes it.
+  - (2) `metRatio = 2/3`, with an epsilon before `ceil`.
+  - (3) Adopt the draft lexicon in `_matcher-test-answers.json`.
+  - (4) QA adds its 24 answers to the T01a labelled set.
+
+  C1 (`|` alternatives) already covers the third issue I found.
+
+### learning-designer · 2026-10-13 · EVIDENCE
+**Answering:** OQ-1 (content accuracy, the learning-designer half)
+- **Checked:** the portable claims, against Anthropic docs fetched today (glossary, context windows, structured outputs, citations, reduce-hallucinations, embeddings, contextual retrieval): **verified**. arXiv and OWASP were unreachable, so Lewis, Liu, RAGAS and OWASP LLM01 are **secondary**.
+- **11 fixes, logged in REVIEW.md:**
+  - two contestable "clean" lines in the zero-error controls: catch-03 s2, and the catch-07 s4 prompt-injection overclaim;
+  - a dated "different embedding models are never compatible" claim (Voyage 4 shared space; **secondary**);
+  - the catch-08 s5 key, whose own cited source found top-20 best;
+  - a missing caveat: Citations and structured outputs can't be combined (400);
+  - a temperature misconception that contradicted its own file;
+  - Lewis et al. wording.
+
+  No AWS claim looks wrong; all stay UNVERIFIED. `docs/research/**` is founder-owned, so the founder accepts or reverts these at sign-off.
+- **Pedagogy:** learn and planted modes are cleanly separated, zero-error controls exist, and every analogy states where it breaks down. Gaps:
+  - tone tells (planted lines carry the absolutes);
+  - catch-06 isn't subtle for d3;
+  - one item per concept, so spaced review can only replay (Later: parallel sets);
+  - every follow-up is a string, so FR-053 `failureModesTradeoffs` is `n/a` everywhere;
+  - the scenario (~25 min) and diagnostic (~20 min) need splitting for focus-friendly sittings.
+- **Interview fit:** RAG strong; embeddings and production thin; agents absent. Recommend the PM put M2 (agents) immediately after M1.
+
+**Confidence:** high on the Anthropic-sourced facts and the matcher arithmetic; medium on the traces (no matcher exists yet; the stopword list is undefined).
+**What would change my mind:** a matcher@1 run on `_matcher-test-answers.json` grading the clear and valid-alternative answers `met`, and the incorrect ones `not_met`.

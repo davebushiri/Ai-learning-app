@@ -8,7 +8,10 @@
 
 - **Ownership note:** CLAUDE.md lists `docs/research/**` as founder-owned. The lead directed the edits below. They are logged so the founder can accept or revert each one as part of the OQ-1 accuracy sign-off.
 - **Content accuracy: good, with 11 fixes made (see the fix log).** The portable claims hold up against Anthropic's docs (fetched today). None of the eight planted misconceptions is actually true, and every `whyWrong` holds. The fixes were overstatements: two "clean" lines in the zero-error controls were contestable, one embedding claim is now dated, and one of the trade-off items was contradicted by its own cited source. No AWS claim looks wrong, and all remain UNVERIFIED.
-- **Assessability: blocking.** Under the matcher as specified (FR-017 to FR-022), this content will be misgraded systematically. The causes are in how the content and the spec meet, not in either one alone. See B1 to B4.
+- **Assessability: blocking.** Under the matcher as specified (FR-017 to FR-022), this content will be misgraded systematically. The causes are in how the content and the spec meet, not in either one alone.
+  - B2 (polarity-blind negation and red-flag rules) and B3 (`metRatio` arithmetic) are not covered by the architect's design review.
+  - B1 (`|`) is fixed once the PM applies C1.
+  - B4 is a smaller content gap.
 - **Pedagogy: sound structure, a few tells.** Learn mode is separate from the planted modes. The zero-error controls, distractors and analogy breakdowns are all present. The weak points are tone tells (H2), a d3 item that isn't subtle (H3), and one item per concept, which leaves nothing new for spaced review (H6).
 - **Interview fit:** strong on RAG, partial on embeddings and production, and nothing on agents (by design: Module 2). Given the interview date, agents are the largest gap (H7).
 
@@ -16,11 +19,10 @@
 
 ## Blocking (fix before F1c-T10 loads this content)
 
-### B1. `|` alternatives are used throughout but are undefined in the matcher
+### B1. `|` alternatives are used throughout but are undefined in FR-017 (resolved once C1 is applied)
 - **Where:** every `rubric` and `teachBack[].rubric` array, e.g. `catch-01 planted[s2].rubric.explain[0]` = `"working memory for one call|what it can see now"`.
-- **Evidence:** FR-017 counts `ceil(0.6 × n)` content tokens per item and says nothing about `|`. If `|` is just treated as a separator, the alternatives merge into one item. `"per-call working memory|what model sees in one request"` (d01) then needs 5 of about 8 tokens, so a learner must say both phrasings.
-- **Risk to learning:** correct answers fail, and the learner learns to parrot rubric wording instead of explaining. This undermines self-explanation, the core mechanism (learning-science.md §2, Bisra et al. g = .55).
-- **Fix (PM/architect):** add to FR-017: "An item containing `|` is split into alternatives; the item is matched if any alternative meets the token rule." Add a T03 test. The content needs no change.
+- **Evidence:** spec FR-017 as written has no alternation. If `|` were just a separator, `"per-call working memory|what model sees in one request"` (d01) would need 5 of about 8 tokens, so the learner would have to say both phrasings.
+- **Status:** the architect's design review ([review.md](../../../specs/F1c-practice-engine/review.md) **C1**) already requires this: an item is matched if any `|` alternative matches. It is blocking only until the PM applies C1 to FR-017/T03. The content needs no change. `_matcher-test-answers.json` assumes C1.
 
 ### B2. The negation rule and the red-flag rule ignore polarity, but this content is made of negations
 - **Where:** FR-021(b) (a negator within 3 tokens before a matched token makes the result uncertain) and FR-022 (any red-flag match makes the result uncertain), applied to rubrics such as `"not fully deterministic at zero"`, `"faithfulness is not correctness"` and `"weights unchanged|no training"`, and red flags such as `"fine-tuning for knowledge"` and `"upgrade the model first"`.
@@ -41,19 +43,18 @@
 - **Evidence:** `ceil(0.67 × 3) = ceil(2.01) = 3`, and `ceil(0.67 × 2) = 2`. So every catch dimension in this module (2 or 3 items) requires 100% for met. The intended "two-thirds" only takes effect at n ≥ 4.
 - **Fix (PM):** use `metRatio = 2/3` with a small epsilon (`ceil(n × 2/3 − 1e-9)`), or `floor`. Separately (author): keep catch `explain` arrays at 2 core items and move narrow extras ("scale varies by model", "documented by provider") out of the scored list (H1).
 
-### B4. Content shapes don't match the F1c schema, so the validator would refuse the pack
-- **Where and evidence** (spec lines 51–83, OQ-4):
-  - `sources[].verified` is a string (`"fetched-2026-10-13"`, `"UNVERIFIED"`), but the spec wants a boolean.
-  - Interview `followUps` are bare strings, but the spec wants `{question, rubric}`, at least 1.
-  - Scenario `challenges` use `{challenge, expected}`, but the spec wants `{question, rubric}`.
-  - `acceptableArchitectures` lack `id` and `mustInclude`.
-  - `diagnostic.json` has no exercise type in the schema. The spec's diagnostic is `mode: "diagnostic"` over existing exercise ids, at most 6.
-  - There is no `schedule.json`.
-- **Risk to learning:** besides failing to load, every `followUp` here is a string, so it is self-rated only. FR-053 `failureModesTradeoffs` is then `n/a` for every concept, and readiness can never show trade-off competence, which is the skill an interviewer probes most.
-- **Fix:**
-  - **Author:** convert `challenges`, `followUps` and `acceptableArchitectures` mechanically. Give `followUp` a `{question, rubric}` on at least catch-06, catch-08 and the four interviews.
-  - **PM:** decide whether `verified` becomes an enum. The string values carry real provenance, which a boolean would lose; I suggest keeping the strings.
-  - **PM:** decide how `diagnostic.json` maps to `schedule.diagnostic`. One option is to recast the 10 items as two diagnostic-mode `interview`-type exercises.
+### B4. String follow-ups leave the trade-off readiness criterion permanently `n/a` (shape mismatches otherwise handled by C2/C12)
+- **Status of the shape mismatches:** the architect's C2/C12 cover them as format mappings in T11:
+  - `verified` becomes a boolean, with the original string kept in `note`;
+  - `challenge`/`expected` become `question`/`rubric`;
+  - architecture `id` comes from the `name`;
+  - string `followUps` are allowed and self-rated only.
+
+  `diagnostic.json` stays in research. `practice.json` and `schedule.json` are hidden work: the PM, with the learning-designer, records the plan and at most 6 diagnostic ids in thread 0007.
+- **What remains a learning issue:** every `followUp` and interview `followUps` entry in module 1 is a string, so all are self-rated only. FR-053 `failureModesTradeoffs` needs a matched follow-up, so it is `n/a` for every concept. Readiness can then never show trade-off competence, which is the skill an interviewer probes most. Content-wise, the `challenges[].expected` lists already exist and map to rubrics.
+- **Fix (author, small):** give `followUp` a `{question, rubric}` (2–3 items) on at least catch-06, catch-08 and the four interviews. Drafts follow; the author decides.
+  - catch-06: rubric `["both stages can contribute", "right chunk ranked low|buried mid-context", "fix ranking and prompt evidence order"]`.
+  - catch-08: rubric `["measure recall@k|hit rate", "measure answer quality|faithfulness", "latency and cost per query"]`.
 
 ---
 
@@ -200,8 +201,20 @@ All edits keep the planted/clean partition unchanged: no statement moved between
 
 ## Left for the author (judgement calls)
 
-H2 (tone tells, including the catch-02 pronoun), H3 (catch-06 s6 subtlety), H4 (catch-08 s5 narration), B4 (shape conversion), H1 (trim narrow rubric items), M1–M5, the item-13 AWS pointer.
+- H2: tone tells, including the catch-02 pronoun.
+- H3: catch-06 s6 subtlety.
+- H4: catch-08 s5 narration.
+- B4: rubric-bearing follow-ups.
+- H1: trim the narrow rubric items.
+- M1–M5.
+- The item-13 AWS pointer.
 
 ## For the PM and architect
 
-B1, B2, B3 (matcher rules), B4 (`verified` type, diagnostic mapping), H6 and M6 (Later: parallel sets and interleaved review), H7 (sequence M2 next). Entries posted in thread 0007.
+- B2 and B3: matcher rules not covered by C1–C15.
+- B1: apply C1.
+- H6 and M6 (Later): parallel sets and interleaved review.
+- H7: sequence M2 next.
+- C12 hidden work: the 7-day plan and at most 6 diagnostic ids. I'm available to draft these with the PM.
+
+Entries are posted in thread 0007.
