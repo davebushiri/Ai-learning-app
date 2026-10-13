@@ -6,7 +6,7 @@
 // same (id, version) refuses the pack until its version is bumped. Events say demo-trades@1, so
 // the content behind that name must never change.
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './http.js';
 import { getDb } from './db.js';
@@ -104,6 +104,8 @@ export function loadPacks(dir = DEFAULT_DIR, db = getDb()) {
     console.warn(`[packs] ${path.basename(dir)} skipped: cannot be read (${e.code ?? 'error'})`);
   }
   for (const name of names) {
+    // ADR 0008 (ARCH-1): a practice pack (practice.json, no pack.json) belongs to the practice loader.
+    if (existsSync(path.join(dir, name, 'practice.json')) && !existsSync(path.join(dir, name, 'pack.json'))) continue;
     try {
       const loaded = loadOne(path.join(dir, name), db);
       deepFreeze(loaded.pack);

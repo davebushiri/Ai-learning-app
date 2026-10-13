@@ -259,6 +259,19 @@ describe('loadPacks refuses and skips bad packs', () => {
     assert.ok(db.getCard('fx_demo-trades_1_electrical'));
   });
 
+  // F1c-T02 (ADR 0008 ARCH-1): practice packs share packs/ and are loaded by the practice loader.
+  test('a directory with practice.json and no pack.json is skipped with no [packs] warning', () => {
+    writePack(tmp.dir, 'practice-only', { 'practice.json': { format: 'practice-v1', id: 'practice-only' } });
+    assert.deepEqual([...loadPacks(tmp.dir, db).keys()], ['demo-trades']);
+    assert.deepEqual(warnings, []);
+  });
+
+  test('a directory with both practice.json and pack.json loads pack.json as before', () => {
+    writePack(tmp.dir, 'demo-trades', { 'practice.json': { format: 'practice-v1' } });
+    assert.deepEqual([...loadPacks(tmp.dir, db).keys()], ['demo-trades']);
+    assert.deepEqual(warnings, []);
+  });
+
   test('a missing packs dir loads nothing and does not throw', () => {
     assert.deepEqual([...loadPacks(path.join(tmp.dir, 'nope'), db).keys()], []);
     assert.match(warnings.join('\n'), /^\[packs\] /);

@@ -1,0 +1,11 @@
+{
+  "format": "practice-v1",
+  "id": "moonberry",
+  "version": 1,
+  "title": "Moonberry growing",
+  "modules": [
+    { "id": "m1", "title": "Beds and harvest", "exercises": ["learn-beds", "catch-watering", "catch-clean", "scenario-orchard", "interview-harvest"] }
+  ],
+  "lexicon": { "synonyms": { "water": ["irrigate", "soak"] } },
+  "provenance": { "builtBy": "tests" }
+}

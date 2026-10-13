@@ -1,0 +1,12 @@
+{ "id": "interview-harvest", "module": "m1", "type": "interview", "objective": "Explain when to harvest.",
+  "prerequisites": [], "difficulty": 3, "concepts": ["harvest"], "referenceIds": ["ref-harvest"],
+  "sources": [{ "title": "Moonberry almanac", "url": "https://example.org/almanac", "verified": true }],
+  "followUp": "What goes wrong if you store them warm?",
+  "transfer": { "scenario": "Harvesting sunberries.", "rubric": ["colour cue|glow"] },
+  "question": "How do you know a moonberry is ready?",
+  "rubric": { "mustCover": ["pale blue glow"], "strongSignals": ["deep blue splits"], "redFlags": ["pick deep blue"] },
+  "followUps": [
+    "How long can they be stored?",
+    { "question": "What happens to a deep blue berry?", "rubric": ["splits|overripe"] }
+  ]
+}

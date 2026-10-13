@@ -1,0 +1,15 @@
+{ "id": "scenario-orchard", "module": "m1", "type": "scenario", "objective": "Plan beds for a new grower.",
+  "prerequisites": ["learn-beds"], "difficulty": 2, "concepts": ["bed-care", "planning"], "referenceIds": ["ref-beds", "ref-harvest"],
+  "sources": [{ "title": "Grower notes", "url": "https://example.org/notes", "verified": false }],
+  "followUp": { "question": "What fails first if the beds flood?", "rubric": ["roots rot|wet roots"] },
+  "transfer": { "scenario": "A rooftop garden with no shade.", "rubric": ["water at dusk"] },
+  "brief": "A grower wants twenty moonberry beds on a slope.",
+  "constraints": ["One helper", "No shade"],
+  "clarifications": [{ "askAbout": ["slope|hill"], "reveal": "The slope faces west." }],
+  "acceptableArchitectures": [
+    { "id": "terraces", "summary": "Terraced raised beds.", "mustInclude": ["terrace|step"], "strengths": ["drains well"], "tradeoffs": ["more labour"] },
+    { "id": "rows", "summary": "Contour rows." }
+  ],
+  "challenges": [{ "question": "Why not flat beds?", "rubric": ["water pools|drainage"] }],
+  "rubric": { "mustCover": ["raised beds", "water at dusk"], "strongSignals": ["west light"], "redFlags": ["water at noon"] }
+}

@@ -1,0 +1,17 @@
+{
+  "days": 2,
+  "minutesPerDay": 60,
+  "diagnostic": ["catch-watering"],
+  "plan": [
+    { "day": 1, "blocks": [
+      { "kind": "diagnostic", "minutes": 10 },
+      { "kind": "learn", "minutes": 10, "exercises": ["learn-beds"] },
+      { "kind": "catch", "minutes": 40, "exercises": ["catch-watering", "catch-clean"] }
+    ] },
+    { "day": 2, "blocks": [
+      { "kind": "scenario", "minutes": 30, "exercises": ["scenario-orchard"] },
+      { "kind": "interview", "minutes": 20, "exercises": ["interview-harvest"] },
+      { "kind": "review", "minutes": 10 }
+    ] }
+  ]
+}

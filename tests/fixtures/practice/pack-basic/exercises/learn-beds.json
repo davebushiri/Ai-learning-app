@@ -1,0 +1,8 @@
+{ "id": "learn-beds", "module": "m1", "type": "learn", "objective": "Explain how moonberry beds are kept.",
+  "prerequisites": [], "difficulty": 1, "concepts": ["bed-care"], "referenceIds": ["ref-beds"],
+  "sources": [{ "title": "Moonberry almanac", "url": "https://example.org/almanac", "verified": true, "note": "fetched for tests" }],
+  "followUp": "When would watering at noon be acceptable?",
+  "transfer": { "scenario": "A friend grows sunberries in pots.", "rubric": ["pots drain faster|water more often"] },
+  "narration": [{ "id": "s1", "text": "Beds sit one hand above the path." }, { "id": "s2", "text": "We water at dusk." }],
+  "teachBack": [{ "question": "Why water at dusk?", "rubric": ["leaves scorch in strong light|noon sun burns leaves"] }]
+}

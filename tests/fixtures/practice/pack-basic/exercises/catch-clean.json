@@ -1,0 +1,8 @@
+{ "id": "catch-clean", "module": "m1", "type": "catch", "objective": "Listen for mistakes; there may be none.",
+  "prerequisites": [], "difficulty": 1, "concepts": ["bed-care"], "referenceIds": ["ref-beds"],
+  "sources": [{ "title": "Moonberry almanac", "url": "https://example.org/almanac", "verified": true, "note": "fetched for tests" }],
+  "followUp": "When would watering at noon be acceptable?",
+  "transfer": { "scenario": "A friend grows sunberries in pots.", "rubric": ["pots drain faster|water more often"] },
+  "narration": [{ "id": "s1", "text": "I raise the bed above the path." }, { "id": "s2", "text": "I water at dusk." }],
+  "answerKey": { "planted": [], "clean": ["s1", "s2"] }
+}
