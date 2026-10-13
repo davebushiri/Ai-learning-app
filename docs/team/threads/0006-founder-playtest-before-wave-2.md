@@ -41,3 +41,24 @@ Tell the lead in chat, or append below. One entry per finding:
 ---
 
 <!-- Entries go below, append-only. -->
+
+### founder · 2026-10-13 · EVIDENCE
+*Recorded by the lead from the founder's chat message on 2026-10-13. Overall: "The app is really functional."*
+
+1. **Kind:** feature (branding). Rename "Stop the Apprentice" to something more all-encompassing. The founder asked for suggestions.
+2. **Kind:** feel (UI). The UI could be more appealing. The founder asked for research on what visuals appeal to learners.
+3. **Kind:** feel + feature (voice). The voice sounds robotic. The founder asked for research on voices that help people learn, and proposed a feature: let the user change voices.
+4. **Kind:** bug. **Mode:** observed during play.
+   - **Steps:** let the narration run for several lines.
+   - **Expected:** the transcript scrolls to keep the newest line visible.
+   - **Actual:** it doesn't auto-scroll, and the text overlaps the STOP button.
+   - **How much it matters:** not stated.
+5. **Kind:** feature (scoring). "I really like the point system." The founder asked for research on how to improve it.
+6. **Kind:** feature (presentation). The talking works well. The founder asked for research on better visuals while the apprentice talks.
+
+**Direction questions (founder):**
+- **PMP:** when is the cheapest time to move to PMP content? It is the founder's own study goal, and would be a proof of concept.
+- **Interview prep:** should the game also be an interview-prep tool?
+- **Why these:** both are immediately usable, and the founder's network is in the same situations, so they can test and catch bugs.
+
+The lead is running research on all of the above. The PM then sorts each item into Wave 2, F1b, F2 or later.
