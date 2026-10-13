@@ -31,7 +31,7 @@ A larger or newer model will not fix a retrieval failure: the model cannot use e
 - **Freshness:** the index holds an old version. The answer is faithful to the retrieved chunk and still wrong. Fix with change detection and sync, version metadata, filters for "current only", and deleting superseded chunks.
 - **Access control:** a user receives content they are not entitled to, or is denied content they are. Enforce permissions at retrieval (filter before the model sees anything), using the user's identity from the authenticated session, never from the question text. A prompt instruction such as "don't reveal HR files" is not access control. Test with users from different groups.
 - **Abstention:** when the retrieved evidence does not answer the question, the correct output is "I can't find that in the policies", ideally with a pointer to a human. Measure both sides: answering when it should have abstained (unsupported answer), and abstaining when the answer was available (over-refusal).
-- **Injected instructions in documents:** a document may contain text like "ignore previous instructions". Retrieved text is data; fence it and instruct the model accordingly.
+- **Injected instructions in documents:** a document may contain text like "ignore previous instructions". Retrieved text is data; fence it and instruct the model accordingly. This lowers the risk but no known method prevents prompt injection completely (OWASP LLM01), so also keep the model's permissions and tools minimal, and include injected documents in the test set.
 
 ### Evaluating before production
 
@@ -73,6 +73,7 @@ A larger or newer model will not fix a retrieval failure: the model cannot use e
 - Es et al., "Ragas: Automated Evaluation of Retrieval Augmented Generation" (2023): https://arxiv.org/abs/2309.15217 (metric definitions confirmed via search snippets 2026-10-13)
 - RAGAS documentation, available metrics: https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/ (not reachable from this environment)
 - Anthropic, Reduce hallucinations: https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations (fetched 2026-10-13)
+- OWASP Top 10 for LLM Applications 2025, LLM01 Prompt Injection ("it is unclear if there are fool-proof methods of prevention"): https://genai.owasp.org/llmrisk/llm01-prompt-injection/ (search snippet only, 2026-10-13; page not fetchable here)
 - Anthropic, Introducing Contextual Retrieval (recall@20 failure-rate framing): https://www.anthropic.com/news/contextual-retrieval (fetched 2026-10-13)
 - AWS to verify: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-it-works.html
 - AWS to verify: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html

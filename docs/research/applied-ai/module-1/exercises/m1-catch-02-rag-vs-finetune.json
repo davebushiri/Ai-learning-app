@@ -78,7 +78,7 @@
           "RAG retrieves relevant passages at question time and adds them to the prompt; the model isn't retrained.",
           "With RAG the model reads our documents per question; it doesn't learn them into its weights."
         ],
-        "exceptions": "The original 2020 RAG paper fine-tuned its retriever and generator on task examples, but the document knowledge stayed in a swappable index. Typical production RAG on a hosted model involves no training.",
+        "exceptions": "The original 2020 RAG paper fine-tuned its query encoder and generator on task examples, but the document encoder was kept fixed and the document knowledge stayed in a swappable index. Typical production RAG on a hosted model involves no training.",
         "kind": "factual",
         "rubric": {
           "explain": [

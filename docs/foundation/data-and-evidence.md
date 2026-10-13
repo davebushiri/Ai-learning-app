@@ -30,6 +30,7 @@ Events follow the shape of **xAPI statements** (actor, verb, object, plus result
 | Session and card lifecycle | `planned`, `started`, `step-shown`, `resumed`, `abandoned`, `completed` |
 | Answers and grades | `stopped`, `explained`, `graded`, `chose` (next move) |
 | Feedback and probes | `flagged`, `rated-fairness`, `probe-answered` |
+| Practice engine (F1c, [ADR 0002](../adr/0002-event-schema-v1.md) Amendment 3) | `self-rated`, `assisted`, `clarified`. Practice events carry `context.engine: "practice"` and `pra_` attempt ids; a missing `engine` means the card engine |
 | Voice and mode | `mode-assigned`, `mode-switched`, `mode-fallback`, `voice-command`, `stt-corrected` |
 | Subject changes | `subject-built`, `subject-edited`, `map-change-accepted` |
 

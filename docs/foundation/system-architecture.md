@@ -25,6 +25,7 @@
 - **Services are subject-agnostic.** Only packs contain subject words, and a test greps engine prompts and code for a deny-list of subject terms.
 - **Shared pure logic** (`shared/`) runs unchanged in browser and server: scoring, mastery maths, the contract validator, and the keyword grader. Scoring and the keyword grader *run* only on the server, because they need the answers ([ADR 0004](../adr/0004-no-grading-in-the-browser.md)).
 - **One writer per table.** The Session Engine is the only writer of events. Projections are rebuilt only by the Learner Model.
+- **The practice engine** ([ADR 0008](../adr/0008-practice-engine-and-practice-pack-format-v1.md), F1c) is a second, separate session engine with its own routes, page and pack format. It writes events only through `db.appendEvents`, tagged `context.engine: "practice"`. It never calls the card engine, and the card engine never calls it. Convergence is decided by an ADR before F2's Session Engine is specced.
 
 ## 2. Module layout (target)
 

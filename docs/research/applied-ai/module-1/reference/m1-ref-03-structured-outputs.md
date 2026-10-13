@@ -28,7 +28,7 @@ Explain what structured outputs guarantee (shape), what they do not guarantee (t
 
 So production code still checks the stop reason, parses defensively, validates business rules, and has a non-AI fallback.
 
-**Why it matters for RAG.** A grounded answer is often returned as a structure such as `{answer, citations[], confidence, abstained}`. Structure makes abstention and citations machine-checkable: the application can refuse to display an answer with no citations, or route an abstention to a human.
+**Why it matters for RAG.** A grounded answer is often returned as a structure such as `{answer, citations[], confidence, abstained}`. Structure makes abstention and citations machine-checkable: the application can refuse to display an answer with no citations, or route an abstention to a human. One trade-off to know: on Anthropic's API, the Citations feature (which guarantees valid pointers into the supplied documents) cannot be combined with structured outputs; the request is rejected with a 400 error. If you put citations in a JSON field instead, they are model-written IDs, so your code must check that each cited chunk exists and was actually retrieved.
 
 ## Systems-engineering analogy
 
@@ -53,5 +53,6 @@ So production code still checks the stop reason, parses defensively, validates b
 ## Sources
 
 - Anthropic, Structured outputs: https://platform.claude.com/docs/en/build-with-claude/structured-outputs (fetched 2026-10-13)
+- Anthropic, Citations ("Citations and structured outputs are incompatible"): https://platform.claude.com/docs/en/build-with-claude/citations (fetched 2026-10-13 by the reviewer)
 - AWS to verify: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
 - AWS to verify: https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use.html

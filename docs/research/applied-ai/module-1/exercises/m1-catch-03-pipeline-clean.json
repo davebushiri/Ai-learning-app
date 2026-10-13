@@ -58,7 +58,7 @@
     },
     {
       "id": "s2",
-      "text": "The same embedding model that indexed the documents must also embed the user's question."
+      "text": "We embed the user's question with the same embedding model that indexed the documents."
     },
     {
       "id": "s3",

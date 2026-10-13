@@ -70,3 +70,6 @@ Clarifies "inserted once". The rules are in [0001](0001-sqlite-storage-and-appen
 - **`subject_pack.id` and `version` are `NOT NULL`.** SQLite allows NULL in a composite `PRIMARY KEY` on a rowid table, and NULLs never conflict, so a keyless pack row could be inserted any number of times.
 - **The loader's fixture cards** go through `putCard`, which follows [0003](0003-server-owned-card-and-attempt-api.md) Amendment 4.
 - **Verification:** the existing "putPack returns inserted, same, conflict" test, plus "putPack with a NULL id or version throws".
+
+## Amendment 3 (2026-10-13, F1c design review, ARCH-2): scope of the F2 hard rule
+Clarifies scope; the rule's text is unchanged. The F2 hard rule governs **subject packs (`pack.json`) and any pack text that enters a prompt**. Practice packs ([0008](0008-practice-engine-and-practice-pack-format-v1.md)) enter no prompt in F1c, and a guard test makes that structural, so the rule doesn't block them. The founder confirms this reading in [thread 0007](../team/threads/0007-applied-ai-aws-track.md) before F1c-T11 ships real content. The first practice-pack text placed in a prompt (the live grader) falls under the rule in full: it must be fenced and pass the gate.

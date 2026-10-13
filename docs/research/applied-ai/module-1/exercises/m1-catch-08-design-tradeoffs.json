@@ -115,7 +115,7 @@
           "More chunks raise recall but add noise, cost and latency; we pick k from evaluation.",
           "Retrieve more candidates, then rerank and keep the best few."
         ],
-        "exceptions": "If recall at a small k is poor and latency budget allows, a larger k can be the right choice; the error is fixing k high without testing the cost.",
+        "exceptions": "If recall at a small k is poor and latency budget allows, a larger k can be the right choice. Anthropic's 2024 contextual-retrieval post found top-20 beat top-10 and top-5 on its datasets and advised experimenting on your own use case. So twenty is not the error; the error is the reasoning that more evidence always helps, applied to every question without measuring noise, cost and latency.",
         "kind": "tradeoff",
         "rubric": {
           "explain": [

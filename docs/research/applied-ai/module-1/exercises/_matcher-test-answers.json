@@ -1,0 +1,232 @@
+{
+  "id": "_matcher-test-answers",
+  "purpose": "Acceptance answers for the F1c rubric-concept matcher (spec FR-017 to FR-022, SC-003). One planted item per catch file, with a clear, partial, valid-alternative and incorrect answer. Zero-error files get a false-interruption probe instead. Written by learning-designer (independent reviewer), 2026-10-13. Not an exercise: the leading underscore keeps it out of the pack, and it must never be loaded by the practice loader.",
+  "classes": "Match SC-003 in docs/specs/F1c-practice-engine/spec.md: clear, partial, valid-alternative, incorrect.",
+  "expectedSemantics": [
+    "A rubric item containing '|' is a set of alternatives; the item is matched if any one alternative is matched. FR-017 does not yet say this (see REVIEW.md B1). Expectations below assume it.",
+    "'expected' is what a fair grader should return. It is the acceptance target, not a prediction of matcher@1.",
+    "'hazard' notes where a hand trace of FR-017 to FR-022 as currently written predicts a different result. Traces were done by hand against the spec text; no matcher exists yet, the stopword list is not defined, and QA should confirm by running them."
+  ],
+  "items": [
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "answers": [
+        {
+          "class": "clear",
+          "text": "That's wrong. The context window is the model's working memory for one call, what it can see while answering this request. Training data is separate; it was learned into the weights beforehand. A bigger window means more input fits in one request, which is different from more knowledge.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Phrased without negators on purpose. The natural wording 'it doesn't mean the model knows more' puts 'doesnt' within 3 tokens of matched tokens and would turn the answer uncertain under FR-021(b)."
+        },
+        {
+          "class": "partial",
+          "text": "The window is just what fits in the current prompt, it's separate from training.",
+          "expected": { "explanation": "partial", "correction": "partial or not_met", "overall": "partial" },
+          "hazard": "'window holds the current request' needs 3 of 4 tokens (window, holds, current, request); this answer has window and current only, so correction may be not_met. Acceptable."
+        },
+        {
+          "class": "valid-alternative",
+          "text": "That mixes up two things. The window is like RAM for a single request. What the model learned in training lives in its weights. A bigger window lets you send a longer prompt; it doesn't make the model smarter.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Predicted explanation partial: 'working memory for one call' has no match for RAM / single request. Needs lexicon forms: memory <- ram, buffer; call <- request, prompt; one <- single. Also 'doesnt make the model' may trigger the negation rule."
+        },
+        {
+          "class": "incorrect",
+          "text": "Right, a bigger window means the model was trained on more documents, so it knows more about our handbook.",
+          "expected": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+          "hazard": "Echo check FR-021(c) may make this uncertain instead of not_met (it repeats much of s2). Either is acceptable; met is a failure."
+        }
+      ]
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "answers": [
+        {
+          "class": "clear",
+          "text": "RAG retrieves relevant passages at query time and adds them to the prompt. The weights stay unchanged and there is no training; the knowledge lives in the index. To update knowledge we update the index, while the model stays the same.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Explanation has 3 items, so 'met' needs ceil(0.67 x 3) = 3, all of them (REVIEW.md B3). 'no training' contains a negator before the matched token 'training' and may trigger FR-021(b)."
+        },
+        {
+          "class": "partial",
+          "text": "RAG looks up our documents when someone asks a question.",
+          "expected": { "explanation": "partial", "correction": "partial or not_met", "overall": "partial" },
+          "hazard": "'retrieves at query time|runtime' has no match for 'looks up' / 'when someone asks'. Without lexicon forms (retrieve <- look up, search, fetch, find; query <- question, ask) this is not_met, which is too harsh."
+        },
+        {
+          "class": "valid-alternative",
+          "text": "Nothing gets learned into the model. When a question comes in, the system searches our documents and pastes the best-matching sections into the prompt, and the model reads them for that one answer. Change a policy and you just re-index it.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Predicted explanation not_met or uncertain (over 20 content words, no item matched): no forms for retrieve (search), query (question), weights unchanged (nothing learned into the model). Correction should still be met through acceptableCorrections[1] (model, reads, documents, question, learned), per FR-020."
+        },
+        {
+          "class": "incorrect",
+          "text": "Yes, RAG trains the model on our documents during setup, so later it already knows the policies.",
+          "expected": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+          "hazard": "'weights unchanged|no training': if 'no' is a stopword, the alternative 'no training' reduces to the single token 'training', and this wrong answer matches it. Polarity is lost (REVIEW.md B2). Must not be met."
+        }
+      ]
+    },
+    {
+      "exercise": "m1-catch-03-pipeline-clean",
+      "statementId": null,
+      "note": "Zero-planted set. There is no planted item, so test detection instead.",
+      "falseInterruptionProbe": {
+        "stopOn": "s3",
+        "text": "Adding a document also adds keyword index entries, so 'only adds chunks' is wrong.",
+        "expected": { "detection": "false_interruption", "reveal": null, "result": null, "copy": "fb.false" }
+      },
+      "cleanPass": { "stops": [], "expected": { "cleanPass": true, "copy": "end.clean" } }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "answers": [
+        {
+          "class": "clear",
+          "text": "A 0.91 similarity is closeness between vectors, a ranking signal. It is a different thing from relevance or truth: the chunk could be outdated or off the question, and the scale varies by model. We still check relevance and currency, and evaluate answers separately.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Explanation has 3 items, so all 3 are required, including the narrow 'scale varies by model'. Most strong answers omit it and would get partial (B3, H1)."
+        },
+        {
+          "class": "partial",
+          "text": "High similarity just means the chunk is close to the question, it's only a ranking signal.",
+          "expected": { "explanation": "partial", "correction": "not_met", "overall": "partial" }
+        },
+        {
+          "class": "valid-alternative",
+          "text": "Cosine similarity just measures how near two embeddings are. A passage can be on the same topic and still be the old version of the policy, or simply wrong. Being near and being right are different things, so we need a separate check on the answer.",
+          "expected": { "explanation": "met", "correction": "met or partial", "overall": "met or partial" },
+          "hazard": "Predicted not_met or uncertain: 'similarity is closeness' fails (near is not closeness), 'not relevance or truth' fails (right, wrong). Needs lexicon forms: closeness <- near, close, distance; truth <- right, correct, true, accurate."
+        },
+        {
+          "class": "incorrect",
+          "text": "Agreed, 0.91 is a high similarity so we can trust the answer is correct.",
+          "expected": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" }
+        }
+      ]
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "answers": [
+        {
+          "class": "clear",
+          "text": "Temperature zero is still not fully deterministic, and the provider documents that identical inputs can give different outputs across calls. So zero gives more consistent output rather than identical output, and we should test over repeated runs.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "'not fully deterministic' puts 'not' before the matched tokens 'fully' and 'deterministic', so FR-021(b) predicts uncertain for the most textbook-correct answer (B2)."
+        },
+        {
+          "class": "partial",
+          "text": "Zero just makes it more consistent; answers can still vary a bit.",
+          "expected": { "explanation": "partial", "correction": "partial", "overall": "partial" }
+        },
+        {
+          "class": "valid-alternative",
+          "text": "Even at zero you can get different answers to the same question, because of how the hosted model is served. Treat it as near-repeatable and run each test several times.",
+          "expected": { "explanation": "met or partial", "correction": "met", "overall": "met or partial" },
+          "hazard": "Predicted not_met: 'documented by provider' needs both tokens and is not a concept a learner needs to say (H1); 'test over repeated runs' fails because 'runs' (4 letters, unstemmed) does not match 'run', and 'several times' has no form for 'repeated'. Needs lexicon forms: deterministic <- repeatable, same answer every time; repeated <- several times, many times, multiple."
+        },
+        {
+          "class": "incorrect",
+          "text": "That's fine. At temperature zero the answers are consistent and identical every time.",
+          "expected": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+          "hazard": "Polarity loss: if 'not' is a stopword, 'more consistent not identical' reduces to more, consistent, identical, and this wrong answer matches 2 of 3 (consistent, identical), giving correction partial. A wrong answer must not score (B2)."
+        }
+      ]
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s5",
+      "answers": [
+        {
+          "class": "clear",
+          "text": "Faithfulness only measures whether the answer is supported by the retrieved context. Here the context was stale, so the answer was faithful but wrong; faithfulness and correctness are different measures. We should add correctness checks against expected answers and add freshness test cases.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Explanation has 3 items, so all 3 are required (B3)."
+        },
+        {
+          "class": "partial",
+          "text": "Faithful to the chunks isn't the same as correct, since the chunks were old.",
+          "expected": { "explanation": "partial", "correction": "not_met", "overall": "partial" },
+          "hazard": "'isnt' sits within 3 tokens of 'correct', so FR-021(b) may make this uncertain."
+        },
+        {
+          "class": "valid-alternative",
+          "text": "The score only tells us the model stuck to the chunks it was given. Those chunks were the old handbook, so it was loyal to bad evidence. We need test questions with the current right answers, including ones about recently changed policies.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Predicted not_met or uncertain: no forms for faithful (stuck to, loyal to, grounded in), stale (old, outdated, superseded), correctness (right answer, accurate), freshness (recently changed, current version)."
+        },
+        {
+          "class": "incorrect",
+          "text": "Yes, faithfulness was high so the answer was correct; the evaluation worked.",
+          "expected": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+          "hazard": "'faithfulness is not correctness' loses its 'not' as a stopword; this wrong answer contains both faithfulness and correct(ness) and may match that item. Must not be met."
+        }
+      ]
+    },
+    {
+      "exercise": "m1-catch-07-access-freshness-clean",
+      "statementId": null,
+      "note": "Zero-planted set. There is no planted item, so test detection instead.",
+      "falseInterruptionProbe": {
+        "stopOn": "s3",
+        "text": "Prompt instructions are useless, so this shouldn't be there at all.",
+        "expected": { "detection": "false_interruption", "reveal": null, "result": null, "copy": "fb.false" }
+      },
+      "cleanPass": { "stops": [], "expected": { "cleanPass": true, "copy": "end.clean" } }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "answers": [
+        {
+          "class": "clear",
+          "text": "Twenty for every question is an untested rule. A higher k gives higher recall but more noise, plus cost and latency, and evidence in the middle of a long context is under-used. Tune k with metrics, or retrieve then rerank and keep the best few.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Explanation has 3 items, so all 3 are required (B3)."
+        },
+        {
+          "class": "partial",
+          "text": "Twenty chunks will make every call slower and cost more.",
+          "expected": { "explanation": "partial", "correction": "not_met", "overall": "partial" },
+          "hazard": "'cost and latency' needs both tokens; 'slower' is not a form of latency. Needs lexicon forms: latency <- slow, slower, delay, response time."
+        },
+        {
+          "class": "valid-alternative",
+          "text": "More passages means more junk for the model to wade through, a longer and pricier prompt, and the useful bit can get lost in the middle. Pick the number by measuring answer quality at a few values, or over-fetch and let a reranker keep the top handful.",
+          "expected": { "explanation": "met", "correction": "met", "overall": "met" },
+          "hazard": "Predicted uncertain (over 20 content words, at most 1 item matched): no forms for noise (junk, irrelevant), cost (pricier, expensive), tune (measure, pick by), metrics (answer quality). 'retrieve then rerank' needs both tokens and 'over-fetch' is not 'retrieve'."
+        },
+        {
+          "class": "incorrect",
+          "text": "Agreed, more chunks is always safer because the model gets more evidence to work with.",
+          "expected": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" }
+        }
+      ]
+    }
+  ],
+  "proposedLexicon": {
+    "note": "Draft lexicon.synonyms entries for practice.json (spec: lexicon is matched as data). Proposed by learning-designer; the backend-engineer owns packs/** and decides. Each form must be checked against FR-017 word-start matching.",
+    "synonyms": {
+      "retrieve": ["search", "look up", "lookup", "fetch", "find", "pull"],
+      "query": ["question", "ask", "asks", "request"],
+      "memory": ["ram", "buffer", "scratchpad"],
+      "call": ["request", "prompt", "turn"],
+      "weights": ["parameters", "model itself"],
+      "unchanged": ["same", "frozen", "fixed", "untouched"],
+      "closeness": ["near", "nearby", "close", "distance"],
+      "truth": ["right", "correct", "true", "accurate"],
+      "stale": ["old", "outdated", "superseded", "out of date"],
+      "faithful": ["grounded", "supported", "stuck to", "loyal"],
+      "noise": ["junk", "irrelevant", "clutter"],
+      "cost": ["expensive", "pricier", "price", "tokens"],
+      "latency": ["slow", "slower", "delay", "response time"],
+      "deterministic": ["repeatable", "reproducible", "identical"],
+      "repeated": ["several", "multiple", "many times"],
+      "bm25": ["bm 25", "keyword", "lexical", "exact match"],
+      "rerank": ["reranker", "re-rank", "cross-encoder"]
+    }
+  }
+}

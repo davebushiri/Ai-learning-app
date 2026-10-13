@@ -41,7 +41,7 @@ Explain how a model produces text one token at a time, what temperature and rela
 ## Common misconceptions
 
 - "Temperature 0 makes the output perfectly repeatable." Not guaranteed (provider docs say so explicitly).
-- "Lower temperature reduces hallucination." It reduces variation, not missing knowledge; a wrong but likely answer stays wrong.
+- "Lower temperature fixes hallucination." It can cut errors that come from sampling unlikely tokens, but it reduces variation, not missing knowledge; a wrong but likely answer stays wrong.
 - "The model learns from each call during inference." No: weights are fixed during inference.
 - "Higher temperature makes the model smarter or more creative in reasoning." It makes word choices more varied; it can also increase errors.
 

@@ -122,7 +122,7 @@
       ]
     },
     {
-      "question": "Why must the question be embedded with the same model as the documents?",
+      "question": "Why is the question normally embedded with the same model as the documents?",
       "rubric": [
         "different models make incompatible vector spaces|not comparable",
         "changing model means re-embedding corpus"

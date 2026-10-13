@@ -54,7 +54,7 @@
     },
     {
       "id": "s4",
-      "text": "If a document says 'ignore your instructions', the assistant treats that as data, not as a command."
+      "text": "We fence retrieved text as data, and our tests include documents that say 'ignore your instructions'."
     },
     {
       "id": "s5",
