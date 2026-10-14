@@ -1,7 +1,7 @@
 # F1c: Tickets
 
-**Status:** Approved (revision 3: Wave A.1 added)
-**Revision history:** revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
+**Status:** Approved (revision 4: F1c-T17 added for F1c-B23; OQ-7 ruled into F1c-T06)
+**Revision history:** revision 4 (2026-10-14): the architect's Wave A.1 re-check (APPROVED) applied. New F1c-T17 (frontend, the F1c-B23 fix: one skip per statement, `err.rejected` on a 4xx; spec PD-9, FR-059, FR-060, SC-013), gated before F1c-T11 merges and before F1c-T01b runs and merges. F1c-T06 gains the OQ-7 voice commands and the "back" command (spec PD-10, FR-061). Shared-file sequence, Wave B order, T01b, T06, T11, the summary and the B23 status updated. Revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
 
 Legend: [P] = can run in parallel with other [P] tickets in the same wave (no shared files).
 
@@ -13,7 +13,7 @@ Legend: [P] = can run in parallel with other [P] tickets in the same wave (no sh
 - **Changed assertions** are listed as `old → new`.
 - **No prompt, gateway or model-routing change** in any F1c ticket.
 - **Shared-file sequences (never in parallel):**
-  - F1c-internal: `server/index.js` T04 → T08; `server/routes/practice.js` T04 → T07; `server/services/practice.js` and `tests/practice-catch.test.js` T04 → T13 → T07; `server/services/practice-matcher.js` and `tests/practice-matcher.test.js` T03 → T12; `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/state.js` and `tests/practice-web-state.test.js` T05 → T14 → T06 → T09 → T10 (each later ticket touches only those of these files it lists); `web/practice/api.js` and `web/practice/practice.css` T05 → T06 → T09 → T10; `web/practice/commands.js` and `tests/practice-web-commands.test.js` T06 only; `server/packs.js` T02 only; `web/speech.js` T06 only; `tests/acceptance/F1c.test.js` is changed after T01a only by F1c-T15 → F1c-T16 (Wave A.1, listed `old → new`) and by QA `todo` removals; `tests/e2e/F1c.e2e.mjs` is changed after T01b only by QA `todo` removals.
+  - F1c-internal: `server/index.js` T04 → T08; `server/routes/practice.js` T04 → T07; `server/services/practice.js` and `tests/practice-catch.test.js` T04 → T13 → T07; `server/services/practice-matcher.js` and `tests/practice-matcher.test.js` T03 → T12; `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/state.js` and `tests/practice-web-state.test.js` T05 → T14 → T17 → T06 → T09 → T10 (each later ticket touches only those of these files it lists); `web/practice/api.js` and `web/practice/practice.css` T05 → T06 → T09 → T10; `web/practice/commands.js` and `tests/practice-web-commands.test.js` T06 only; `server/packs.js` T02 only; `web/speech.js` T06 only; `tests/acceptance/F1c.test.js` is changed after T01a only by F1c-T15 → F1c-T16 (Wave A.1, listed `old → new`) and by QA `todo` removals; `tests/e2e/F1c.e2e.mjs` is changed after T01b only by QA `todo` removals.
   - **Wave A.1 merge order:** F1c-T15 → F1c-T13 → F1c-T12 (T12 merges after T13, because T13 makes `tests/practice-catch.test.js` assert `MATCHER_VERSION` instead of `'matcher@1'`, and after T15's SC-012 rows and QA's `matcher@1` validity record exist). F1c-T14 merges at any point. F1c-T16 verifies last.
   - **Cross-spec order with F1a Wave 2 (C7; F1a is on hold, mirrored in F1a `tasks.md` rev 4.7):**
 
@@ -26,8 +26,12 @@ Legend: [P] = can run in parallel with other [P] tickets in the same wave (no sh
     | `npm test` `# todo` count | T01a, T01b add `F1c-` todos | T19b requires 0 `F1a-` todos | no order needed |
 - **Wave order.**
   - **Wave A** (usable text-mode catch loop): T01a, T02, T03 [P] → T04 → T05. Built; verdicts CHANGES REQUESTED / DON'T SHIP (review.md, qa-report.md).
-  - **Wave A.1** (fix wave; turns Wave A into SHIP): T12, T13, T14, T15 [P] → T16. Ready to build now. Wave B starts after T16's SHIP, except T01b, T08 and T11's content preparation, which touch no Wave A.1 file.
-  - **Wave B:** T01b, T06, T07, T08 [P]. T06 after T14; T07 after T13. T11 [P] after T02, T03, T12 and its content gates.
+  - **Wave A.1** (fix wave; turns Wave A into SHIP): T12, T13, T14, T15 [P] → T16. **Done:** QA SHIP and architect APPROVED (2026-10-14).
+  - **Wave B** (revision 4 order):
+    - **Frontend lane:** T17 → T06. T17 (the F1c-B23 gate) starts now; T06 starts after T17 merges, because they share `web/practice/*` and T06 wires T17's `#rejected` panel to voice.
+    - **Backend lane:** T07 (after T13) and T08 [P], unchanged. T11 [P] after T02, T03, T12 and its content gates; **T11 merges only after T17 has merged** (plus the founder's ARCH-2).
+    - **QA:** T01b may be written now. **Its run for the verdict and its merge wait for T17** (it carries the B23 e2e tests with no `todo`).
+    - T17 shares no file with T07, T08, T11 or T01b, so it runs in parallel with all of them.
   - **Wave C:** T09 → T10.
 
 ## Shared shapes (referenced by several tickets)
@@ -452,13 +456,68 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 
 ## Wave B: voice, other modes and progress (backend), e2e
 
+### F1c-T17 [P] Practice page: one skip per statement; a refused request gets `err.rejected` and a way back (F1c-B23, inv. 7)
+- **Owner:** frontend-engineer · **Size:** M · **Depends on:** F1c-T14 (merged; same files). **Gate:** must merge before F1c-T11 merges and before F1c-T01b runs and merges. F1c-T06 starts after it (same files).
+- **Files:** modify `web/practice/app.js`, `web/practice/state.js`, `web/practice/copy.js`, `web/practice.html`, `tests/practice-web-state.test.js`
+  - `web/practice/api.js` is **not** changed: `ApiError` (with `status`) and `NetworkError` already exist and are imported from it. No server file changes: the FR-009a rule stays as it is.
+- **Interfaces:**
+  - **Consumes:** `ApiError` and `NetworkError` from `web/practice/api.js` (unchanged); the T14 `S.skipped`, `completeRequest`, `netError({skip, retry})`, `say()` and `openPicker()`; `pickTrack(id)` (existing, in `app.js`).
+  - **Produces, `state.js` (pure, Node-importable, no `window`):**
+    - `recordSkip(skipped: {statementId: string, elapsedMs: number}[], entry: {statementId: string, elapsedMs: number}) → {statementId, elapsedMs}[]` (FR-059). Returns a **new** array and never mutates its input.
+      - A `statementId` not yet in the list is appended.
+      - A `statementId` already in the list keeps its position. Its `elapsedMs` becomes the new value only if that is smaller. An `elapsedMs` that isn't a finite number counts as larger than any finite one.
+      - An entry whose `statementId` isn't a non-empty string returns a copy of the list unchanged.
+    - `errorKind(err: unknown) → 'rejected' | 'net'` (FR-060): `'rejected'` exactly when `err instanceof ApiError` and `400 ≤ err.status ≤ 499`; otherwise `'net'`. It imports `ApiError` from `./api.js` and never reads `err.message`.
+  - **Produces, `copy.js`:** adds `err.rejected` and `btn.picker`, with exactly the spec copy-table text:
+    - `err.rejected`: `The server can't continue this exercise, and trying again won't help. Say "back" or press Back to exercises.`
+    - `btn.picker`: `Back to exercises`
+  - **Produces, `practice.html`:** one new panel, directly after `#net-error`:
+    ```html
+    <section id="rejected" class="practice-panel error" role="alert" hidden>
+      <p id="rejected-msg"></p>
+      <div class="row"><button id="picker-btn" class="primary" type="button"></button></div>
+    </section>
+    ```
+    Every existing id is unchanged. `#picker-btn`'s label is set from `COPY['btn.picker']` with `textContent` when the panel is shown.
+  - **Produces, `app.js`:**
+    - `onSkip`: `S.skipped = recordSkip(S.skipped, {statementId: S.stop.statementId, elapsedMs: S.stop.elapsedMs})` replaces the `push`.
+    - `rejected() → Promise<void>`: `S.gen++`; `S.phase = 'rejected'`; hides `#net-error`, `#answer-panel`, `#feedback-panel`, `#stop-btn`, `#stop-hint` and `#assist-btn`; shows `#rejected`; sets the `#picker-btn` label; focuses `#picker-btn`; returns `say($('rejected-msg'), COPY['err.rejected'])` (shown and spoken, FR-035). F1c-T06 arms the voice "back" command when this promise resolves.
+    - `complete()` catch: `errorKind(err) === 'rejected' ? rejected() : netError({skip: false, retry: complete})`.
+    - `submitStop()` catch: `errorKind(err) === 'rejected' ? rejected() : netError({skip: true, retry: submitStop})`. `S.pending` is cleared in both cases.
+    - `backToPicker()`, wired to `#picker-btn` click: hides `#rejected`, calls `openPicker()`, then `pickTrack(S.track)`, so the exercise list is re-fetched (a pack version may have changed).
+    - `openPicker()`'s hidden-panel list gains `'rejected'`.
+  - **DOM (QA's e2e depends on these):** `#rejected`, `#rejected-msg`, `#picker-btn`.
+- **Acceptance:**
+  - **FR-059:** after any number of skips, `S.skipped` holds at most one entry per statement, with the smallest `elapsedMs`. The `complete` body therefore never exceeds the narration length.
+  - **FR-060:** a 4xx at `complete` or at a stop shows `err.rejected` in `#rejected` and never `err.net`; no Try again or Skip is shown; Back to exercises opens the picker with the exercise list re-fetched. A `NetworkError` or a 5xx keeps `err.net` with Try again (and Skip at a stop), unchanged.
+  - **FR-035:** in voice mode, the `speak()` argument for `err.rejected` equals `#rejected-msg`'s normalized `textContent`.
+  - US1.16, US1.17 (text) and US2.13 (voice, button half; the "back" voice command is F1c-T06's).
+  - No `innerHTML`; all text through `textContent`. No change to `web/index.html` or `web/app.js` (Untouched list).
+  - **QA verification (closes F1c-B23; SC-013):** QA re-runs, against the real server in text and voice mode at 390 px and 1280 px, and records in `qa-report.md` under "F1c-B23":
+    - the scratch scenario `bug-21-skips-text-1280` and its voice and 390 px twins: 21 failed stops on `s1`, each skipped, then the set runs out. Expected: exactly 1 `complete` request, status 200, `skipped` with exactly 1 entry for `s1`, and the reveal shown; 3 of 3 runs;
+    - **a mid-exercise pack-version 404:** start `catch-lines` from a temporary copy of the fixture packs, stop the server, bump that pack's `version` in `practice.json`, restart on the same `DB_PATH`, then (i) press Stop and submit, and (ii) in a second attempt, let the set run out. Expected in both: the request returns 404, `err.rejected` is shown (and spoken, equal to the shown text, in voice mode), `#net-error` is never shown, no further request goes to that attempt, and `#picker-btn` opens the picker in 1 action, from which a new attempt starts (200);
+    - a forced `NetworkError` and a forced 500 at `complete`: `err.net` with Try again, as before.
+- **Tests that prove it:** `tests/practice-web-state.test.js`:
+  - "recordSkip keeps one entry per statement with the smallest elapsedMs, in first-skip order" (example: skips `s1@900`, `s2@50`, `s1@300`, `s1@1200` → `[{s1, 300}, {s2, 50}]`);
+  - "recordSkip never mutates its input; a non-finite elapsedMs never replaces a finite one; a missing statementId changes nothing";
+  - "21 skips on one statement give one entry; one skip on each of 20 statements gives 20 entries";
+  - "the client skip list fits the server cap: MAX_SKIPPED ≥ LIMITS.narration" (source check: reads `server/services/practice.js` and `server/services/practice-pack.js` as text, extracts `MAX_SKIPPED = <n>` and the `narration: <n>` entry of `LIMITS`, fails if either isn't found, and asserts the first ≥ the second; no server import);
+  - "errorKind: ApiError 400, 404, 409 and 499 are rejected; ApiError 500 and 503, NetworkError, a plain Error and undefined are net";
+  - "practice.html has a hidden #rejected panel with #rejected-msg and #picker-btn" (source check);
+  - old → new: "copy strings equal the spec table": the frozen expected object gains `err.rejected` and `btn.picker`.
+  - **Manual real-browser check, recorded in the PR, in text and voice mode at 390 and 1280 px:** a forced 404 at `complete` and at a stop (DevTools request override) shows `err.rejected` and Back to exercises reaches the picker; a forced 500 and offline still show `err.net`; 0 console errors on a fresh load other than the deliberate failures.
+- **Notes:**
+  - The fix is client-only. The server rule (at most 20 entries, else 400) stays, per the architect.
+  - Keep the request classification in `errorKind` only: `app.js` doesn't compare `status` itself (CLAUDE.md "typed error classes").
+  - The voice commands ("back", and OQ-7's "try again" and "skip") are F1c-T06's, because `commands.js` and the recognizer arrive there.
+
 ### F1c-T01b [P] Acceptance tests, browser level (e2e)
-- **Owner:** qa-engineer · **Size:** M · **Depends on:** F1c-T01a (accept-pack), F1c-T05 (DOM ids), F1c-T15 (same fixture file)
+- **Owner:** qa-engineer · **Size:** M · **Depends on:** F1c-T01a (accept-pack), F1c-T05 (DOM ids), F1c-T15 (same fixture file). **Revision 4:** may be written now; its verdict run and merge wait for F1c-T17 (the F1c-B23 gate).
 - **Files:** create `tests/e2e/F1c.e2e.mjs`; modify `tests/fixtures/practice/labelled-answers.json`
 - **Interfaces:**
   - Consumes: the T05, T06, T09 and T10 DOM ids; `tests/golden/browser-stubs.js`, reused and not edited. If it lacks a `SpeechRecognition` stub, define one inline in this file that emits scripted interim and final segments (per-result `isFinal`).
   - Uses the F1a timing contract (`page.clock`, held utterances, DOM-keyed actions).
-- **Acceptance:** US1 (text) and US2 (voice), plus the voice/text halves of US3–US6 as `todo` until T09 and T10. Covers SC-005, SC-006, SC-007 and SC-011, with 0 console errors at 390 px and 1280 px.
+- **Acceptance:** US1 (text) and US2 (voice), plus the voice/text halves of US3–US6 as `todo` until T09 and T10. Covers SC-005, SC-006, SC-007 and SC-011, and the injected-error half of SC-013 (revision 4), with 0 console errors at 390 px and 1280 px.
 - **Tests that prove it:**
   - "US2.1 hotword cancels speech within 300 ms, interrupted statement kept";
   - "US2.2 typing stops dictation, nothing auto-submits";
@@ -472,6 +531,11 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - "US1.13 / US2.10 skipped stop is shown as not scored, never Missed, and spoken as shown" (`todo: 'F1c-T14'` until T14 merges);
   - "US1.15 / US2.11 a failed self-rating shows err.rate and Try again succeeds" (`todo: 'F1c-T14'` until T14 merges);
   - "SC-011 hands-free: catch, next, review with 0 clicks after Start" (`todo: 'F1c-T10'`);
+  - **revision 4 (F1c-T17; no `todo`, because T17 merges first):**
+    - "US1.16 / US2.13 a 4xx at complete shows err.rejected, never err.net, and Back to exercises opens the picker" (route-level 404 injection; voice twin asserts the spoken text equals `#rejected-msg`);
+    - "US1.16 a 4xx at a stop shows err.rejected; a 500 and a network abort still show err.net with Try again";
+    - "US1.17 21 skips on one statement send one skipped entry and reach the reveal";
+  - **revision 4 (F1c-T06):** "US2.13 'back' after err.rejected has been spoken opens the picker" and "US2.14 'try again' and 'skip' at err.net act only after err.net has been spoken" (`todo: 'F1c-T06'` until T06 merges);
   - each with its text-mode twin where the spec lists one.
 - **Notes:**
   - Runs outside `npm test` (`node tests/e2e/F1c.e2e.mjs`, `MOCK=1`).
@@ -480,7 +544,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - Add one real dictated answer per SC-003 class to `labelled-answers.json` (tag `dictated`), per the architect's dictation RISK in thread 0007. If one of them breaks FR-019, report it in thread 0007 for the PM (PD-4 revisit). This is the one fixture edit T01b makes, after F1c-T15.
 
 ### F1c-T06 [P] Voice for catch: hotword, barge-in, editable dictation, command parser
-- **Owner:** frontend-engineer · **Size:** M · **Depends on:** F1c-T05, F1c-T14 (shared `web/practice/*` files) (ARCH-6 ruled, ADR 0008)
+- **Owner:** frontend-engineer · **Size:** M · **Depends on:** F1c-T05, F1c-T14, F1c-T17 (shared `web/practice/*` files; T17's `#rejected` panel and `rejected()` promise) (ARCH-6 ruled, ADR 0008)
 - **Files:** create `web/practice/voice.js`, `web/practice/commands.js`, `tests/practice-web-commands.test.js`; modify `web/speech.js`, `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/practice.css`
   - `web/speech.js` (C8): exactly one additive change, an optional `onSegment({text, isFinal})` callback in `listen()`, called once per recognition result. No other line changes; `web/app.js` doesn't pass it.
   - `web/practice.html`: `#mic-btn`, `#mic-msg`. `web/practice/copy.js`: `mic.denied`.
@@ -490,16 +554,26 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
     - **`web/speech.js`:** `listen({onInterim, onSegment} = {}) → {result: Promise<string>, stop()}`; `onSegment({text: string, isFinal: boolean})` per result; everything else unchanged.
     - **`commands.js` (pure; every command in the spec table, including C11):**
       - `isHotword(segment: string, statementText: string) → boolean` (FR-032; phrases "stop", "hold on");
-      - `parseCommand(segment: string, state: 'narrating' | 'answering' | 'feedback' | 'reveal' | 'done' | 'clarifying' | 'progress') → null | {cmd: 'stop' | 'send' | 'done' | 'continue' | 'rate' | 'next' | 'ready' | 'review' | 'diagnostic', rating?: Rating}`. States and commands exactly as the spec's voice-command table ("had it" / "partly" / "missed it" → `rate` in `reveal`).
+      - `parseCommand(segment: string, state: 'narrating' | 'answering' | 'feedback' | 'reveal' | 'done' | 'clarifying' | 'progress' | 'net-error' | 'net-error-stop' | 'rejected') → null | {cmd: 'stop' | 'send' | 'done' | 'continue' | 'rate' | 'next' | 'ready' | 'review' | 'diagnostic' | 'retry' | 'skip' | 'picker', rating?: Rating}`. States and commands exactly as the spec's voice-command table ("had it" / "partly" / "missed it" → `rate` in `reveal`). **Revision 4 (OQ-7, PD-10, FR-061):**
+        - `'net-error'` (a failed `complete`): "try again" → `{cmd: 'retry'}`;
+        - `'net-error-stop'` (a failed stop, `#skip-btn` visible): "try again" → `{cmd: 'retry'}`, "skip" → `{cmd: 'skip'}`;
+        - `'rejected'`: "back" or "back to exercises" → `{cmd: 'picker'}`;
+        - each only on a final segment that, normalized exactly as for "send" (FR-034), equals the phrase (the FR-032 bare-phrase rule); `null` for anything else.
+      - `errorCommandState({panel: 'net' | 'rejected', skip: boolean, spoken: boolean}) → 'net-error' | 'net-error-stop' | 'rejected' | null` (revision 4, the echo guard): `null` while `spoken` is false; otherwise `'rejected'` for `panel: 'rejected'`, `'net-error-stop'` for `panel: 'net'` with `skip: true`, and `'net-error'` for `panel: 'net'` with `skip: false`.
       - `stripCommand(text: string) → string`.
     - **`voice.js`:**
       - `startHotword({getStatementText, onStop}) → {stop()}`, active only while narrating;
       - `startDictation({onText, onCommand}) → {stop()}`, with fallback to text after 3 consecutive recognizer errors;
-      - `startCommands({state: () => string, onCommand}) → {stop()}`: listens for state commands in `reveal`, `done` and `progress`.
+      - `startCommands({state: () => string, onCommand}) → {stop()}`: listens for state commands in `reveal`, `done`, `progress`, and (revision 4) `net-error`, `net-error-stop` and `rejected`.
   - Wires "next" in `reveal` and `done` to the same handler as `#next-btn` (FR-058).
+  - **Revision 4 wiring (FR-061), in `app.js`:**
+    - `netError()` records `spoken: false`, and sets it to `true` when its `say()` promise for `err.net` resolves; T17's `rejected()` promise does the same for `err.rejected`. The command state is `errorCommandState(...)` while either panel is shown. Hiding the panel (any button, or a command) ends that state, so a late-resolving utterance never arms a hidden panel.
+    - `retry` runs the same handler as `#retry-btn`; `skip` the same as `#skip-btn`; `picker` the same as `#picker-btn` (`backToPicker()`, F1c-T17).
+    - The copy is unchanged (`err.net` already names both words; `err.rejected` names "back").
 - **Acceptance:** US2.1–US2.9 and US2.12; FR-030–FR-038 (voice half), FR-058 (voice "next"). `stopSpeaking()` is called synchronously in the stop handler, and `stopLatencyMs` is measured with `performance.now()`. Golden replay shows 0 diffs after this ticket.
   - **W-S2, moved here from the Wave A code review (spec PD-8 deferrals):** STOP (hotword, button or Space) is accepted while `end.catch` is spoken (`phase === 'ending'`). `#stop-btn` stays visible until `complete` is called. The stop is posted for the last statement with `elapsedMs` measured from that statement's start and a fresh `stopId`, and the pending `complete` is cancelled until narration ends again.
   - Every new stop keeps the F1c-T14 `stopId` behavior (one `newStopId()` per press; Try again re-sends it).
+  - **Revision 4 (OQ-7 closed, PD-10, FR-061; architect ruling, inv. 8):** US2.13 (voice half) and US2.14. In voice mode, "try again" retries and "skip" skips at `err.net`, and "back" / "back to exercises" opens the picker at `err.rejected`, each exactly as its button. None of them acts while its panel's message is still being spoken, or inside a longer segment. "skip" never acts when `#skip-btn` is hidden.
 - **Tests that prove it:** `tests/practice-web-commands.test.js`:
   - "stop / hold on detected in narrating only";
   - "hotword inside statement text needs the bare phrase";
@@ -512,7 +586,14 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - "review and diagnostic in progress only";
   - "commands ignored outside their state";
   - "web/speech.js diff adds only the onSegment option" (source check: `listen` still works without it).
+  - **Revision 4 (OQ-7, the architect's named tests, plus the B23 way out):**
+    - "try again retries in net-error and net-error-stop only, as a whole final segment";
+    - "skip skips in net-error-stop only, as a whole final segment";
+    - "back and back to exercises open the picker in rejected only, as a whole final segment";
+    - "a segment containing 'try again' inside a longer sentence does nothing" (e.g. "let me try again later" → `null` in `net-error-stop`; the same for "skip that one" and "go back a bit" in their states);
+    - "errorCommandState arms only after the error message has been spoken" (`spoken: false` → `null` for every panel; then `'net-error'`, `'net-error-stop'` and `'rejected'` as specified).
   - The real-browser check also covers US2.12: a Space press during `end.catch` on an exercise whose last statement is planted gives a hit on it.
+  - **Revision 4 real-browser check (voice, recorded in the PR):** with the stop request failing, saying "try again" while `err.net` is still being spoken does nothing, and saying it after does re-post the same `stopId`; "skip" after the utterance skips; with a forced 404 at `complete`, "back" after `err.rejected` has been spoken opens the picker.
   - `node tests/golden/run.mjs --replay`: 0 diffs.
   - The real-browser check (Chrome) is recorded in voice and text mode.
 
@@ -585,7 +666,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - `tests/db.test.js`: "eventsForEngine filters by actor and engine in seq order"; "a missing context.engine is not returned for engine 'practice'".
 
 ### F1c-T11 [P] Move reviewed module-1 content into packs/applied-ai
-- **Owner:** backend-engineer · **Size:** S · **Depends on:** F1c-T02, F1c-T03, F1c-T12 (SC-003b runs on `matcher@2`); OQ-1 sign-off, the 7-day plan and ≤ 6 diagnostic ids (PM + learning-designer, C12) and the content author's answer to OQ-6, each recorded in thread 0007. **Merge** also waits on the founder's ARCH-2 confirmation (OQ-5) in thread 0007.
+- **Owner:** backend-engineer · **Size:** S · **Depends on:** F1c-T02, F1c-T03, F1c-T12 (SC-003b runs on `matcher@2`); OQ-1 sign-off, the 7-day plan and ≤ 6 diagnostic ids (PM + learning-designer, C12) and the content author's answer to OQ-6, each recorded in thread 0007. **Merge** also waits on the founder's ARCH-2 confirmation (OQ-5) in thread 0007, and (revision 4) on F1c-T17 having merged (the F1c-B23 gate: T11 is when the founder starts on real content, and pack edits mid-attempt cause the 404 that B23 turns into a stall).
 - **Files:** create `packs/applied-ai/practice.json`, `packs/applied-ai/schedule.json`, `packs/applied-ai/exercises/*.json`, `packs/applied-ai/reference/*.md`, `tests/practice-content.test.js`
 - **Interfaces:** consumes `validatePracticePack`, `loadPracticePacks` and `matcherGrade`; copies from `docs/research/applied-ai/module-1/`, which is read, never edited.
 - **Format mapping only (C12):**
@@ -677,11 +758,12 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 | F1c-T14 [P] | frontend-engineer | M | T13 (contract only) | A.1 |
 | F1c-T15 [P] | qa-engineer | S | none; merges before T12 | A.1 |
 | F1c-T16 | qa-engineer | M | T15; todo removal after T12, T13, T14 | A.1 |
-| F1c-T01b [P] | qa-engineer | M | T01a, T05, T15 | B |
-| F1c-T06 [P] | frontend-engineer | M | T05, T14 | B |
+| F1c-T17 [P] | frontend-engineer | M | T14; gate: merges before T11 merges and before T01b runs/merges | B (first, frontend lane) |
+| F1c-T01b [P] | qa-engineer | M | T01a, T05, T15; verdict run and merge after T17 | B |
+| F1c-T06 [P] | frontend-engineer | M | T05, T14, T17 ([P] with T07, T08, T11, T01b; never with T17) | B (after T17) |
 | F1c-T07 [P] | backend-engineer | M | T04, T13 | B |
 | F1c-T08 [P] | backend-engineer | M | T04 | B |
-| F1c-T11 [P] | backend-engineer | S | T02, T03, T12, thread-0007 content gates; merge: founder ARCH-2 | B (content-gated) |
+| F1c-T11 [P] | backend-engineer | S | T02, T03, T12, thread-0007 content gates; merge: founder ARCH-2 and T17 | B (content-gated) |
 | F1c-T09 | frontend-engineer | M | T06, T07 | C |
 | F1c-T10 | frontend-engineer | M | T08, T09 | C |
 
@@ -694,7 +776,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - T15 touches the two labelled-answer files, `tests/acceptance/F1c.test.js` and `qa-report.md`.
   - T16 shares `tests/acceptance/F1c.test.js` and `qa-report.md` with T15, so it runs after T15 (not [P]).
   - The only cross-ticket coupling is a merge-order one: T12 changes the grader version that T13's tests read through `MATCHER_VERSION`, so T13 merges first.
-- **Wave B:** T06 touches `web/practice/*`, `web/speech.js` and its new test. T07 touches `server/services/practice.js`, `server/routes/practice.js` and its new test. T08 touches the new `practice-progress` files, `server/index.js`, `server/db.js` and `tests/db.test.js`. T11 touches `packs/applied-ai/**` and its new test. T01b touches its one new file. No overlap.
+- **Wave B:** T17 touches `web/practice/{app,state,copy}.js`, `web/practice.html` and `tests/practice-web-state.test.js`. T06 touches `web/practice/*`, `web/speech.js` and its new test. T07 touches `server/services/practice.js`, `server/routes/practice.js` and its new test. T08 touches the new `practice-progress` files, `server/index.js`, `server/db.js` and `tests/db.test.js`. T11 touches `packs/applied-ai/**` and its new test. T01b touches its one new file and `labelled-answers.json`. **T17 and T06 share `web/practice/app.js`, `copy.js` and `practice.html`, so T06 is not [P] with T17 and runs after it (revision 4).** T17 has no overlap with T07, T08, T11 or T01b (T17's source check only reads two server files). No other overlap.
 
 ## Bugs (QA appends)
 
@@ -752,3 +834,4 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 - **Severity: minor; doesn't block the Wave A.1 ship.** It needs 21 failed stop requests in one exercise (the fixture and module-1 draft catch exercises have 2 to 8 statements), followed by a `complete` that does reach the server. Nothing is corrupted: the event log stays valid and append-only, and a reload gets back to the picker. It is still a real stall with a false message, so it must be fixed before T01b's e2e and before the founder uses the page on a bad connection.
 - **Suspected file:** `web/practice/app.js` (`onSkip`, `complete()`). The error mapping in `complete()` (any non-network error → `err.net` + endless retry) is the general cause; the unbounded `S.skipped` is this instance of it.
 - **Owner:** technical-product-manager chooses the policy, then frontend-engineer. Options: (a) the client keeps at most 20 entries (first 20, or the latest per `statementId`, which changes attribution only for repeat skips on one statement); (b) after 20 skips the Skip button is hidden and `err.net` offers Try again only; (c) on an `ApiError` 4xx from `complete`, show a different message and a way back to the picker instead of `err.net`. (c) is needed whichever of (a) or (b) is chosen.
+- **Status (PM, 2026-10-14, revision 4): ruled; fix ticketed as F1c-T17 (frontend-engineer).** The architect classed it an inv. 7 defect, not blocking Wave A.1, and gated before F1c-T11 merges and before F1c-T01b (review.md "Wave A.1 re-check"). Policy (spec PD-9): a variant of (a), one skip per statement with the **smallest** `elapsedMs` (not the latest; it preserves the server's attribution exactly), plus (c) for a 4xx at `complete` **and** at a stop: `err.rejected` with Back to exercises, by button and (from F1c-T06) by voice "back". (b) is rejected. `NetworkError` and 5xx keep `err.net`. The server rule is unchanged. QA closes B23 after re-running `bug-21-skips` and a mid-exercise pack-version 404 (SC-013, F1c-T17 acceptance).

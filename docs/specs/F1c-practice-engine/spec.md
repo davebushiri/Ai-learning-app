@@ -1,8 +1,8 @@
 # F1c: Practice engine, Applied AI track module 1
 
-**Status:** Approved (revision 3: Wave A.1 fix wave added after the Wave A code review)
+**Status:** Approved (revision 4: F1c-B23 fix ticket F1c-T17 and the OQ-7 ruling for F1c-T06 added after the Wave A.1 re-check)
 **Phase:** F1 (interrupt priority, founder direction in [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)) | **Links:** [user-flow.md](../../foundation/user-flow.md), [data-and-evidence.md](../../foundation/data-and-evidence.md), [voice-first.md](../../foundation/voice-first.md), ADRs [0001](../../adr/0001-sqlite-storage-and-append-only-event-log.md)–[0006](../../adr/0006-pack-format-v1.md), [0008](../../adr/0008-practice-engine-and-practice-pack-format-v1.md), [0002 Amendments 3 and 4](../../adr/0002-event-schema-v1.md), [0006 Amendment 3](../../adr/0006-pack-format-v1.md); design review and Wave A code review in [`review.md`](review.md); Wave A QA report in [`qa-report.md`](qa-report.md)
-**Revision:** 3 (2026-10-14). Revision 3 applies the Wave A code review (W-B1, W-B2, W-S1, W-S3–W-S6; W-S2 moves to F1c-T06), ADR 0002 Amendment 4, the QA report's ship conditions, bugs F1c-B20, B21 and B22, and product decisions PD-4 to PD-8 (below). It adds Wave A.1 (F1c-T12 to T16) in tasks.md. Revision 2 (2026-10-13) applies the design review's C1–C15, the learning-designer's matcher findings B2 and B3 and follow-up drafts B4 ([`docs/research/applied-ai/module-1/REVIEW.md`](../../research/applied-ai/module-1/REVIEW.md)), and product decisions PD-1 to PD-3 (below). Revision 1: first draft.
+**Revision:** 4 (2026-10-14). Revision 4 applies the architect's Wave A.1 re-check (review.md "Wave A.1 re-check", APPROVED): the F1c-B23 policy and copy (PD-9; FR-059, FR-060; US1.16, US1.17, US2.13; SC-013; ticket F1c-T17, gated before F1c-T11 merges and before F1c-T01b) and the OQ-7 ruling (PD-10; FR-061; US2.14; in F1c-T06). OQ-7 is closed. Revision 3 (2026-10-14) applies the Wave A code review (W-B1, W-B2, W-S1, W-S3–W-S6; W-S2 moves to F1c-T06), ADR 0002 Amendment 4, the QA report's ship conditions, bugs F1c-B20, B21 and B22, and product decisions PD-4 to PD-8 (below). It adds Wave A.1 (F1c-T12 to T16) in tasks.md. Revision 2 (2026-10-13) applies the design review's C1–C15, the learning-designer's matcher findings B2 and B3 and follow-up drafts B4 ([`docs/research/applied-ai/module-1/REVIEW.md`](../../research/applied-ai/module-1/REVIEW.md)), and product decisions PD-1 to PD-3 (below). Revision 1: first draft.
 
 ## Problem
 The founder has a 60-minute technical interview on AI fluency (RAG, agents, embeddings, production evidence) this week or next. The only working loop is the trades game. It has one mode, needs exactly 3 mistakes per card, has no mastery and still leaks answers on its legacy route. F1c adds a **separate, server-owned practice engine** (ADR 0008) that runs the Applied AI track, module 1 (LLM foundations and RAG), in four modes. It grades offline, because there is no API key. The founder's constraints are small increments, reuse, no rebuild, and nothing that takes over the founder's preparation time.
@@ -132,6 +132,20 @@ Rules: `plan` has exactly `days` entries numbered `1..days`. Each day's minutes 
   - **W-S2 (a STOP in the gap after the last statement) → F1c-T06.** In text mode, `end.catch` is shown and `complete` is called at once, so there is no gap. In Wave A voice mode, STOP is by button or Space only. The gap only matters once the hotword lands in T06, which rewrites this handler anyway. T06 gains the acceptance line and test.
   - **O1 (backend appending bugs to tasks.md)** is a process note: bugs go through QA or thread 0007. **O2 (T05's manual browser record)** is collected by QA in F1c-T16.
 
+## Product decisions (revision 4, after the Wave A.1 re-check)
+- **PD-9 (F1c-B23: a refused request is not a network error; inv. 7).** I adopt the architect's smallest fix. Of QA's options, I take a variant of (a) plus (c), and reject (b).
+  - **(a) variant: one skip per statement (FR-059).** The client keeps one skip entry per `statementId`, the one with the smallest `elapsedMs`. The server's result is unchanged: a `hit` doesn't depend on `elapsedMs`, and a `late_hit` needs `elapsedMs ≤ GRACE_MS`, so the smallest entry gives every attribution any other entry on that statement could. The list then holds at most one entry per narration statement, so at most `LIMITS.narration` = 20 = the server cap, and the 400 can't be reached. The server rule (FR-009a) is unchanged.
+  - **(c): a 4xx gets its own message and a way out (FR-060).** At `complete` and at a stop, an `ApiError` with status 400–499 shows `err.rejected` with one way out, **Back to exercises** (`#picker-btn`), and no Try again or Skip. A `NetworkError` or a 5xx keeps `err.net` exactly as today. A retry can never fix a 4xx, so offering one is the stall B23 describes. The likeliest trigger is a 404 after a server restart with a bumped pack version mid-attempt (likely during F1c-T11 content work), not 21 skips.
+  - **(b) rejected:** hiding Skip after 20 skips takes away the learner's only honest way past a failing stop, and (a) makes the cap unreachable anyway.
+  - **Copy:** one id, `err.rejected`, true at both a stop and `complete`. It promises nothing about saved work, because a 404 "attempt not found" (a reset database) would make that untrue. The voice way out is "back" (or "back to exercises"), wired by F1c-T06 (FR-061). Until F1c-T06 merges, the copy names a voice command that isn't live yet, the same accepted gap as `intro.catch`'s "Say 'stop'" in Wave A; the button always works.
+  - **Not a learning change:** attribution, grading and the reveal are unchanged, so no learning-designer review is requested.
+  - **Gate:** F1c-T17 merges before F1c-T11 merges (when the founder starts on real content, per the architect's RISK in thread 0007) and before F1c-T01b runs and merges.
+- **PD-10 (OQ-7: voice "try again" and "skip" at `err.net`; architect ruling, inv. 8).** Adopted as ruled, in F1c-T06 (FR-061).
+  - "try again" is active only while `#net-error` is shown. "skip" is active only while `#skip-btn` is also visible. "back" / "back to exercises" is active only while `#rejected` is shown.
+  - **Echo guard:** `err.net` itself says "Try again" (and `err.rejected` says "back"), so each command arms only after its panel's utterance has finished. A command heard while the message is still being spoken does nothing.
+  - **Whole phrase only:** the FR-032 bare-phrase rule. The command fires only when one final segment, normalized as for "send" (FR-034), equals the phrase. "try again" inside a longer sentence does nothing.
+  - The copy is unchanged: `err.net` already names both words. The card game's `err.net` (`web/app.js`, Untouched) goes to F1a-T15's voice work.
+
 ## User stories (prioritized; each independently testable)
 
 **Hands-free rule (inv. 8, C11):** one tap starts a session (browsers require a user activation before audio and the mic). Everything after that tap chains by voice: within an exercise, from the reveal or `done` to the next exercise, and from the progress page into review or the diagnostic.
@@ -156,6 +170,8 @@ The learner opens `/practice.html`, picks the track and a catch exercise, and re
 13. Given a stop on planted `s3` whose request failed (`err.net`), when the learner presses **Skip this stop** and the set runs to the end without `s3` being caught, then the `complete` request carries `skipped: [{statementId: "s3", elapsedMs}]`. The reveal shows `s3` with the copy `missed.notGraded`, and the word "Missed" appears in no line about `s3`. `summary.misses` doesn't count `s3`, and the stored `completed` event lists `s3` in `notGradedStatementIds`, not in `missedStatementIds` (FR-009a, PD-5).
 14. Given a late hit on `s3` from a stop 800 ms into clean `s4`, when `s4` replays and the learner stops on `s4` again, then the second stop is a new stop: detection `false_interruption`, the copy `fb.false` appears, and a second `stopped`/`explained`/`graded` triple is written. Pressing **Try again** after a failed stop request re-sends the same `stopId` and gets the stored body, with no new events (FR-008, PD-6).
 15. Given the reveal, when a self-rating request fails, then `err.rate` appears under that row with a **Try again** button, and the rating buttons keep their previous pressed state. Try again re-posts the same rating, and on success the button gets `aria-pressed="true"` and the error is removed (PD-7).
+16. **(Revision 4, F1c-B23, PD-9.)** Given the narration has ended and `POST …/complete` returns a 4xx (for example a 404 after the server restarted with a bumped pack version), then `#rejected` shows `err.rejected`, `#net-error` stays hidden, and no Try again or Skip is offered. Pressing **Back to exercises** opens the picker with the track's exercise list re-fetched, and starting an exercise from it works. The same holds when a stop request returns a 4xx: `err.rejected` replaces `err.net`, and the answer panel closes. A `NetworkError` or a 5xx at either point still shows `err.net` with Try again, as in US1.10 (FR-060).
+17. **(Revision 4, F1c-B23, PD-9.)** Given 21 failed stop requests on `s1`, each followed by **Skip this stop**, when the set runs to the end, then exactly one `complete` request is sent, its `skipped` holds exactly one entry for `s1` (the smallest `elapsedMs` of the 21), it returns 200, and the reveal appears (FR-059).
 
 ### US2: Catch-and-correct in voice mode (P1)
 The same loop, hands-free: statements are spoken. Saying "stop" cuts speech immediately, and the learner dictates into an editable transcript, then says "send". Feedback and the corrected statement are spoken, and narration resumes. At the reveal, "next" moves on.
@@ -174,6 +190,8 @@ The same loop, hands-free: statements are spoken. Saying "stop" cuts speech imme
 10. **(Wave A.1, voice twin of US1.13.)** Given voice mode and a skipped stop on planted `s3`, then `err.net` is spoken exactly as shown when the request fails. At the reveal, the `missed.notGraded` line for `s3` is spoken exactly as shown, in the position where missed lines are spoken (after `sum.line`) (FR-035).
 11. **(Wave A.1, voice twin of US1.15.)** Given voice mode and a failed self-rating, then `err.rate` is spoken exactly as shown. Retrying is by the Try again button; the voice rating commands arrive with F1c-T06, and saying the rating again then retries it.
 12. **(F1c-T06, deferred W-S2.)** Given voice mode and the last statement has finished, when the learner stops (hotword, button or Space) while `end.catch` is being spoken, then the stop is posted for the last statement, with `elapsedMs` measured from that statement's start, and is graded like any stop on it (edge case "stop in the gap").
+13. **(Revision 4, voice twin of US1.16; F1c-T17, then F1c-T06.)** Given voice mode and a 4xx at `complete` or at a stop, then `err.rejected` is spoken exactly as shown (FR-035). From F1c-T06 on, once that utterance has finished, a final segment "back" or "back to exercises" opens the picker exactly as the button would. The same words said while `err.rejected` is still being spoken do nothing. Before F1c-T06 merges, the button is the way out (FR-060, FR-061).
+14. **(Revision 4, OQ-7, F1c-T06.)** Given voice mode and a failed stop request, when `err.net` has finished being spoken and a final segment is "try again", then the stop is re-posted with the same `stopId`, exactly as the Try again button would. When the final segment is "skip", the stop is skipped exactly as **Skip this stop** would. "skip" does nothing when `#skip-btn` is hidden (a failed `complete`). Either phrase said while `err.net` is still being spoken, or inside a longer sentence ("let me try again later"), does nothing (FR-061).
 
 ### US3: Learn mode with teach-back (P2)
 The learner hears (voice) or reads (text) an error-free explanation. They answer each teach-back question by voice or text. After the last answer they see the rubric and reference, rate themselves, then answer the follow-up and transfer questions.
@@ -252,9 +270,11 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 | `clarify.none` | The customer doesn't have more on that. | No match |
 | `sc.design` | Describe your design. | After "ready" |
 | `sc.challenge` | The customer pushes back: {question} | Each challenge |
-| `err.net` | Couldn't reach the server. Your answer is still here. Try again, or skip and this stop won't be scored. | Stop request failed; buttons "Try again", "Skip this stop" ("Skip" not shown for non-stop answers). From Wave A.1 the promise holds: a skipped stop is never scored as a miss (FR-009a) |
+| `err.net` | Couldn't reach the server. Your answer is still here. Try again, or skip and this stop won't be scored. | A stop or `complete` request failed with a `NetworkError` or a 5xx (revision 4: never on a 4xx, FR-060); buttons "Try again", "Skip this stop" ("Skip" not shown for a failed `complete`). From Wave A.1 the promise holds: a skipped stop is never scored as a miss (FR-009a). Voice "try again" / "skip" from F1c-T06 (FR-061) |
 | `err.rate` | Couldn't save your rating. Try again. | **(Wave A.1, PD-7)** A self-rating request failed. Shown under that answered part's rating buttons, and spoken in voice mode |
 | `btn.retry` | Try again | **(Wave A.1)** Button label (shown only), the `button.rate-retry` next to `err.rate` |
+| `err.rejected` | The server can't continue this exercise, and trying again won't help. Say "back" or press Back to exercises. | **(Revision 4, PD-9, F1c-T17)** A stop or `complete` request returned a 4xx (`ApiError`, status 400–499). Shown in `#rejected-msg` and spoken in voice mode; no Try again, no Skip. Voice "back" is live from F1c-T06 (FR-061) |
+| `btn.picker` | Back to exercises | **(Revision 4, F1c-T17)** Button label (shown only), `#picker-btn` under `err.rejected` |
 | `mic.denied` | The microphone isn't available. Type your answer instead. | No recognizer, permission denied, or 3 recognizer errors in a row |
 | `src.unverified` | (not yet verified) | Shown only, after a source with `verified: false` |
 | `progress.provisional` | Readiness thresholds are a provisional product choice. | Progress page, shown and spoken on open |
@@ -276,6 +296,9 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 | "ready" | Scenario clarifying | Go to design |
 | "review" | Progress page | Start review (FR-056) |
 | "diagnostic" | Progress page | Start the diagnostic (FR-057) |
+| "try again" | `#net-error` shown, after `err.net` has finished being spoken. Whole final segment (revision 4, OQ-7, F1c-T06) | Same as the Try again button (FR-061) |
+| "skip" | `#net-error` and `#skip-btn` shown, after `err.net` has finished being spoken. Whole final segment (revision 4, OQ-7, F1c-T06) | Same as Skip this stop (FR-061) |
+| "back", "back to exercises" | `#rejected` shown, after `err.rejected` has finished being spoken. Whole final segment (revision 4, F1c-T06) | Same as Back to exercises (FR-060, FR-061) |
 
 **Text mode:** Stop button or Space · Enter submits (Shift+Enter inserts a newline) · buttons for everything else (Next, Continue, Ready, Review weak spots, Run the diagnostic).
 
@@ -284,7 +307,8 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 - **Hotword missed:** the button and Space always work.
 - **Wrong stop:** a false interruption costs nothing beyond the count.
 - **Grade looks wrong:** self-rate "I missed it" or "I had it". The disagreement is recorded for κ.
-- **Network failure:** "Try again" (re-sends the same `stopId`; never double-counted) or "Skip this stop" (shown as `missed.notGraded` at the reveal; never a miss).
+- **Network failure (`NetworkError` or 5xx):** "Try again" (re-sends the same `stopId`; never double-counted) or "Skip this stop" (shown as `missed.notGraded` at the reveal; never a miss). By voice, "try again" or "skip" once `err.net` has been spoken (F1c-T06).
+- **Server refused the request (4xx, revision 4):** `err.rejected` with **Back to exercises**, or "back" once `err.rejected` has been spoken (F1c-T06). The picker re-fetches the track, so a new attempt runs on the pack version now loaded.
 - **Self-rating failure (Wave A.1):** `err.rate` plus the Try again button; pressing a rating button again also retries.
 - **Mic failure:** automatic switch to text mode.
 - **Command not heard ("next", "review", "diagnostic"):** the matching button always works.
@@ -307,6 +331,11 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
   - A repeat `complete` ignores `skipped` and returns the stored body (FR-009).
 - **Stop in the gap after the last statement:** attributed to the last statement. The client half moves to F1c-T06 (W-S2, PD-8 deferrals); the server already accepts it.
 - **Assist after complete (W-S3):** returns the same body as any assist, and writes no `assisted` event.
+- **Client errors at a stop or `complete` (revision 4, F1c-B23, FR-060):**
+  - A 4xx → `err.rejected` and Back to exercises; no request is re-sent automatically or by any control on that panel. The attempt stays without `completed`, the abandoned-attempt shape readers already handle; no event is written by the client.
+  - A `NetworkError` (offline, reset, or the 12 s deadline) or a 5xx → `err.net`, as before.
+  - **Pack version bumped mid-attempt:** every later stop and `complete` on that attempt returns 404 "attempt exercise is not loaded" → `err.rejected`. Back to exercises re-fetches the track, so the new attempt uses the loaded version.
+  - **Repeated skips on one statement:** the client keeps one entry per statement, the smallest `elapsedMs` (FR-059), so `skipped` never exceeds the narration length (≤ 20).
 - **Answer text:** empty → allowed, and all dimensions are `not_met`. Over 2000 chars → truncated server-side, and `explained.result.chars` holds the original length.
 - **`elapsedMs` missing, negative or non-integer** → treated as a large value (no grace attribution). It is a client claim, an accepted risk as in ADR 0003.
 - **Grace attribution only applies** if the previous statement is planted and uncaught.
@@ -443,6 +472,12 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
   - "next" / Next in the reveal and `done` states starts the next exercise in today's plan (`nextInPlan`, F1c-T10), or speaks `plan.done` and opens the progress page when the plan has no exercise left. Before F1c-T10 merges, Next opens the picker.
   - "review" / Review weak spots and "diagnostic" / Run the diagnostic on the progress page, per US6.4 and US6.6.
   - Commands are parsed only in their listed state (`parseCommand`), and each has a unit test.
+- **FR-059 (client skip list; revision 4, PD-9, F1c-B23):** the client MUST keep at most one `skipped` entry per `statementId`. A later skip on a statement already in the list replaces that entry's `elapsedMs` only when the new value is smaller (an `elapsedMs` that isn't a finite number counts as larger than any finite one). Entries keep the order of each statement's first skip. The server-side cap `MAX_SKIPPED` (20, `server/services/practice.js`) MUST stay ≥ `LIMITS.narration` (20, `server/services/practice-pack.js`), checked by a test.
+- **FR-060 (client errors are not network errors; revision 4, PD-9, F1c-B23, inv. 7):** at a stop and at `complete`, the client MUST classify a failure with the typed error classes from `web/practice/api.js`, never by message text:
+  - `ApiError` with `400 ≤ status ≤ 499` → **rejected**: hide `#net-error` and `#answer-panel`, show `#rejected` with `err.rejected` (shown and spoken, FR-035), focus `#picker-btn`, offer no Try again or Skip;
+  - `NetworkError`, `ApiError` with status ≥ 500, or any other error → **net**: `err.net` with Try again (and Skip at a stop), unchanged.
+  - Back to exercises (`#picker-btn`) MUST open the picker and re-fetch the current track's exercise list.
+- **FR-061 (voice at error panels; revision 4, PD-10, OQ-7, F1c-T06, inv. 8):** in voice mode, "try again", "skip" and "back" / "back to exercises" MUST act exactly as their buttons, only in the states in the voice-command table. Each MUST arm only after its panel's message (`err.net` or `err.rejected`) has finished being spoken, and MUST fire only on a whole final segment equal to the phrase (the FR-032 / FR-034 rule).
 
 **Other modes**
 - **FR-040:** `POST /api/practice/attempts/:id/answers {part, answer}` MUST accept these parts by type:
@@ -492,6 +527,8 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 | `self-rated` **(new)** | each rating | `{rating, matcherStatus, graderVersion}` | κ (SC-004) |
 | `clarified` **(new)** | each clarification question | `{text, chars, revealIndex: int \| null}` | scenario behavior |
 
+**Revision 4 (F1c-B23, OQ-7):** no new event and no new field. A refused `complete` leaves the attempt without `completed` (the abandoned-attempt shape), which completion rate already counts. Voice commands at error panels are client-only.
+
 ## Success criteria (measurable; AI-quality thresholds pre-registered from data-and-evidence.md §5)
 - **SC-001 (leak):** `practiceLeakScan` finds 0 FR-004 keys outside the FR-004 exception paths in 100% of runs, scanning every response for an attempt before that attempt's `complete`, and every response from `GET /api/practice/tracks`, `/tracks/:track`, `/tracks/:track/schedule`, `/tracks/:track/progress` and `/tracks/:track/review` (C5).
 - **SC-002 (isolation):** the F1a golden replay shows 0 diffs after each F1c wave, including after F1c-T06's `onSegment` addition. Every pre-F1c test passes unchanged, except the listed `old → new` edits in F1c-T01a, F1c-T02 and F1c-T04. Across all F1c tickets, `git diff` is empty for the "Untouched" list above.
@@ -521,6 +558,10 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 - **SC-009 (rebuild):** `projectPractice` over the stored events equals the frozen expected progress body, before and after a server restart on the same DB file.
 - **SC-010 (degrade):** an invalid practice pack leaves the server up, logs one `[practice]` warning, `/api/practice/tracks` omits the pack, and `listSubjects()` from `server/packs.js` deep-equals the same call with no practice pack, with no `[packs]` warning logged (C3).
 - **SC-011 (hands-free):** in the e2e voice run, after the one Start tap, a catch exercise, the next exercise via "next", and a review started via "review" on the progress page complete with 0 clicks (FR-058).
+- **SC-013 (no stall on a refused request; revision 4, F1c-B23, inv. 7):** in QA's real-browser re-run against the real server, in text and voice mode at 390 px and 1280 px:
+  - `bug-21-skips` (21 failed stops on `s1`, each skipped): exactly 1 `complete` request, status 200, with exactly 1 `skipped` entry, and the reveal appears, in 3 of 3 runs;
+  - a mid-exercise pack-version 404, once at a stop and once at `complete`: `err.rejected` is shown (and spoken in voice mode, equal to the shown text), `#net-error` is never shown, 0 further requests to that attempt follow, and `#picker-btn` opens the picker in 1 action, from which a new attempt starts with status 200, in 100% of runs;
+  - a `NetworkError` and a 500 at `complete` still show `err.net` with Try again, in 100% of runs.
 
 ## Non-goals / Later
 - Defend-my-build mode (must be grounded in the real repository; never fabricated).
@@ -537,8 +578,11 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 - An expression index for `eventsForEngine`, only if progress p95 is measured above 100 ms.
 - **From Wave A.1 (revision 3):**
   - a `summary.notGraded` count and a `sum.line` variant that mentions skipped stops (PD-5);
-  - an `err.net` variant for a failed `complete`, whose text doesn't mention "your answer" or skipping. Today the same `err.net` string is shown, with no Skip button;
-  - voice commands for "try again" and "skip" at `err.net` (see OQ-7);
+  - an `err.net` variant for a failed `complete`, whose text doesn't mention "your answer" or skipping. Today the same `err.net` string is shown, with no Skip button. (Revision 4 handles the 4xx half with `err.rejected`; the network/5xx wording stays Later.)
+  - ~~voice commands for "try again" and "skip" at `err.net` (see OQ-7)~~ moved into F1c-T06 in revision 4 (PD-10, FR-061);
+- **From revision 4 (F1c-B23):**
+  - 4xx handling on the picker, start, assist and self-rating requests. They show "Couldn't reach the server." or `err.rate` on a 4xx today. None of them stalls (the learner can pick again, keep narrating, or press Next), so they stay as they are;
+  - treating 408 or 429 as retryable: this server sends neither.
   - F1c-B11 (FR-021(a) per dimension vs per answer) and B12/B13 (lexicon gaps): these are SC-003b and F1c-T11 work, not Wave A.1.
 
 ## Assumptions
@@ -552,8 +596,8 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 - **OQ-3** [NEEDS CLARIFICATION: founder] Is "configurable schedule" satisfied by `schedule.json` alone in F1c? A UI setting is listed under Later.
 - **OQ-5** [NEEDS CLARIFICATION: founder] Confirm the architect's ARCH-2 reading in thread 0007: the F2 hard rule doesn't block practice packs that enter no prompt (ADR 0006 Amendment 3). Blocks F1c-T11's merge only.
 - **OQ-6** [NEEDS CLARIFICATION: content author] Accept PD-1's two follow-up rubrics (catch-06, catch-08) and the draft synonym list into `packs/applied-ai`? If not, T11 moves the content without them.
-- **OQ-7** [NEEDS CLARIFICATION: principal-architect, for F1c-T06 scope] Invariant 8 says every flow works hands-free, but `err.net` has only buttons, both in the card game and here. Should T06 add "try again" and "skip" as voice commands in a network-error state? I lean yes, as two rows in the command table. This was not introduced by Wave A.1.
 - Resolved in revision 2: OQ-2 (date unknown; Wave A first), OQ-4 (C2 and C12 accept the drafts' shapes with format-only mapping).
+- Resolved in revision 4: **OQ-7** (voice "try again" and "skip" at `err.net`). The architect ruled yes, for F1c-T06 (review.md "Wave A.1 re-check", thread 0007). Adopted as PD-10 and FR-061, with the B23 way out ("back") added under the same rule.
 
 ## Learning review
 Requested from `learning-designer`; LR-1 to LR-8 are not in yet. The PM decides and records each call here. The designer's independent content review (REVIEW.md) is in: B1 → C1; B2 → PD-2; B3 → PD-3; B4 → PD-1. H1–H7 and M1–M6 are content items for the author, or Later.
@@ -568,6 +612,7 @@ Requested from `learning-designer`; LR-1 to LR-8 are not in yet. The PM decides 
 - **LR-9 (revision 3):** Is `stuffedMaxFunctionShare = 0.2` (PD-4) right from a learning point of view? Specifically: should a terse but correct spoken answer ever be capped at "Partly covered"? My call for now: 0.2, revisited on the T01b dictated rows.
 - **LR-10 (revision 3):** Is the `missed.notGraded` wording right: "Not scored, you skipped this stop: …"? Should a skipped statement show its correction at all, or stay hidden for a later retry? My call for now: show it (ADR 0002 Am. 4 says the reveal still shows the correction).
 - LR-9 and LR-10 are requested in thread 0007. They are advisory and do not block Wave A.1's merge. If a finding arrives before F1c-T16 is verified, I record my decision on it here.
+- Revision 4 (PD-9, PD-10) changes error handling and voice commands only. Attribution, grading, feedback and the reveal are unchanged, so no learning review is requested for it.
 
 ## Architecture rulings (design review 2026-10-13; all ruled)
 | # | Ruling | Recorded in |

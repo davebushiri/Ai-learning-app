@@ -323,3 +323,23 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 
 ### principal-architect · 2026-10-14 · RISK
 **`matcher@2` was tuned and gated on the same small labelled set.** SC-003 passes on 48 rows and SC-012 on 7 module-1 rows (with 24 more labelled module-1 rows behind SC-003b), but the threshold 0.2 was chosen by looking at those rows. Likelihood M · impact M (a dictated, grammar-poor correct answer is capped to `partial`, or a padded list reaches `met`). **Mitigation:** the PM's revisit trigger on 0.2, T01b's dictated rows, and SC-004 κ grouped by `graderVersion`. The 0.2 constant is named in `MATCHER_RULES`, so a change is one line plus a version bump.
+
+### technical-product-manager · 2026-10-14 · DECISION
+**Answering:** the architect's Wave A.1 re-check follow-ups: the F1c-B23 policy, fix ticket and copy; OQ-7 for T06. Applied as spec and tasks **revision 4**.
+- **F1c-B23 (spec PD-9, FR-059, FR-060, SC-013) → new ticket F1c-T17 (frontend-engineer, M).** The architect's smallest fix, as proposed:
+  - one skip per `statementId`, the **smallest** `elapsedMs` (pure `recordSkip` in `state.js`, plus a source-check test that `MAX_SKIPPED ≥ LIMITS.narration`);
+  - an `ApiError` 400–499 at `complete` **or** at a stop shows the new `err.rejected` panel (`#rejected`) with **Back to exercises** (`#picker-btn`, re-fetches the track) and no Try again or Skip. `NetworkError` and 5xx keep `err.net`. Classification lives in one pure `errorKind(err)`, which uses `instanceof ApiError`.
+  - QA's option (b) is rejected (hiding Skip removes the honest way past a failing stop). The server rule is unchanged.
+  - **Copy:** `err.rejected` = "The server can't continue this exercise, and trying again won't help. Say "back" or press Back to exercises."; `btn.picker` = "Back to exercises". It promises nothing about saved work, which would be untrue after a 404 "attempt not found".
+  - **Gate:** T17 merges before T11 merges and before T01b's verdict run and merge. QA's re-run (`bug-21-skips` and a mid-exercise pack-version 404, at a stop and at `complete`) is in T17's acceptance and closes B23.
+- **OQ-7: closed (spec PD-10, FR-061), in F1c-T06 as ruled.** "try again" works while `#net-error` is shown. "skip" works only while `#skip-btn` is visible. The B23 way out, "back" / "back to exercises", works while `#rejected` is shown.
+  - Each command arms only after its panel's utterance resolves (pure `errorCommandState`). Each is whole final segment only.
+  - The tests are the architect's: one per command, plus "'try again' inside a longer sentence does nothing". The copy is unchanged.
+- **Wave B ordering change:** the frontend lane is now **T17 → T06** (shared `web/practice/*`; T06 also wires T17's panel to voice). T07, T08 and T11's preparation are unaffected. T11's merge also waits on T17. T01b may be written now, but its run and merge wait on T17.
+- **Accepted gap:** until T06 merges, `err.rejected` names a voice command ("back") that isn't live yet. This is the same gap as `intro.catch`'s "Say 'stop'" in Wave A, and the button always works.
+- **Dissent recorded:** none.
+- **Follow-ups:**
+  - **frontend-engineer:** F1c-T17 now, then F1c-T06.
+  - **qa-engineer:** the B23 re-run per T17's acceptance; the T01b additions.
+  - **principal-architect:** check T17's diff at code review. No ADR is needed: client-only, no contract change.
+  - The thread stays `open` (OQ-1, OQ-3, OQ-5, OQ-6).
