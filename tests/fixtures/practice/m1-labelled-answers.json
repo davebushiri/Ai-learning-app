@@ -1,0 +1,539 @@
+{
+  "id": "m1-labelled-answers",
+  "source": "docs/research/applied-ai/module-1/exercises/_matcher-test-answers.json",
+  "builtBy": "qa-engineer, F1c-T01a: one row per answer in the source, fields copied verbatim; 'x or y' expected values become expect: ['x', 'y']",
+  "excluded": {
+    "exercises": [
+      "m1-catch-03-pipeline-clean",
+      "m1-catch-07-access-freshness-clean"
+    ],
+    "why": "zero-planted sets carry a falseInterruptionProbe and a cleanPass check, not graded answers; covered at the HTTP level (US1.3, US1.8)"
+  },
+  "draftSynonyms": {
+    "retrieve": [
+      "search",
+      "look up",
+      "lookup",
+      "fetch",
+      "find",
+      "pull"
+    ],
+    "query": [
+      "question",
+      "ask",
+      "asks",
+      "request"
+    ],
+    "memory": [
+      "ram",
+      "buffer",
+      "scratchpad"
+    ],
+    "call": [
+      "request",
+      "prompt",
+      "turn"
+    ],
+    "weights": [
+      "parameters",
+      "model itself"
+    ],
+    "unchanged": [
+      "same",
+      "frozen",
+      "fixed",
+      "untouched"
+    ],
+    "closeness": [
+      "near",
+      "nearby",
+      "close",
+      "distance"
+    ],
+    "truth": [
+      "right",
+      "correct",
+      "true",
+      "accurate"
+    ],
+    "stale": [
+      "old",
+      "outdated",
+      "superseded",
+      "out of date"
+    ],
+    "faithful": [
+      "grounded",
+      "supported",
+      "stuck to",
+      "loyal"
+    ],
+    "noise": [
+      "junk",
+      "irrelevant",
+      "clutter"
+    ],
+    "cost": [
+      "expensive",
+      "pricier",
+      "price",
+      "tokens"
+    ],
+    "latency": [
+      "slow",
+      "slower",
+      "delay",
+      "response time"
+    ],
+    "deterministic": [
+      "repeatable",
+      "reproducible",
+      "identical"
+    ],
+    "repeated": [
+      "several",
+      "multiple",
+      "many times"
+    ],
+    "bm25": [
+      "bm 25",
+      "keyword",
+      "lexical",
+      "exact match"
+    ],
+    "rerank": [
+      "reranker",
+      "re-rank",
+      "cross-encoder"
+    ]
+  },
+  "draftSynonymsNote": "Data only, for F1c-T11. The SC-003b test reads the lexicon from the loaded packs/applied-ai pack, never from here.",
+  "rows": [
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "clear",
+      "text": "That's wrong. The context window is the model's working memory for one call, what it can see while answering this request. Training data is separate; it was learned into the weights beforehand. A bigger window means more input fits in one request, which is different from more knowledge.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "partial",
+      "text": "The window is just what fits in the current prompt, it's separate from training.",
+      "expected": {
+        "explanation": "partial",
+        "correction": "partial or not_met",
+        "overall": "partial"
+      },
+      "expect": {
+        "explanation": "partial",
+        "correction": [
+          "partial",
+          "not_met"
+        ],
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "valid-alternative",
+      "text": "That mixes up two things. The window is like RAM for a single request. What the model learned in training lives in its weights. A bigger window lets you send a longer prompt; it doesn't make the model smarter.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "incorrect",
+      "text": "Right, a bigger window means the model was trained on more documents, so it knows more about our handbook.",
+      "expected": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      }
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "clear",
+      "text": "RAG retrieves relevant passages at query time and adds them to the prompt. The weights stay unchanged and there is no training; the knowledge lives in the index. To update knowledge we update the index, while the model stays the same.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "partial",
+      "text": "RAG looks up our documents when someone asks a question.",
+      "expected": {
+        "explanation": "partial",
+        "correction": "partial or not_met",
+        "overall": "partial"
+      },
+      "expect": {
+        "explanation": "partial",
+        "correction": [
+          "partial",
+          "not_met"
+        ],
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "valid-alternative",
+      "text": "Nothing gets learned into the model. When a question comes in, the system searches our documents and pastes the best-matching sections into the prompt, and the model reads them for that one answer. Change a policy and you just re-index it.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "incorrect",
+      "text": "Yes, RAG trains the model on our documents during setup, so later it already knows the policies.",
+      "expected": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "clear",
+      "text": "A 0.91 similarity is closeness between vectors, a ranking signal. It is a different thing from relevance or truth: the chunk could be outdated or off the question, and the scale varies by model. We still check relevance and currency, and evaluate answers separately.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "partial",
+      "text": "High similarity just means the chunk is close to the question, it's only a ranking signal.",
+      "expected": {
+        "explanation": "partial",
+        "correction": "not_met",
+        "overall": "partial"
+      },
+      "expect": {
+        "explanation": "partial",
+        "correction": "not_met",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "valid-alternative",
+      "text": "Cosine similarity just measures how near two embeddings are. A passage can be on the same topic and still be the old version of the policy, or simply wrong. Being near and being right are different things, so we need a separate check on the answer.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met or partial",
+        "overall": "met or partial"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": [
+          "met",
+          "partial"
+        ],
+        "overall": [
+          "met",
+          "partial"
+        ]
+      }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "incorrect",
+      "text": "Agreed, 0.91 is a high similarity so we can trust the answer is correct.",
+      "expected": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      }
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "clear",
+      "text": "Temperature zero is still not fully deterministic, and the provider documents that identical inputs can give different outputs across calls. So zero gives more consistent output rather than identical output, and we should test over repeated runs.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "partial",
+      "text": "Zero just makes it more consistent; answers can still vary a bit.",
+      "expected": {
+        "explanation": "partial",
+        "correction": "partial",
+        "overall": "partial"
+      },
+      "expect": {
+        "explanation": "partial",
+        "correction": "partial",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "valid-alternative",
+      "text": "Even at zero you can get different answers to the same question, because of how the hosted model is served. Treat it as near-repeatable and run each test several times.",
+      "expected": {
+        "explanation": "met or partial",
+        "correction": "met",
+        "overall": "met or partial"
+      },
+      "expect": {
+        "explanation": [
+          "met",
+          "partial"
+        ],
+        "correction": "met",
+        "overall": [
+          "met",
+          "partial"
+        ]
+      }
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "incorrect",
+      "text": "That's fine. At temperature zero the answers are consistent and identical every time.",
+      "expected": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      }
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "clear",
+      "text": "Faithfulness only measures whether the answer is supported by the retrieved context. Here the context was stale, so the answer was faithful but wrong; faithfulness and correctness are different measures. We should add correctness checks against expected answers and add freshness test cases.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "partial",
+      "text": "Faithful to the chunks isn't the same as correct, since the chunks were old.",
+      "expected": {
+        "explanation": "partial",
+        "correction": "not_met",
+        "overall": "partial"
+      },
+      "expect": {
+        "explanation": "partial",
+        "correction": "not_met",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "valid-alternative",
+      "text": "The score only tells us the model stuck to the chunks it was given. Those chunks were the old handbook, so it was loyal to bad evidence. We need test questions with the current right answers, including ones about recently changed policies.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "incorrect",
+      "text": "Yes, faithfulness was high so the answer was correct; the evaluation worked.",
+      "expected": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "clear",
+      "text": "Twenty for every question is an untested rule. A higher k gives higher recall but more noise, plus cost and latency, and evidence in the middle of a long context is under-used. Tune k with metrics, or retrieve then rerank and keep the best few.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "partial",
+      "text": "Twenty chunks will make every call slower and cost more.",
+      "expected": {
+        "explanation": "partial",
+        "correction": "not_met",
+        "overall": "partial"
+      },
+      "expect": {
+        "explanation": "partial",
+        "correction": "not_met",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "valid-alternative",
+      "text": "More passages means more junk for the model to wade through, a longer and pricier prompt, and the useful bit can get lost in the middle. Pick the number by measuring answer quality at a few values, or over-fetch and let a reranker keep the top handful.",
+      "expected": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      },
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "incorrect",
+      "text": "Agreed, more chunks is always safer because the model gets more evidence to work with.",
+      "expected": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      }
+    }
+  ]
+}
