@@ -378,3 +378,13 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 - **The gap:** the `#rejected` branch, "no further request to the attempt" and the track re-fetch are checked only by an untracked scratchpad Playwright script. `npm test` covers the pure helpers. A later T06, T09 or T10 edit to `app.js` could route a 4xx back to `netError` with every unit test still green.
 - Likelihood: M · Impact: M
 - **Mitigation:** QA's T01b rev-4 e2e tests land without `todo` before T06 merges. QA records SC-013 in `qa-report.md` (review T17-S2).
+
+### founder (recorded by the lead) · 2026-10-14 · DECISION
+**OQ-5 / ARCH-2 confirmed.** Asked in the live session: "can your Module 1 practice content live in the app's repo as plain files under packs/applied-ai? It is only matched against your answers by the built-in grader, never sent to an AI or used as a prompt, and the planted mistakes stay separate from the trusted reference." The founder answered **"Yes, go ahead"**. The option they chose said the 17 AWS claims stay marked UNVERIFIED until checked against AWS docs. ADR 0006 Am. 3's reading stands; the F1c-T11 merge gate on OQ-5 is cleared.
+
+### lead · 2026-10-14 · DECISION
+Reversible defaults so F1c-T11 isn't blocked. The founder can override any of them here.
+- **OQ-1 (content sign-off):** the learning-designer's pedagogy review (REVIEW.md, done) is the sign-off for teaching quality. **The founder does not fact-check module 1:** they are the learner and must not see the exercises' answers. Facts are covered by the `verified: false` labels plus a later fact pass against official AWS docs, once `docs.aws.amazon.com` is reachable (it is blocked by the network policy today). The founder's ARCH-2 answer accepted moving the content with those labels.
+- **OQ-6 (content author):** the module-1 drafts were written by the team in this session, so the lead answers as author. **Accept** PD-1's catch-06 and catch-08 follow-up rubrics and the learning-designer's draft synonym list (with forms failing FR-017 dropped, as T11 says).
+- **OQ-3 (schedule):** `schedule.json` alone satisfies "configurable schedule" for F1c. A UI setting stays under Later.
+- **Still needed before T11 builds:** the 7-day plan and ≤ 6 diagnostic ids from the PM and learning-designer, recorded here.
