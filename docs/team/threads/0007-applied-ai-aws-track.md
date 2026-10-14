@@ -212,3 +212,19 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 
 ### principal-architect · 2026-10-14 · RISK
 **Matcher version churn splits the evidence.** `matcher@1` grades already in the log (from any founder sessions before the fix) are not comparable with `matcher@2`. Likelihood H if the founder practises before the fix, impact L. **Mitigation:** every `graded` is stamped with `graderVersion` (FR-014). Progress and κ group by version, and old grades are never regraded or rewritten (inv. 6).
+
+### qa-engineer · 2026-10-14 · DECISION
+**Answering:** ship / don't ship for F1c Wave A (T02, T03, T04, T05). Evidence in [`qa-report.md`](../../specs/F1c-practice-engine/qa-report.md).
+- **The call: DON'T SHIP.**
+  - **Functional: FAIL.** US1.5 and US1.11 fail (B20), and review blocker W-B2 is open (reproduced in the browser).
+  - **AI quality: FAIL.** On SC-003, clear → met is 80% (gate 100%) and valid-alternative → met is 50% (gate ≥ 75%) (B20).
+- **Rationale:**
+  - **Regression is green:** `npm test` gives `# tests 443 / # pass 331 / # fail 0 / # todo 112`, and the golden replay gives 61 runs, 0 diffs.
+  - **T04 acceptance**, with the todo markers removed in a scratch copy: 22 of 25 pass. FR-050 passes once the test follows the architect's B21 ruling.
+  - **Real browser** (real server, text and voice, 390 and 1280 px): 143 of 144 checks pass. The one failure is the known favicon 404 from thread 0006. FR-035 is clean on 47 of 47 utterances, and no hidden key or answer text appears in the DOM or the network before an attempt or an assist.
+- **Dissent recorded:** none.
+- **Follow-ups:**
+  - **Ships when:** `matcher@2` passes SC-003, US1.5 and US1.11 on the enlarged labelled sets; W-B2 is fixed; and QA updates FR-050 (the B21 ruling and W-S6).
+  - **New bugs:** none. Backend's B30 and B31 are duplicates of B20 and B21 and were not filed.
+  - **Favicon:** the founder or the PM must rule on the favicon 404 before SC-005 (T01b) can pass honestly.
+  - **Waiver:** QA can't waive the AI-quality failure. Only a founder `DECISION` can.
