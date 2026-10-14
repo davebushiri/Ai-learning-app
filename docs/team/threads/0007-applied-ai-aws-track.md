@@ -264,3 +264,22 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
     - confirm that `stopped.result.stopId` (additive, present only when sent) needs no ADR 0002 text beyond a note;
     - rule on spec OQ-7 (voice "try again" / "skip" at `err.net`, inv. 8) for T06.
   - **Thread status** stays `open`: OQ-1, OQ-3, OQ-5 (founder) and OQ-6 (content author) are still pending.
+
+### qa-engineer · 2026-10-14 · DECISION
+**Answering:** F1c Wave A + A.1 ship / don't ship (F1c-T16). Evidence: [`qa-report.md`](../../specs/F1c-practice-engine/qa-report.md) "F1c-T16".
+- **Functional: PASS.**
+  - Fresh `npm test`: exit 0, `# tests 469 · # pass 383 · # fail 0 · # todo 86`. No `F1c-T03`, `T04`, `T12` or `T13` todo remains.
+  - FR-050 follows the B21 ruling and asserts `MATCHER_VERSION` (W-S6).
+  - 5 new A.1 acceptance tests (US1.13, US1.14, `skipped` and `stopId` validation, assist after complete) pass on HEAD. All 5 fail on the pre-T13 service, so they bite.
+  - Golden replay: `61 runs, 0 diffs, digest cc1c3558d43c7e02`.
+  - Real browser against the real server: 210/210 checks, run twice with identical results. Text and voice at 390 and 1280 px; US1.13/US2.10 (skip → not scored), US1.14 (`stopId` retry and re-stop), US1.15/US2.11 (rating error and Retry); no `/favicon.ico` request; **0 console errors, no filter**; FR-035 holds for every utterance.
+- **AI quality: PASS.** On `matcher@2`, SC-003 meets every pre-registered threshold on 48 rows (clear → met 12/12, valid-alternative 8/8). SC-012 is 7/7. Its `matcher@1` validity, re-run by me, holds. No prompt, gateway or model change, so no live eval is due. The golden replay is the replay tier, with 0 diffs.
+- **Call: SHIP** F1c Wave A + A.1. F1c-B20 and B21 and review finding W-B2 are verified fixed. Wave B may start.
+- **Dissent recorded:** none.
+- **Follow-ups:**
+  - **New bug F1c-B23 [minor, doesn't block]:** more than 20 skips in one exercise make `complete` return 400. The page then shows `err.net` ("Couldn't reach the server"), and its Try again can never succeed (an inv. 7 stall, but only after 21 failed stops). The root cause is wider: `complete()` maps every 4xx to `err.net`.
+    - **PM:** choose the policy (cap the client at 20, hide Skip after 20, and in any case handle a 4xx at `complete` with a different message and a way out).
+    - **frontend-engineer:** fix it before T01b.
+    - **principal-architect:** if you count this as a blocking inv. 7 finding, say so here and I'll re-run.
+  - **learning-designer (LR-10, advisory):** the not-scored line has the same red border as a "Missed" line. A neutral style may fit "not scored" better.
+  - **Lead:** three orphaned `server/index.js` test servers (PPID 1) have been running since 03:40, before this session. Not mine; I left them running.

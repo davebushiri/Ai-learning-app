@@ -4,7 +4,17 @@
 **Scope:** F1c-T02 (pack format, validator, loader), T03 (matcher), T04 (catch attempt API, events, wiring), T05 (practice page, text-mode catch loop). T01a is QA's own ticket and is exercised here, not graded.
 **Related:** [`tasks.md`](tasks.md) bugs F1c-B20, B21, B22 · [`review.md`](review.md) "Wave A code review" (W-B1, W-B2, W-S1–W-S6) · [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)
 
-## Verdicts
+## Current verdict (F1c-T16, Wave A + A.1, 2026-10-14): **SHIP**
+
+| Verdict | Result |
+|---|---|
+| **Functional** | **PASS**. See "F1c-T16" at the end of this file. |
+| **AI quality** | **PASS**. |
+| **Final** | **SHIP**, with 1 new minor bug (F1c-B23) that doesn't block. |
+
+The Wave A verdict below (DON'T SHIP) is kept as the record it was. It is superseded by the F1c-T16 section.
+
+## Verdicts (Wave A, superseded)
 
 | Verdict | Result | Why |
 |---|---|---|
@@ -230,3 +240,149 @@ The same `matcher@1` run of "SC-003 labelled set thresholds" on the enlarged acc
 ### Notes for the lead
 - **Merge order.** The merge order is T15 → T13 → T12, but T12's WIP checkpoint (`a9d7cb5`) is already on `team/agents` ahead of T15. The validity record above is pinned to the `303dbe8` blob, so it stays valid. Please don't treat the branch checkpoint as T12's merge.
 - **LR-9.** The learning-designer may review the 7 module-1 `qaRows` in thread 0007 (advisory).
+
+## F1c-T16: Wave A.1 acceptance updates, todo removal and re-verify (2026-10-14)
+
+**Author:** qa-engineer · **Branch:** `team/agents` at `4737dba` (T12 `a9d7cb5`, T13 `b7024e7` + `4737dba`, T14 `ae7fc73`, T15 `be0fc29`). My only changes are `tests/acceptance/F1c.test.js`, this file and the F1c-B23 entry in `tasks.md`. `practice-helpers.mjs` is unchanged, because `api().stop/complete` already pass any body. Nothing is committed.
+
+### Verdicts
+
+| Verdict | Result | Why |
+|---|---|---|
+| **Functional** | **PASS** | `npm test` exit 0, `# fail 0`. Every ship condition in tasks.md "Wave A.1, Ships when" is met (table below). No `F1c-T03`, `F1c-T04`, `F1c-T12` or `F1c-T13` todo remains. The browser re-check is 210/210 at 390 and 1280 px, in text and voice, with 0 console errors and no filter. W-B2 is fixed and reproduced as fixed in the browser. |
+| **AI quality** (deterministic matcher `matcher@2`; pre-registered SC-003 and SC-012 thresholds) | **PASS** | SC-003 on the enlarged 48-row accept-pack set meets every threshold (clear → met 100%, valid-alternative → expected 100%, partial 100%, should-flag 100%, uncertain over clear + incorrect 0%). SC-012 is 7/7: the keyword lists are `partial` and the short correct sentences are `met`. Validity: under `matcher@1` all 4 short-correct rows are `partial`, which I re-ran myself and which matches T15's record. Wave A.1 changes no prompt, gateway, model or `shared/` file, so the eval gate isn't triggered. There is no evals-engineer live report and no `tests/fixtures/recorded/` recording for F1c. The replay tier that applies is the golden replay: 0 diffs. |
+| **Final** | **SHIP** | Both verdicts pass. The new bug F1c-B23 is minor and isn't a ship condition (reasons in the bug). SC-003b (T11), T07, T08 and T01b are later waves and aren't in this verdict. |
+
+### Ship conditions (tasks.md Wave A.1)
+
+| Condition | Result | Evidence |
+|---|---|---|
+| `matcher@2` passes SC-003 on the enlarged set | PASS | "SC-003 labelled set thresholds" (todo removed), table below |
+| SC-012 | PASS | "SC-012 FR-019 on module-1 wording: …" (todo removed), 7/7 rows |
+| US1.5, US1.11 | PASS | Both tests pass with the todo removed. Both fail on a copy running `matcher@1` (mutation check below) |
+| W-B2 fixed (FR-009a) | PASS | "US1.13 a skipped stop is not scored …" and the "edge: skipped validation 400 …" API tests; in the browser, US1.13/US2.10 pass in 4 runs |
+| FR-050 follows B21 and asserts `MATCHER_VERSION` | PASS | "FR-050 catch events: …" now expects `graded` after the false interruption, with the exact Am. 4 result, its own consecutive-seq append, and `MATCHER_VERSION` in 3 places. No `'matcher@1'` literal is left in the file except a comment |
+| `F1c-T03`, `F1c-T04` (25), `F1c-T12` markers gone; `npm test` `# fail 0` | PASS | Todo reasons left in the run: F1a-T12 13, F1a-T13b 27, F1a-T14 22, F1a-T18 1, F1c-T07 12, F1c-T08 10, F1c-T11 1 |
+| Golden replay 0 diffs | PASS | `replay 1/1: 61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02`, exit 0 |
+| Real-browser re-check | PASS | 210/210 checks (below) |
+
+### Acceptance tests changed or added (`tests/acceptance/F1c.test.js`)
+
+| Test | Covers | Result |
+|---|---|---|
+| "FR-050 catch events: …" (old → new per T16) | FR-050, B21, Am. 4, W-S6 | pass |
+| "US1.13 a skipped stop is not scored: notGraded at the reveal, not counted in misses, stored in notGradedStatementIds" (new) | US1.13, FR-009a, PD-5. Also: a skip that would have been a false interruption keeps `cleanPass` | pass |
+| "US1.14 a new stopId after a late hit is a new stop (false interruption); Try again with the same stopId returns the stored body with no events" (new) | US1.14, FR-008, PD-6, W-S1. `stopId` is stored when sent; a request without `stopId` keeps the rev-2 rule | pass |
+| "edge: skipped validation 400 (not an array, 21 entries, a non-object entry, an unknown statementId); a repeat complete ignores skipped" (new) | FR-009a validation: 11 bad shapes, including `__proto__`. Rejected requests write nothing. 20 entries is OK and `null` is OK. A repeat complete ignores a valid, an invalid or a 30-entry `skipped` | pass |
+| "edge: a malformed stopId is 400; the same stopId on another statement is 400" (new) | FR-008: 10 malformed values (7 and 65 chars, space, dot, non-ASCII, empty, number, object, array, boolean). 8 and 64 chars are accepted. Rejected requests write nothing, and the server stays up | pass |
+| "edge: assist after complete writes no event" (new) | W-S3 | pass |
+| 24 other T04 tests, SC-003, SC-012 | todo markers removed | all pass |
+
+The new tests are marked as passing without a `todo: 'F1c-T13'` step, because T13 was already on the branch when I wrote them. **Mutation check (they bite):** I ran the same file on a scratch copy of HEAD with `server/services/practice.js` from `303dbe8` (before T13). All 5 new tests fail there and nothing else does. With `practice-matcher.js` from `303dbe8` (`matcher@1`) as well, SC-003, SC-012, US1.5 and US1.11 also fail. FR-050 passes on both copies, as expected: Wave A already wrote the Am. 4 `graded`, and the test reads `MATCHER_VERSION`.
+
+### Regression (fresh, final working tree)
+
+- `npm test` → exit 0 · `# tests 469` · `# pass 383` · `# fail 0` · `# cancelled 0` · `# skipped 0` · `# todo 86` (the Wave A.1 baseline before my edits was `464 / 351 / 0 / 113`).
+- `node --test tests/acceptance/F1c.test.js` → `# tests 67 · # pass 44 · # fail 0 · # todo 23` (T07 12, T08 10, T11 1).
+- Ticket unit tests: `practice-catch` 31/31; `practice-matcher` + `practice-web-state` 46/46 (`# fail 0`).
+- `node tests/golden/run.mjs --replay` → exit 0 · `replay 1/1: 61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02` (run twice, same digest).
+- File scope: `git diff --stat 303dbe8 HEAD` touches 13 files, each inside its ticket's Files line (T12 2, T13 2, T14 5, T15 4). `web/practice/api.js`, `web/index.html` and `web/app.js` are untouched, and there is no `innerHTML` in `web/practice/*.js`.
+- Orphan check: no `server/index.js` process was added by `npm test` or by my browser runs. Three orphaned test servers (PPID 1, started 03:40:05–03:40:08, before this session, `PORT=0 DB_PATH=:memory:`) were already running. I didn't start them and didn't kill them. They are probably left over from an engineer's earlier `npm test`.
+
+### AI quality tables (`matcher@2`)
+
+SC-003, accept-pack labelled set (48 rows):
+```
+class             met       partial   not_met   uncertain
+clear             12        0         0         0
+incorrect         0         0         9         0
+partial           0         11        0         0
+valid-alternative 8         0         0         0
+should-flag       0         0         0         8
+clear → met (100%): 100%
+incorrect → met (0%): 0%
+valid-alternative → not_met (0%): 0%
+valid-alternative → expected (≥ 75%): 100%
+partial → partial or uncertain (≥ 80%): 100%
+should-flag → uncertain (≥ 80%): 100%
+clear + incorrect → uncertain (≤ 20%): 0%
+```
+SC-012, module-1 `qaRows` (research drafts, `draftSynonyms`):
+```
+matcher@2 m1-catch-01-context-window s2 keyword-list: expected partial, actual partial (explanation partial, correction partial)
+matcher@2 m1-catch-04-embeddings s6 keyword-list: expected partial, actual partial (explanation partial, correction partial)
+matcher@2 m1-catch-08-design-tradeoffs s5 keyword-list: expected partial, actual partial (explanation partial, correction partial)
+matcher@2 m1-catch-04-embeddings s6 short-correct: expected met, actual met (explanation met, correction met)
+matcher@2 m1-catch-02-rag-vs-finetune s3 short-correct: expected met, actual met (explanation met, correction met)
+matcher@2 m1-catch-05-structured-outputs s3 short-correct: expected met, actual met (explanation met, correction met)
+matcher@2 m1-catch-08-design-tradeoffs s5 short-correct: expected met, actual met (explanation met, correction met)
+```
+Validity, re-run by me on `matcher@1` from `303dbe8`: every keyword-list row is `partial` and every short-correct row is `partial`. This is identical to the T15 record above.
+
+### Real-browser re-check (Chromium 1194, Playwright, real server)
+
+**Setup:**
+- Server: `PRACTICE_PACKS_DIR=tests/fixtures/practice PORT=0 npm run mock`, with a temp `DB_PATH`. The event log was read from that file after each step.
+- Speech: `tests/golden/browser-stubs.js` plus the FR-035 probe (each spoken text must equal the `textContent` of an element on the page).
+- Failure injection: an in-page `fetch` wrapper. `reject` means the request never leaves; `lose` means the server handles the request and the response is lost. Because of this, the browser logs no "Failed to load resource" line of its own, and the console check runs **with no filter**.
+- A separate pass used real `route.abort` and `context.setOffline` to confirm that real network failures behave the same.
+- Script: `<scratchpad>/e2e-waveA1.mjs` (scratch, not committed). The server and browser were killed at the end.
+
+**Result:** run 1 and run 2 (separate servers and DBs) both gave `checks 210 pass 210 fail 0`, exit 0, with 0 error or warning lines in the server log. The results were identical, so the check is deterministic.
+
+| Scenario (both text and voice) | Width | Flow | Result |
+|---|---|---|---|
+| fresh first context | 1280 | first `/practice.html` load in a new browser | no `/favicon.ico` request (PD-8); 0 console errors |
+| plan A: `text-1280`, `voice-1280`, `text-390-skip`, `voice-390-skip` | 1280, 390 | false interruption (Space) on s2 → s3 stop, **response lost** → `err.net`, answer kept → **Try again** → s5 stop, **request fails** → **Skip this stop** → reveal → **rating failures** → Next → catch-clean `end.clean` | all pass |
+| plan B: `text-390`, `voice-390`, `text-1280-restop`, `voice-1280-restop` | 390, 1280 | false interruption on s2 → **late hit** on s4 (→ s3) → s4 replays → **stop on s4 again** → assist → hit s5 → reveal → rating failures → Next → clean pass | all pass |
+| real network (`realnet-text-1280`) | 1280 | `route.abort` on a stop → Skip → reveal; `setOffline` → rating → back online → Try again | all pass; the 2 console lines are the browser's own log of the 2 injected failures (`net::ERR_INTERNET_DISCONNECTED`) |
+
+**What was checked:**
+- **US1.13 / US2.10 (W-B2):**
+  - `complete` carries `{"lastStatementId":"s6","skipped":[{"statementId":"s5","elapsedMs":39}]}`.
+  - The summary reads "Caught 1 of 2. Missed 0. Stopped on 1 accurate statement.".
+  - `#missed-list` has exactly one line, equal to `missedLine({…, notGraded: true})`, starting "Not scored, you skipped this stop: ".
+  - No "Missed:" text appears anywhere in the reveal.
+  - The `completed` event has `notGradedStatementIds ["s5"]`, `missedStatementIds []` and `skippedStatementIds ["s5"]`.
+  - No `stopped` event is written for s5.
+  - Voice: `err.net` is spoken exactly as shown, and the not-graded line is spoken exactly as shown, after `sum.line`.
+- **US1.14 (stopId):**
+  - Try again re-sends the same `stopId` (a UUID, which matches `^[A-Za-z0-9_-]{8,64}$`).
+  - The retry body is identical to the lost body.
+  - The log has one `stopped` for s3, carrying that `stopId`.
+  - Stopping again on the replayed s4 sends a new `stopId`, gets `false_interruption` and shows `fb.false`. The log has 2 triples on s4, and the second `graded` has `outcome: false_alarm`, `overall: null`.
+  - The summary reads "Caught 2 of 2. Missed 0. Stopped on 2 accurate statements.".
+  - With nothing skipped, `complete` carries no `skipped` key.
+- **US1.15 / US2.11 (PD-7):**
+  - A failed rating shows `p.rate-error` (`role="status"`, text `err.rate`) and `button.rate-retry` ("Try again"), and `aria-pressed` doesn't change.
+  - Two failures in a row still leave one error and one retry button.
+  - Try again re-posts `partly` → 200, `aria-pressed="true"`, and the error is removed.
+  - A failed change to `had_it` keeps `partly` pressed, and retrying it succeeds.
+  - Voice: `err.rate` is spoken exactly as shown.
+- **The Wave A flows again:** false interruption, hit, late hit, assist (`assisted: true` only after it), reveal, self-rating, Next → picker, and the zero-planted `end.clean`. The SC-001 key-level leak scan is clean over every pre-complete response (8 per plan-B run).
+- **Every scenario:**
+  - FR-035: 29 to 32 utterances per voice run, each shown verbatim.
+  - Text mode: 0 utterances.
+  - No `/favicon.ico` request.
+  - **0 console errors, no filter.**
+  - No horizontal overflow (`scrollWidth ≤ innerWidth`) at 390 and 1280.
+
+**Observation (not filed):** the not-scored line has the same red left border as a "Missed" line (`voice-390-skip-04-reveal-not-scored.png`). The spec doesn't define its style, and the text is right. Passed to the learning-designer's LR-10 review as a suggestion: a neutral border would match "not scored".
+
+**Screenshots** (`/tmp/claude-0/-home-user/0355a50c-9f07-57a8-b4c8-1ac26d9678c5/scratchpad/f1c-t16/`, 58 files):
+- plan A, `{text,voice}-1280-*` and `{text,voice}-390-skip-*`: `01-narration`, `02-net-error-lost-response`, `03-net-error-skip-offered`, `04-reveal-not-scored`, `07-rate-error`, `08-rate-ok`, `09-clean-pass`;
+- plan B, `{text,voice}-390-*` and `{text,voice}-1280-restop-*`: `01-narration`, `02-late-hit`, `03-second-stop-false`, `04-reveal`, `07-rate-error`, `08-rate-ok`, `09-clean-pass`;
+- `realnet-text-1280-rate-error-offline.png`;
+- `bug-21-skips-text-1280-complete-400-try-again.png` (F1c-B23).
+
+### Invariant checks
+
+- **Inv. 2 (answers before grading):** the browser key-level leak scan is clean in every run. The API leak tests (US1.1, US1.3) pass.
+- **Inv. 6 (append-only):** every rejected `complete` or `stop` (bad `skipped`, bad `stopId`, `stopId` on another statement) writes nothing. Repeats write nothing. `completed` is written once, even after 3 repeat calls with different bodies.
+- **Inv. 7 (malformed input):** 21 malformed `skipped` and `stopId` values return 400, and the server stays up. In the client, F1c-B23 is a stall, but only after more than 20 skips.
+- **Inv. 9 (spoken equals shown):** the FR-035 probe passes, including the new `missed.notGraded`, `err.net` and `err.rate` lines.
+
+### Bugs
+
+- **Closed at verify:** F1c-B20 (SC-003, US1.5 and US1.11 pass on `matcher@2`). F1c-B21 (the FR-050 test follows the ruling). W-B2 (US1.13 passes, in the API test and in the browser).
+- **New: F1c-B23 [minor]**, "More than 20 skips in one exercise: `complete` returns 400 and the page offers a 'Try again' that can never succeed". Owner: the PM chooses the policy, then frontend-engineer. It doesn't block, because it needs 21 failed stop requests in one exercise (catch exercises have 2 to 8 statements), corrupts nothing, and a reload recovers. Root cause: `complete()` maps every error, including a 4xx, to `err.net` and an endless retry.

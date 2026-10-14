@@ -290,10 +290,9 @@ test('SC-010 invalid practice pack: server up, one [practice] warning, listSubje
 // F1c-T03: SC-003 matcher thresholds on the QA-labelled set
 // =============================================================================================
 
-// Runs for real (T03 is merged) and prints the confusion table. It stays a todo on F1c-T03 because the
-// matcher misses two thresholds (bug F1c-B20, FR-019 stuffing cap on concise correct answers); QA removes
-// the marker when B20 is fixed and this passes.
-test('SC-003 labelled set thresholds', { todo: 'F1c-T03' }, async t => {
+// Prints the confusion table. The F1c-T03 todo was removed at F1c-T16 (2026-10-14): matcher@2 (F1c-T12)
+// fixes F1c-B20 and this passes on the enlarged set (F1c-T15).
+test('SC-003 labelled set thresholds', async t => {
   const { matcherGrade, combineOverall, MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
   const lexicon = PACK.manifest.lexicon;
   const rows = readLabelled().map(r => {
@@ -345,7 +344,7 @@ test('SC-003b module-1 labelled set thresholds', { todo: 'F1c-T11' }, async t =>
 
 // Gate for F1c-T12's merge. Validity (spec SC-012): under matcher@1 every short-correct row came out
 // partial, so these rows exercise FR-019(a); the run is recorded in qa-report.md "Wave A.1".
-test('SC-012 FR-019 on module-1 wording: keyword lists partial, short correct sentences met (research drafts, draftSynonyms)', { todo: 'F1c-T12' }, async t => {
+test('SC-012 FR-019 on module-1 wording: keyword lists partial, short correct sentences met (research drafts, draftSynonyms)', async t => {
   const { matcherGrade, combineOverall, MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
   const m1 = readM1Labelled();
   const lexicon = { synonyms: m1.draftSynonyms };
@@ -367,7 +366,7 @@ test('SC-012 FR-019 on module-1 wording: keyword lists partial, short correct se
 // F1c-T04: catch attempt API (US1, US6.3, server edge cases)
 // =============================================================================================
 
-test('US1.1 start returns narration only (leak scan)', { todo: 'F1c-T04' }, async () => {
+test('US1.1 start returns narration only (leak scan)', async () => {
   const A = await sharedApi();
   const r = await A.start('catch-lines');
   const body = ok(r, 'start');
@@ -381,7 +380,7 @@ test('US1.1 start returns narration only (leak scan)', { todo: 'F1c-T04' }, asyn
   for (const p of LINES.answerKey.planted) assert.ok(!r.text.includes(p.whyWrong) && !r.text.includes(p.acceptableCorrections[0]), 'answer text in start body');
 });
 
-test('US1.2 hit met', { todo: 'F1c-T04' }, async () => {
+test('US1.2 hit met', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   const r = await A.stop(attemptId, { statementId: 's3', elapsedMs: 900, answer: A_S3_MET, via: 'button', stopLatencyMs: null });
@@ -399,7 +398,7 @@ test('US1.2 hit met', { todo: 'F1c-T04' }, async () => {
   assert.ok(!hasNumber(body.result), 'no numeric score is returned (FR-013)');
 });
 
-test('US1.3 false interruption returns nothing about other statements', { todo: 'F1c-T04' }, async () => {
+test('US1.3 false interruption returns nothing about other statements', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   const r = await A.stop(attemptId, { statementId: 's2', elapsedMs: 3000, answer: 'braided line stretches more', via: 'key', stopLatencyMs: 12 });
@@ -411,7 +410,7 @@ test('US1.3 false interruption returns nothing about other statements', { todo: 
   }
 });
 
-test('US1.4 late hit inside 2000 ms; same stop at 2001 ms is a false interruption', { todo: 'F1c-T04' }, async () => {
+test('US1.4 late hit inside 2000 ms; same stop at 2001 ms is a false interruption', async () => {
   const A = await sharedApi();
   for (const [elapsedMs, detection] of [[1500, 'late_hit'], [2000, 'late_hit'], [2001, 'false_interruption'], [0, 'late_hit']]) {
     const { attemptId } = await begin(A, 'catch-lines');
@@ -435,7 +434,7 @@ test('US1.4 late hit inside 2000 ms; same stop at 2001 ms is a false interruptio
   assert.equal(again.attributedStatementId, 's4');
 });
 
-test('US1.5 valid alternative correction met', { todo: 'F1c-T04' }, async () => {
+test('US1.5 valid alternative correction met', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   const body = await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_ALT });
@@ -457,7 +456,7 @@ test('US1.6 long unmatched answer is uncertain, flagged in progress', { todo: 'F
   assert.equal(line.independent.n, 0, 'uncertain is excluded from mastery (FR-052)');
 });
 
-test('US1.7 complete reveals missed statements, reference, sources and rubrics; answered stops are self-ratable', { todo: 'F1c-T04' }, async () => {
+test('US1.7 complete reveals missed statements, reference, sources and rubrics; answered stops are self-ratable', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET });
@@ -484,7 +483,7 @@ test('US1.7 complete reveals missed statements, reference, sources and rubrics; 
   assert.equal((await A.selfRate(attemptId, { part: 'stop:s3', rating: 'great' })).status, 400, 'unknown rating');
 });
 
-test('US1.8 zero-planted clean pass', { todo: 'F1c-T04' }, async () => {
+test('US1.8 zero-planted clean pass', async () => {
   const A = await sharedApi();
   const { attemptId, exercise } = await begin(A, 'catch-clean');
   assert.equal(exercise.narration.length, 4);
@@ -499,7 +498,7 @@ test('US1.8 zero-planted clean pass', { todo: 'F1c-T04' }, async () => {
   assert.equal(spoiled.summary.falseInterruptions, 1);
 });
 
-test('US1.9 assisted only after assist', { todo: 'F1c-T04' }, async () => {
+test('US1.9 assisted only after assist', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   assert.equal((await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET })).assisted, false);
@@ -511,7 +510,7 @@ test('US1.9 assisted only after assist', { todo: 'F1c-T04' }, async () => {
   assert.deepEqual(done.answered.map(x => x.part), ['stop:s3', 'stop:s5']);
 });
 
-test('US1.11 negated correction against a negated rubric item is met, not uncertain', { todo: 'F1c-T04' }, async () => {
+test('US1.11 negated correction against a negated rubric item is met, not uncertain', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   const body = await stopOk(A, attemptId, { statementId: 's5', answer: A_S5_NEGATED });
@@ -521,7 +520,7 @@ test('US1.11 negated correction against a negated rubric item is met, not uncert
   assert.equal(body.result.overall, 'met');
 });
 
-test('US6.3 diagnostic attempt: no assist; only schedule.diagnostic ids; bad mode 400', { todo: 'F1c-T04' }, async () => {
+test('US6.3 diagnostic attempt: no assist; only schedule.diagnostic ids; bad mode 400', async () => {
   const A = await sharedApi();
   const diag = await begin(A, 'catch-lines', { mode: 'diagnostic' });
   assert.equal(diag.assistAllowed, false);
@@ -532,7 +531,7 @@ test('US6.3 diagnostic attempt: no assist; only schedule.diagnostic ids; bad mod
   assert.equal(ok(await A.start('catch-lines', { mode: 'review' }), 'review mode').assistAllowed, true);
 });
 
-test('FR-055 tracks list and track detail', { todo: 'F1c-T04' }, async () => {
+test('FR-055 tracks list and track detail', async () => {
   const A = await sharedApi();
   const list = ok(await A.tracks(), 'tracks');
   assert.deepEqual(list, [{ id: TRACK, title: 'Kite Craft', version: 1 }]);
@@ -549,7 +548,10 @@ test('FR-055 tracks list and track detail', { todo: 'F1c-T04' }, async () => {
   noLeak(detail, LEAK_ALLOW.other, 'track');
 });
 
-test('FR-050 catch events: one stopped/explained/graded append per stop, completed once, engine practice, self-rated carries part', { todo: 'F1c-T04' }, async t => {
+// Revision 3 (F1c-B21 ruling, ADR 0002 Am. 4): a false interruption also writes `graded`, with overall null
+// and outcome false_alarm. F1c-T16 (W-S6): graderVersion is MATCHER_VERSION, not a hard-coded 'matcher@1'.
+test('FR-050 catch events: one stopped/explained/graded append per stop, completed once, engine practice, self-rated carries part', async t => {
+  const { MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
   const { A, dbPath } = await fresh(t, { db: true });
   const { attemptId } = await begin(A, 'catch-lines');
   await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET, via: 'voice', stopLatencyMs: 40 });
@@ -558,9 +560,11 @@ test('FR-050 catch events: one stopped/explained/graded append per stop, complet
   await A.complete(attemptId, { lastStatementId: 's6' });
   await A.selfRate(attemptId, { part: 'stop:s3', rating: 'partly' });
   const ev = eventsFor(dbPath, attemptId);
-  assert.deepEqual(ev.map(e => e.verb), ['started', 'stopped', 'explained', 'graded', 'stopped', 'explained', 'completed', 'self-rated']);
-  const seqs = ev.slice(1, 4).map(e => e.seq);
-  assert.deepEqual(seqs, [seqs[0], seqs[0] + 1, seqs[0] + 2], 'one append, in seq order');
+  assert.deepEqual(ev.map(e => e.verb), ['started', 'stopped', 'explained', 'graded', 'stopped', 'explained', 'graded', 'completed', 'self-rated']);
+  for (const [from, label] of [[1, 'hit'], [4, 'false interruption']]) {
+    const seqs = ev.slice(from, from + 3).map(e => e.seq);
+    assert.deepEqual(seqs, [seqs[0], seqs[0] + 1, seqs[0] + 2], `${label}: one append, in seq order`);
+  }
   for (const e of ev) {
     assert.equal(e.context.engine, 'practice');
     assert.equal(e.context.subject, `${TRACK}@1`);
@@ -574,15 +578,20 @@ test('FR-050 catch events: one stopped/explained/graded append per stop, complet
   const [stopped, , graded] = ev.slice(1, 4);
   assert.deepEqual(stopped.result, { attributedStatementId: 's3', detection: 'hit', elapsedMs: 800, via: 'voice', stopLatencyMs: 40 });
   assert.equal(graded.result.graderSource, 'matcher');
-  assert.equal(graded.result.graderVersion, 'matcher@1');
+  assert.equal(graded.result.graderVersion, MATCHER_VERSION);
   assert.equal(graded.result.assisted, false);
   assert.equal(graded.result.outcome, 'caught');
+  // The false interruption's graded records a detection, not a grade (spec "Events and metrics", exact shape).
+  const [stopped2, , graded2] = ev.slice(4, 7);
+  assert.equal(stopped2.result.detection, 'false_interruption');
+  assert.equal(graded2.object.statement, 's4');
+  assert.deepEqual(graded2.result, { dimensions: {}, overall: null, outcome: 'false_alarm', assisted: false, confidence: 'high', graderSource: 'matcher', graderVersion: MATCHER_VERSION, latencyMs: 0 });
   const rated = ev.at(-1);
   assert.equal(rated.object.part, 'stop:s3');
-  assert.deepEqual(rated.result, { rating: 'partly', matcherStatus: 'met', graderVersion: 'matcher@1' });
+  assert.deepEqual(rated.result, { rating: 'partly', matcherStatus: 'met', graderVersion: MATCHER_VERSION });
 });
 
-test('edge: repeat stop identical body, no new events', { todo: 'F1c-T04' }, async t => {
+test('edge: repeat stop identical body, no new events', async t => {
   const { A, dbPath } = await fresh(t, { db: true });
   const { attemptId } = await begin(A, 'catch-lines');
   const first = await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET });
@@ -592,14 +601,14 @@ test('edge: repeat stop identical body, no new events', { todo: 'F1c-T04' }, asy
   assert.equal(allEvents(dbPath).length, n, 'a repeat writes no events (FR-008)');
 });
 
-test('edge: stop after complete 409', { todo: 'F1c-T04' }, async () => {
+test('edge: stop after complete 409', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   ok(await A.complete(attemptId, { lastStatementId: 's2' }), 'complete');
   assert.equal((await A.stop(attemptId, { statementId: 's3', elapsedMs: 100, answer: A_S3_MET })).status, 409);
 });
 
-test('edge: att_ id on practice routes 404', { todo: 'F1c-T04' }, async () => {
+test('edge: att_ id on practice routes 404', async () => {
   const A = await sharedApi();
   for (const id of ['att_01J00000000000000000000000', 'pra_01J00000000000000000000000', 'nope']) {
     for (const [route, body] of [['stops', { statementId: 's1', elapsedMs: 1, answer: 'x' }], ['assist', {}], ['complete', {}],
@@ -611,7 +620,7 @@ test('edge: att_ id on practice routes 404', { todo: 'F1c-T04' }, async () => {
   }
 });
 
-test('edge: unknown track, exercise or attempt 404', { todo: 'F1c-T04' }, async () => {
+test('edge: unknown track, exercise or attempt 404', async () => {
   const A = await sharedApi();
   assert.equal((await A.track('nope')).status, 404);
   assert.equal((await A.track('__proto__')).status, 404);
@@ -620,7 +629,7 @@ test('edge: unknown track, exercise or attempt 404', { todo: 'F1c-T04' }, async 
   assert.equal((await A.start('toString')).status, 404);
 });
 
-test('edge: 413 and 400', { todo: 'F1c-T04' }, async () => {
+test('edge: 413 and 400', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   for (const p of ['/api/practice/attempts', `/api/practice/attempts/${attemptId}/stops`]) {
@@ -634,7 +643,7 @@ test('edge: 413 and 400', { todo: 'F1c-T04' }, async () => {
   assert.equal((await A.tracks()).status, 200, 'server still up');
 });
 
-test('edge: stop on an unknown statement, an earlier statement or a non-catch attempt is 400', { todo: 'F1c-T04' }, async () => {
+test('edge: stop on an unknown statement, an earlier statement or a non-catch attempt is 400', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   assert.equal((await A.stop(attemptId, { statementId: 'zz', elapsedMs: 1, answer: 'x' })).status, 400);
@@ -645,7 +654,7 @@ test('edge: stop on an unknown statement, an earlier statement or a non-catch at
   assert.equal((await A.stop(learn.attemptId, { statementId: 's1', elapsedMs: 1, answer: 'x' })).status, 400, 'US3.2: no stops in learn');
 });
 
-test('edge: empty answer is not_met; an answer over 2000 chars is truncated and chars keeps its length', { todo: 'F1c-T04' }, async t => {
+test('edge: empty answer is not_met; an answer over 2000 chars is truncated and chars keeps its length', async t => {
   const { A, dbPath } = await fresh(t, { db: true });
   const one = await begin(A, 'catch-lines');
   const empty = await stopOk(A, one.attemptId, { statementId: 's3', answer: '' });
@@ -659,7 +668,7 @@ test('edge: empty answer is not_met; an answer over 2000 chars is truncated and 
   assert.equal(explained.result.chars, long.length);
 });
 
-test('edge: elapsedMs missing, negative or non-integer gives no grace attribution', { todo: 'F1c-T04' }, async () => {
+test('edge: elapsedMs missing, negative or non-integer gives no grace attribution', async () => {
   const A = await sharedApi();
   for (const elapsedMs of [undefined, -5, 1.5, '100', null]) {
     const { attemptId } = await begin(A, 'catch-lines');
@@ -671,7 +680,7 @@ test('edge: elapsedMs missing, negative or non-integer gives no grace attributio
   assert.equal((await stopOk(A, attemptId, { statementId: 's2', elapsedMs: 300, answer: 'x y z' })).detection, 'false_interruption');
 });
 
-test('edge: early complete: planted statements after lastStatementId are notReached, not missed', { todo: 'F1c-T04' }, async () => {
+test('edge: early complete: planted statements after lastStatementId are notReached, not missed', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   const done = ok(await A.complete(attemptId, { lastStatementId: 's4' }), 'complete');
@@ -681,7 +690,7 @@ test('edge: early complete: planted statements after lastStatementId are notReac
   assert.equal(done.summary.cleanPass, false);
 });
 
-test('edge: complete is idempotent and writes completed once', { todo: 'F1c-T04' }, async t => {
+test('edge: complete is idempotent and writes completed once', async t => {
   const { A, dbPath } = await fresh(t, { db: true });
   const { attemptId } = await begin(A, 'catch-lines');
   await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET });
@@ -691,7 +700,7 @@ test('edge: complete is idempotent and writes completed once', { todo: 'F1c-T04'
   assert.equal(eventsFor(dbPath, attemptId).filter(e => e.verb === 'completed').length, 1);
 });
 
-test('edge: self-rating before complete, or for a part with no answer, is 400', { todo: 'F1c-T04' }, async () => {
+test('edge: self-rating before complete, or for a part with no answer, is 400', async () => {
   const A = await sharedApi();
   const { attemptId } = await begin(A, 'catch-lines');
   await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET });
@@ -701,7 +710,7 @@ test('edge: self-rating before complete, or for a part with no answer, is 400', 
   assert.equal((await A.selfRate(attemptId, { part: 'stop:zz', rating: 'had_it' })).status, 400, 'unknown part');
 });
 
-test('edge: assist is idempotent: same reference, one assisted event', { todo: 'F1c-T04' }, async t => {
+test('edge: assist is idempotent: same reference, one assisted event', async t => {
   const { A, dbPath } = await fresh(t, { db: true });
   const { attemptId } = await begin(A, 'catch-lines');
   const one = ok(await A.assist(attemptId), 'assist 1');
@@ -712,7 +721,7 @@ test('edge: assist is idempotent: same reference, one assisted event', { todo: '
   assert.deepEqual(assisted[0].result, { kind: 'reference' });
 });
 
-test('edge: invalid practice pack: server up, one [practice] warning, tracks omit it, no [packs] warning', { todo: 'F1c-T04' }, async t => {
+test('edge: invalid practice pack: server up, one [practice] warning, tracks omit it, no [packs] warning', async t => {
   const dir = mkdtempSync(path.join(tmpdir(), 'f1c-badpack-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   cpSync(ACCEPT_PACK_DIR, path.join(dir, 'kite-craft'), { recursive: true });
@@ -724,6 +733,117 @@ test('edge: invalid practice pack: server up, one [practice] warning, tracks omi
   assert.equal(out.split('\n').filter(l => l.startsWith('[practice]')).length, 1, out);
   assert.ok(!out.includes('[packs]'), out);
   assert.ok(srv.alive());
+});
+
+// =============================================================================================
+// F1c-T13 / F1c-T16 (Wave A.1): skipped stops, stopId repeats, assist after complete (FR-008, FR-009a,
+// ADR 0002 Am. 4, PD-5, PD-6, W-S1, W-S3). Written by QA from spec revision 3.
+// =============================================================================================
+
+// A skipped stop's request never reached the server: the client reports it only in `complete`.
+test('US1.13 a skipped stop is not scored: notGraded at the reveal, not counted in misses, stored in notGradedStatementIds', async t => {
+  const { A, dbPath } = await fresh(t, { db: true });
+  const { attemptId } = await begin(A, 'catch-lines');
+  const done = ok(await A.complete(attemptId, { lastStatementId: 's6', skipped: [{ statementId: 's3', elapsedMs: 900 }] }), 'complete');
+  const p3 = planted('s3');
+  const p5 = planted('s5');
+  assert.deepEqual(done.missed, [
+    { statementId: 's3', text: narr(LINES, 's3'), misconception: p3.misconception, whyWrong: p3.whyWrong, exceptions: p3.exceptions, correctedText: p3.acceptableCorrections[0], notGraded: true },
+    { statementId: 's5', text: narr(LINES, 's5'), misconception: p5.misconception, whyWrong: p5.whyWrong, exceptions: p5.exceptions, correctedText: p5.acceptableCorrections[0] }
+  ], 'missed[] is narration order; only the not-graded item carries notGraded');
+  assert.deepEqual(done.summary, { planted: 2, hits: 0, lateHits: 0, misses: 1, falseInterruptions: 0, notReached: 0, cleanPass: false, flagged: 0 });
+  const completed = eventsFor(dbPath, attemptId).filter(e => e.verb === 'completed');
+  assert.equal(completed.length, 1);
+  const r = completed[0].result;
+  assert.deepEqual([r.missedStatementIds, r.notGradedStatementIds, r.skippedStatementIds, r.notReachedStatementIds], [['s5'], ['s3'], ['s3'], []]);
+  assert.deepEqual(eventsFor(dbPath, attemptId).map(e => e.verb), ['started', 'completed'], 'a skip writes no stop events');
+  // A skip that would have been a false interruption on a clean exercise changes no count: cleanPass holds.
+  const clean = await begin(A, 'catch-clean');
+  const cleanDone = ok(await A.complete(clean.attemptId, { lastStatementId: 's4', skipped: [{ statementId: 's2', elapsedMs: 5000 }] }), 'complete clean');
+  assert.equal(cleanDone.summary.cleanPass, true);
+  assert.deepEqual(cleanDone.missed, []);
+});
+
+test('US1.14 a new stopId after a late hit is a new stop (false interruption); Try again with the same stopId returns the stored body with no events', async t => {
+  const { MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
+  const { A, dbPath } = await fresh(t, { db: true });
+  const { attemptId } = await begin(A, 'catch-lines');
+  const late = await stopOk(A, attemptId, { statementId: 's4', elapsedMs: 800, answer: A_S3_MET, stopId: 'stop-aaaa-0001' });
+  assert.equal(late.detection, 'late_hit');
+  assert.equal(late.attributedStatementId, 's3');
+  // s4 replays; the learner stops on s4 again (a new STOP press, so a new stopId).
+  const again = await stopOk(A, attemptId, { statementId: 's4', elapsedMs: 800, answer: 'it is wrong', stopId: 'stop-bbbb-0002' });
+  assert.deepEqual(again, { statementId: 's4', attributedStatementId: 's4', detection: 'false_interruption', assisted: false, result: null, reveal: null });
+  const ev = eventsFor(dbPath, attemptId);
+  assert.deepEqual(ev.map(e => e.verb), ['started', 'stopped', 'explained', 'graded', 'stopped', 'explained', 'graded']);
+  assert.deepEqual(ev.filter(e => e.verb === 'stopped').map(e => e.result.stopId), ['stop-aaaa-0001', 'stop-bbbb-0002'], 'stopId stored when sent');
+  assert.deepEqual(ev.at(-1).result, { dimensions: {}, overall: null, outcome: 'false_alarm', assisted: false, confidence: 'high', graderSource: 'matcher', graderVersion: MATCHER_VERSION, latencyMs: 0 });
+  // Try again after a lost response re-sends the same stopId (and the same answer): stored body, no events.
+  const n = allEvents(dbPath).length;
+  assert.deepEqual(await stopOk(A, attemptId, { statementId: 's4', elapsedMs: 800, answer: 'it is wrong', stopId: 'stop-bbbb-0002' }), again);
+  assert.deepEqual(await stopOk(A, attemptId, { statementId: 's4', elapsedMs: 800, answer: A_S3_MET, stopId: 'stop-aaaa-0001' }), late);
+  // Without a stopId the revision-2 rule holds: the latest stop on the statement.
+  assert.deepEqual(await stopOk(A, attemptId, { statementId: 's4', answer: 'x' }), again);
+  assert.equal(allEvents(dbPath).length, n, 'repeats write no events (FR-008)');
+  const done = ok(await A.complete(attemptId, { lastStatementId: 's6' }), 'complete');
+  assert.deepEqual([done.summary.lateHits, done.summary.falseInterruptions, done.summary.misses], [1, 1, 1]);
+});
+
+test('edge: skipped validation 400 (not an array, 21 entries, a non-object entry, an unknown statementId); a repeat complete ignores skipped', async t => {
+  const { A, dbPath } = await fresh(t, { db: true });
+  const { attemptId } = await begin(A, 'catch-lines');
+  const s = id => ({ statementId: id, elapsedMs: 100 });
+  const bads = {
+    'an object': { statementId: 's3' }, 'a string': 's3', 'a number': 3, '21 entries': Array.from({ length: 21 }, () => s('s1')),
+    'a string entry': ['s3'], 'a null entry': [null], 'an array entry': [['s3']], 'an unknown statementId': [s('zz')],
+    'a missing statementId': [{ elapsedMs: 100 }], 'a non-string statementId': [{ statementId: 3 }], 'a prototype key': [s('__proto__')]
+  };
+  for (const [label, skipped] of Object.entries(bads)) {
+    const r = await A.complete(attemptId, { lastStatementId: 's6', skipped });
+    assert.equal(r.status, 400, `${label}: ${r.status} ${r.text}`);
+    assert.equal(typeof r.json?.error, 'string', label);
+  }
+  assert.deepEqual(eventsFor(dbPath, attemptId).map(e => e.verb), ['started'], 'a rejected complete writes nothing');
+  // 20 entries is the limit, not over it; null reads as absent.
+  const twenty = await begin(A, 'catch-lines');
+  ok(await A.complete(twenty.attemptId, { lastStatementId: 's6', skipped: Array.from({ length: 20 }, () => s('s1')) }), '20 entries');
+  ok(await A.complete((await begin(A, 'catch-lines')).attemptId, { skipped: null }), 'skipped null');
+  // The first complete wins: later calls ignore skipped (even an invalid one) and lastStatementId.
+  const first = ok(await A.complete(attemptId, { lastStatementId: 's6' }), 'complete 1');
+  assert.deepEqual(first.missed.map(m => [m.statementId, m.notGraded]), [['s3', undefined], ['s5', undefined]]);
+  for (const body of [{ skipped: [s('s3')] }, { skipped: 'nope' }, { lastStatementId: 's2', skipped: Array.from({ length: 30 }, () => s('s5')) }]) {
+    assert.deepEqual(ok(await A.complete(attemptId, body), `repeat ${JSON.stringify(body).slice(0, 40)}`), first);
+  }
+  assert.equal(eventsFor(dbPath, attemptId).filter(e => e.verb === 'completed').length, 1);
+});
+
+test('edge: a malformed stopId is 400; the same stopId on another statement is 400', async t => {
+  const { A, dbPath } = await fresh(t, { db: true });
+  const { attemptId } = await begin(A, 'catch-lines');
+  for (const stopId of ['short7c', 'x'.repeat(65), 'has space1', 'dot.dot.dot', 'é-accent-x', '', 12345678, {}, ['abcdefgh'], true]) {
+    const r = await A.stop(attemptId, { statementId: 's3', elapsedMs: 100, answer: A_S3_MET, stopId });
+    assert.equal(r.status, 400, `stopId ${JSON.stringify(stopId)}: ${r.status}`);
+  }
+  assert.deepEqual(eventsFor(dbPath, attemptId).map(e => e.verb), ['started'], 'a rejected stop writes nothing');
+  // Boundaries: 8 and 64 characters are valid.
+  assert.equal((await stopOk(A, attemptId, { statementId: 's2', elapsedMs: 3000, answer: 'x', stopId: 'Ab_-0123' })).detection, 'false_interruption');
+  const s3 = await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET, stopId: 'Z'.repeat(64) });
+  assert.equal(s3.detection, 'hit');
+  const n = allEvents(dbPath).length;
+  const r = await A.stop(attemptId, { statementId: 's4', elapsedMs: 3000, answer: 'x', stopId: 'Z'.repeat(64) });
+  assert.equal(r.status, 400, `same stopId on s4: ${r.status}`);
+  assert.equal(allEvents(dbPath).length, n);
+  assert.equal(ok(await A.tracks(), 'tracks').length, 1, 'server still up');
+});
+
+test('edge: assist after complete writes no event', async t => {
+  const { A, dbPath } = await fresh(t, { db: true });
+  const { attemptId } = await begin(A, 'catch-lines');
+  ok(await A.complete(attemptId, { lastStatementId: 's6' }), 'complete');
+  const after = ok(await A.assist(attemptId), 'assist after complete');
+  assert.deepEqual(after, { assisted: true, reference: [{ id: 'lines', text: PACK.references.get('lines') }] });
+  assert.deepEqual(ok(await A.assist(attemptId), 'assist again'), after);
+  assert.deepEqual(eventsFor(dbPath, attemptId).map(e => e.verb), ['started', 'completed']);
 });
 
 // =============================================================================================
