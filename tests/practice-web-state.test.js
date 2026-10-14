@@ -6,7 +6,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { COPY } from '../web/practice/copy.js';
-import { resumeIndex, feedbackText, dimLines, rubricLines, summaryLine, missedLine, newStopId, completeRequest } from '../web/practice/state.js';
+import { resumeIndex, feedbackText, dimLines, rubricLines, summaryLine, missedLine, newStopId, completeRequest, recordSkip, errorKind } from '../web/practice/state.js';
+import { ApiError, NetworkError } from '../web/practice/api.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const WEB = path.join(ROOT, 'web');
@@ -109,6 +110,78 @@ test('completeRequest sends skipped only when non-empty and lastStatementId only
   assert.deepEqual(completeRequest(undefined, undefined), {});
 });
 
+// F1c-T17 (FR-059, F1c-B23): one skip entry per statement, so `skipped` never exceeds the narration length.
+const skip = (statementId, elapsedMs) => ({ statementId, elapsedMs });
+
+test('recordSkip keeps one entry per statement with the smallest elapsedMs, in first-skip order', () => {
+  let list = [];
+  for (const e of [skip('s1', 900), skip('s2', 50), skip('s1', 300), skip('s1', 1200)]) list = recordSkip(list, e);
+  assert.deepEqual(list, [skip('s1', 300), skip('s2', 50)]);
+});
+
+test('recordSkip never mutates its input; a non-finite elapsedMs never replaces a finite one; a missing statementId changes nothing', () => {
+  const input = Object.freeze([Object.freeze(skip('s1', 400))]);
+  const out = recordSkip(input, skip('s1', 100));
+  assert.notEqual(out, input);
+  assert.deepEqual(input, [skip('s1', 400)]);
+  assert.deepEqual(out, [skip('s1', 100)]);
+  for (const bad of [NaN, Infinity, undefined, null, '5']) {
+    assert.deepEqual(recordSkip([skip('s1', 400)], skip('s1', bad)), [skip('s1', 400)], String(bad));
+  }
+  // A finite value replaces a non-finite one.
+  assert.deepEqual(recordSkip([skip('s1', NaN)], skip('s1', 700)), [skip('s1', 700)]);
+  for (const id of [undefined, null, '', 7]) {
+    const same = recordSkip(input, skip(id, 1));
+    assert.deepEqual(same, [skip('s1', 400)], String(id));
+    assert.notEqual(same, input);
+  }
+});
+
+test('21 skips on one statement give one entry; one skip on each of 20 statements gives 20 entries', () => {
+  let one = [];
+  for (let i = 0; i < 21; i++) one = recordSkip(one, skip('s1', 1000 - i * 10));
+  assert.deepEqual(one, [skip('s1', 800)]);
+  let many = [];
+  for (let i = 1; i <= 20; i++) many = recordSkip(many, skip(`s${i}`, i));
+  assert.equal(many.length, 20);
+  assert.deepEqual(many.map(e => e.statementId), Array.from({ length: 20 }, (_, i) => `s${i + 1}`));
+});
+
+test('the client skip list fits the server cap: MAX_SKIPPED ≥ LIMITS.narration', () => {
+  // Source check, no server import: the client keeps one entry per statement (FR-059).
+  const svc = readFileSync(path.join(ROOT, 'server/services/practice.js'), 'utf8');
+  const pack = readFileSync(path.join(ROOT, 'server/services/practice-pack.js'), 'utf8');
+  const cap = svc.match(/\bMAX_SKIPPED\s*=\s*(\d+)/);
+  const limits = pack.match(/\bLIMITS\s*=\s*\{([\s\S]*?)\}/);
+  const narration = limits?.[1].match(/\bnarration\s*:\s*(\d+)/);
+  assert.ok(cap, 'MAX_SKIPPED = <n> not found in server/services/practice.js');
+  assert.ok(narration, 'LIMITS narration: <n> not found in server/services/practice-pack.js');
+  assert.ok(Number(cap[1]) >= Number(narration[1]), `MAX_SKIPPED ${cap[1]} < LIMITS.narration ${narration[1]}`);
+});
+
+// F1c-T17 (FR-060): a 4xx can't be fixed by a retry, so it is "rejected", never "net".
+test('errorKind: ApiError 400, 404, 409 and 499 are rejected; ApiError 500 and 503, NetworkError, a plain Error and undefined are net', () => {
+  for (const s of [400, 404, 409, 499]) assert.equal(errorKind(new ApiError(s, 'x')), 'rejected', String(s));
+  for (const s of [500, 503]) assert.equal(errorKind(new ApiError(s, 'x')), 'net', String(s));
+  assert.equal(errorKind(new NetworkError(new TypeError('offline'))), 'net');
+  assert.equal(errorKind(new Error('HTTP 404')), 'net');
+  assert.equal(errorKind({ status: 404 }), 'net'); // only the typed class counts
+  assert.equal(errorKind(undefined), 'net');
+});
+
+test('practice.html has a hidden #rejected panel with #rejected-msg and #picker-btn', () => {
+  const html = readFileSync(path.join(WEB, 'practice.html'), 'utf8');
+  const panel = html.match(/<section id="rejected"([^>]*)>([\s\S]*?)<\/section>/);
+  assert.ok(panel, '#rejected section not found');
+  assert.match(panel[1], /\bhidden\b/);
+  assert.match(panel[1], /role="alert"/);
+  assert.match(panel[2], /<p id="rejected-msg"><\/p>/);
+  assert.match(panel[2], /<button id="picker-btn"[^>]*type="button"/);
+  // Directly after #net-error.
+  assert.ok(html.indexOf('id="net-error"') < panel.index);
+  assert.doesNotMatch(html.slice(html.indexOf('id="net-error"'), panel.index), /<section /);
+});
+
 test('newStopId is unique per call and matches the server pattern', () => {
   const ids = Array.from({ length: 200 }, () => newStopId());
   for (const id of ids) assert.match(id, /^[A-Za-z0-9_-]{8,64}$/);
@@ -167,7 +240,9 @@ test('copy strings equal the spec table', () => {
     'src.unverified': '(not yet verified)',
     'missed.notGraded': 'Not scored, you skipped this stop: {text} {whyWrong} Corrected: {correctedText}',
     'err.rate': "Couldn't save your rating. Try again.",
-    'btn.retry': 'Try again'
+    'btn.retry': 'Try again',
+    'err.rejected': 'The server can\'t continue this exercise, and trying again won\'t help. Say "back" or press Back to exercises.',
+    'btn.picker': 'Back to exercises'
   };
   assert.deepEqual({ ...COPY, 'selfrate.options': { ...COPY['selfrate.options'] } }, expected);
   assert.ok(Object.isFrozen(COPY) && Object.isFrozen(COPY['selfrate.options']));

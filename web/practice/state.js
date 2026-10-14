@@ -2,6 +2,7 @@
 // The browser never decides detection or grades (FR-005); these only turn
 // server responses into the exact strings that are shown and spoken.
 import { COPY } from './copy.js';
+import { ApiError } from './api.js';
 
 // Single pass, so a value containing "{x}" is never filled again.
 export function fill(template, vars) {
@@ -87,6 +88,27 @@ export function completeRequest(lastStatementId, skipped) {
   if (lastStatementId != null) body.lastStatementId = lastStatementId;
   if (Array.isArray(skipped) && skipped.length) body.skipped = skipped;
   return body;
+}
+
+// FR-059 (F1c-B23): one skip entry per statement, keeping the smallest elapsedMs. The
+// server attributes no better from a larger one, and the list then never exceeds the
+// narration length, so the server's 20-entry cap can't be hit by repeated skips.
+export function recordSkip(skipped, entry) {
+  const list = Array.isArray(skipped) ? skipped.map(e => ({ ...e })) : [];
+  const id = entry?.statementId;
+  if (typeof id !== 'string' || !id) return list;
+  const i = list.findIndex(e => e.statementId === id);
+  if (i < 0) return [...list, { statementId: id, elapsedMs: entry.elapsedMs }];
+  if (smaller(entry.elapsedMs, list[i].elapsedMs)) list[i].elapsedMs = entry.elapsedMs;
+  return list;
+}
+// A non-finite value counts as larger than any finite one.
+const smaller = (a, b) => Number.isFinite(a) && (!Number.isFinite(b) || a < b);
+
+// FR-060: a 4xx can't be fixed by trying again, so it isn't a network error.
+// Typed class and status only, never the message text.
+export function errorKind(err) {
+  return err instanceof ApiError && err.status >= 400 && err.status <= 499 ? 'rejected' : 'net';
 }
 
 // FR-035: what is spoken must equal the element's normalized textContent.

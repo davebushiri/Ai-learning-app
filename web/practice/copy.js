@@ -34,5 +34,7 @@ export const COPY = Object.freeze({
   'src.unverified': '(not yet verified)',
   'missed.notGraded': 'Not scored, you skipped this stop: {text} {whyWrong} Corrected: {correctedText}',
   'err.rate': "Couldn't save your rating. Try again.",
-  'btn.retry': 'Try again'
+  'btn.retry': 'Try again',
+  'err.rejected': 'The server can\'t continue this exercise, and trying again won\'t help. Say "back" or press Back to exercises.',
+  'btn.picker': 'Back to exercises'
 });

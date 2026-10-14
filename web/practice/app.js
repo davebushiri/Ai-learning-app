@@ -4,7 +4,8 @@
 import * as api from './api.js';
 import { COPY } from './copy.js';
 import {
-  resumeIndex, feedbackText, correctedLine, dimNames, dimLines, rubricLines, summaryLine, missedLine, newStopId, completeRequest
+  resumeIndex, feedbackText, correctedLine, dimNames, dimLines, rubricLines, summaryLine, missedLine, newStopId, completeRequest,
+  recordSkip, errorKind
 } from './state.js';
 import { speak, stopSpeaking } from './speech.js';
 
@@ -22,7 +23,7 @@ const show = (id, on = true) => { $(id).hidden = !on; };
 const S = {
   phase: 'picker', track: null, attemptId: null, exercise: null, assistAllowed: false, assisted: false,
   index: 0, reached: -1, statementStart: 0, stop: null, pending: false, gen: 0,
-  skipped: [] // stops skipped after err.net, sent at complete so they are never scored as misses (FR-009a)
+  skipped: [] // stops skipped after err.net, one per statement (FR-059), sent at complete so they are never scored as misses (FR-009a)
 };
 
 // Shown and spoken from the same string (FR-035). Resolves after speech, or at once in text mode.
@@ -95,7 +96,7 @@ function openPicker() {
   S.gen++;
   stopSpeaking();
   S.phase = 'picker';
-  for (const id of ['narration-screen', 'answer-panel', 'net-error', 'feedback-panel', 'reveal']) show(id, false);
+  for (const id of ['narration-screen', 'answer-panel', 'net-error', 'rejected', 'feedback-panel', 'reveal']) show(id, false);
   show('picker-screen');
   $('picker-title').focus();
 }
@@ -216,7 +217,7 @@ async function submitStop() {
     console.warn('stop failed', err);
     S.pending = false;
     $('submit-btn').disabled = false;
-    netError({ skip: true, retry: submitStop });
+    if (errorKind(err) === 'rejected') rejected(); else netError({ skip: true, retry: submitStop });
     return;
   }
   S.pending = false;
@@ -230,6 +231,25 @@ function netError({ skip, retry }) {
   show('net-error');
   $('retry-btn').focus();
   say($('net-error-msg'), COPY['err.net']);
+}
+
+// FR-060: the server refused the request (4xx), so a retry can't help. One way out:
+// back to the picker. F1c-T06 arms the voice "back" once this resolves.
+function rejected() {
+  S.gen++;
+  S.phase = 'rejected';
+  for (const id of ['net-error', 'answer-panel', 'feedback-panel', 'stop-btn', 'stop-hint', 'assist-btn']) show(id, false);
+  show('rejected');
+  $('picker-btn').textContent = COPY['btn.picker'];
+  $('picker-btn').focus();
+  return say($('rejected-msg'), COPY['err.rejected']);
+}
+
+// The track is re-fetched: a pack version may have changed under the refused attempt.
+function backToPicker() {
+  show('rejected', false);
+  openPicker();
+  pickTrack(S.track);
 }
 
 async function showFeedback(res) {
@@ -274,7 +294,7 @@ function onContinue() {
 function onSkip() {
   show('net-error', false);
   if (S.phase !== 'answering') return;
-  S.skipped.push({ statementId: S.stop.statementId, elapsedMs: S.stop.elapsedMs });
+  S.skipped = recordSkip(S.skipped, { statementId: S.stop.statementId, elapsedMs: S.stop.elapsedMs });
   S.stop && statementLi(S.stop.statementIndex).classList.remove('interrupted');
   show('answer-panel', false);
   $('stop-btn').focus();
@@ -335,7 +355,7 @@ async function complete() {
     res = await api.postComplete(S.attemptId, completeRequest(last?.id ?? null, S.skipped));
   } catch (err) {
     console.warn('complete failed', err);
-    netError({ skip: false, retry: complete });
+    if (errorKind(err) === 'rejected') rejected(); else netError({ skip: false, retry: complete });
     return;
   }
   showReveal(res);
@@ -456,6 +476,7 @@ $('continue-btn').addEventListener('click', onContinue);
 $('assist-btn').addEventListener('click', onAssist);
 $('retry-btn').addEventListener('click', () => { show('net-error', false); retryAction?.(); });
 $('skip-btn').addEventListener('click', onSkip);
+$('picker-btn').addEventListener('click', backToPicker);
 $('next-btn').addEventListener('click', openPicker); // FR-058 Wave A: the picker; F1c-T10 retargets it
 $('voice-toggle').addEventListener('change', () => { if (!voiceOn()) stopSpeaking(); });
 
