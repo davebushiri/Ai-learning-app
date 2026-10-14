@@ -3,7 +3,7 @@
 
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +12,7 @@ import { validateEvent } from '../shared/events.js';
 import { loadPacks, listSubjects } from '../server/packs.js';
 import { loadPracticePacks } from '../server/services/practice-pack.js';
 import { createPracticeService, projectPracticeAttempt, trackSummary, GRACE_MS } from '../server/services/practice.js';
+import { MATCHER_VERSION } from '../server/services/practice-matcher.js';
 import { startServer } from './helpers/server.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -37,10 +38,41 @@ function hiddenKeys(v, out = []) {
   return out;
 }
 
+// F1c-T13: a catch with four planted statements, so caught, missed, not graded and not reached can all
+// occur in one attempt. Written into the temp copy only; the pack-basic fixture is not touched.
+const plantedItem = (statementId, word) => ({
+  statementId, misconception: `The ${word} step is harmless.`, whyWrong: `The ${word} step harms the vines.`,
+  acceptableCorrections: [`Skip the ${word} step.`], exceptions: '', kind: 'wrong-step',
+  rubric: { explain: [`${word} harms vines`], correct: [`skip ${word}`] }
+});
+const CATCH_MULTI = {
+  id: 'catch-multi', module: 'm1', type: 'catch', objective: 'Catch four vine mistakes.',
+  prerequisites: [], difficulty: 2, concepts: ['bed-care'], referenceIds: ['ref-beds'],
+  sources: [{ title: 'Moonberry almanac', url: 'https://example.org/almanac', verified: true }],
+  followUp: 'Which step matters most?', transfer: { scenario: 'A friend grows sunberries on a wall.', rubric: ['walls hold heat'] },
+  narration: [
+    { id: 's1', text: 'I loosen the soil around each vine.' },
+    { id: 's2', text: 'I paint the vines with salt water.' },
+    { id: 's3', text: 'I tie the vines with copper wire.' },
+    { id: 's4', text: 'I shake the vines every morning.' },
+    { id: 's5', text: 'I cover the bed with straw.' },
+    { id: 's6', text: 'I cut every second vine at the root.' }
+  ],
+  answerKey: {
+    planted: [plantedItem('s2', 'salt'), plantedItem('s3', 'copper'), plantedItem('s4', 'shaking'), plantedItem('s6', 'cutting')],
+    clean: ['s1', 's5']
+  }
+};
+
 let packsDir;
 before(() => {
   packsDir = mkdtempSync(path.join(tmpdir(), 'f1c-t04-'));
-  cpSync(BASIC, path.join(packsDir, 'pack-basic'), { recursive: true });
+  const dir = path.join(packsDir, 'pack-basic');
+  cpSync(BASIC, dir, { recursive: true });
+  writeFileSync(path.join(dir, 'exercises', 'catch-multi.json'), JSON.stringify(CATCH_MULTI));
+  const manifest = JSON.parse(readFileSync(path.join(dir, 'practice.json'), 'utf8'));
+  manifest.modules[0].exercises.push('catch-multi');
+  writeFileSync(path.join(dir, 'practice.json'), JSON.stringify(manifest));
 });
 after(() => rmSync(packsDir, { recursive: true, force: true }));
 
@@ -109,7 +141,7 @@ describe('catch attempts (service)', () => {
     assert.deepEqual(explained.result, { text: GOOD, chars: GOOD.length });
     assert.equal(graded.result.outcome, 'caught');
     assert.equal(graded.result.graderSource, 'matcher');
-    assert.equal(graded.result.graderVersion, 'matcher@1');
+    assert.equal(graded.result.graderVersion, MATCHER_VERSION);
     assert.equal(graded.result.assisted, false);
     assert.equal(graded.result.confidence, 'high');
     assert.equal(graded.result.dimensions.correction.confidence, 'high');
@@ -224,7 +256,7 @@ describe('catch attempts (service)', () => {
     assert.deepEqual(svc.complete(full, { lastStatementId: 's1' }), body);
     const completed = events(full).filter(e => e.verb === 'completed');
     assert.equal(completed.length, 1);
-    assert.deepEqual(completed[0].result, { hits: 0, lateHits: 0, misses: 1, falseInterruptions: 0, notReached: 0, cleanPass: false, flagged: 0, missedStatementIds: ['s2'], notReachedStatementIds: [] });
+    assert.deepEqual(completed[0].result, { hits: 0, lateHits: 0, misses: 1, falseInterruptions: 0, notReached: 0, cleanPass: false, flagged: 0, missedStatementIds: ['s2'], notReachedStatementIds: [], skippedStatementIds: [], notGradedStatementIds: [] });
     assert.equal(status(() => svc.complete(early, { lastStatementId: 's9' })), 200, 'already complete: stored body');
     const bad = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
     assert.equal(status(() => svc.complete(bad, { lastStatementId: 's9' })), 400);
@@ -265,7 +297,7 @@ describe('catch attempts (service)', () => {
     const rated = events(attemptId).filter(e => e.verb === 'self-rated');
     assert.equal(rated.length, 2);
     assert.deepEqual(rated[1].object, { type: 'exercise', id: 'catch-watering', part: 'stop:s2' });
-    assert.deepEqual(rated[1].result, { rating: 'had_it', matcherStatus: 'met', graderVersion: 'matcher@1' });
+    assert.deepEqual(rated[1].result, { rating: 'had_it', matcherStatus: 'met', graderVersion: MATCHER_VERSION });
     assert.equal(svc.complete(attemptId, {}).answered[0].selfRating, 'had_it', 'latest rating wins');
   });
 
@@ -343,6 +375,187 @@ describe('catch attempts (service)', () => {
     const { svc, events } = setup({ now: () => t });
     const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
     assert.equal(events(attemptId)[0].at, '2026-10-13T08:00:00.000Z');
+  });
+});
+
+describe('F1c-T13: skipped stops, stopId repeats, assist after complete (ADR 0002 Am. 4; FR-008, FR-009a)', () => {
+  const SID_A = 'stopA_000001';
+  const SID_B = 'stopB-000002';
+  const completedOf = (events, id) => events(id).find(e => e.verb === 'completed').result;
+
+  test('a false interruption writes graded with outcome false_alarm and overall null', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    svc.submitStop(attemptId, { statementId: 's1', elapsedMs: 9999, answer: 'the bed is too high' });
+    const evs = events(attemptId);
+    assert.deepEqual(evs.map(e => e.verb), ['started', 'stopped', 'explained', 'graded']);
+    assert.deepEqual(evs[3].result, {
+      dimensions: {}, overall: null, outcome: 'false_alarm', assisted: false, confidence: 'high',
+      graderSource: 'matcher', graderVersion: MATCHER_VERSION, latencyMs: 0
+    });
+    for (const e of evs) assert.deepEqual(validateEvent(e), [], e.verb);
+  });
+
+  test('a skipped stop on a planted statement is notGraded, not missed; caught, missed, notGraded and notReached are disjoint and cover every planted statement', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-multi' });
+    assert.equal(svc.submitStop(attemptId, { statementId: 's2', elapsedMs: 100, answer: 'salt harms vines, skip salt' }).detection, 'hit');
+    const body = svc.complete(attemptId, { lastStatementId: 's5', skipped: [{ statementId: 's4', elapsedMs: 9999 }] });
+    const c = completedOf(events, attemptId);
+    assert.deepEqual(c.missedStatementIds, ['s3']);
+    assert.deepEqual(c.notGradedStatementIds, ['s4']);
+    assert.deepEqual(c.skippedStatementIds, ['s4']);
+    assert.deepEqual(c.notReachedStatementIds, ['s6']);
+    assert.equal(c.misses, 1);
+    assert.equal(c.notReached, 1);
+    assert.deepEqual(body.summary, { planted: 4, hits: 1, lateHits: 0, misses: 1, falseInterruptions: 0, notReached: 1, cleanPass: false, flagged: body.summary.flagged });
+    const caught = body.answered.map(x => x.part.slice('stop:'.length));
+    const groups = [caught, c.missedStatementIds, c.notGradedStatementIds, c.notReachedStatementIds];
+    const all = groups.flat();
+    assert.equal(new Set(all).size, all.length, 'disjoint');
+    assert.deepEqual(all.sort(), ['s2', 's3', 's4', 's6'], 'cover every planted statement');
+    // Response: the union in narration order; only the not-graded item carries notGraded.
+    assert.deepEqual(body.missed.map(m => m.statementId), ['s3', 's4']);
+    assert.equal('notGraded' in body.missed[0], false);
+    assert.equal(body.missed[1].notGraded, true);
+    assert.equal(body.missed[1].text, 'I shake the vines every morning.');
+    assert.equal(body.missed[1].correctedText, 'Skip the shaking step.');
+    assert.deepEqual(svc.complete(attemptId, {}), body, 'repeat complete returns the stored body');
+  });
+
+  test('skipped: a skip inside 2000 ms of the next statement marks the previous planted statement notGraded; a skip on a clean or already-caught statement changes no count and keeps cleanPass', () => {
+    const { svc, events } = setup();
+    const late = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
+    const body = svc.complete(late, { skipped: [{ statementId: 's3', elapsedMs: 500 }] });
+    assert.deepEqual(completedOf(events, late), {
+      hits: 0, lateHits: 0, misses: 0, falseInterruptions: 0, notReached: 0, cleanPass: false, flagged: 0,
+      missedStatementIds: [], notReachedStatementIds: [], skippedStatementIds: ['s3'], notGradedStatementIds: ['s2']
+    });
+    assert.deepEqual(body.missed.map(m => [m.statementId, m.notGraded]), [['s2', true]]);
+    // Outside the grace window the same skip is on a clean statement: s2 stays missed.
+    const outside = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
+    svc.complete(outside, { skipped: [{ statementId: 's3', elapsedMs: 2001 }] });
+    assert.deepEqual(completedOf(events, outside).missedStatementIds, ['s2']);
+    assert.deepEqual(completedOf(events, outside).notGradedStatementIds, []);
+
+    const clean = svc.startAttempt({ track: TRACK, exercise: 'catch-clean' }).attemptId;
+    const cb = svc.complete(clean, { skipped: [{ statementId: 's1' }, { statementId: 's2', elapsedMs: 100 }] });
+    assert.deepEqual(cb.summary, { planted: 0, hits: 0, lateHits: 0, misses: 0, falseInterruptions: 0, notReached: 0, cleanPass: true, flagged: 0 });
+    assert.deepEqual(cb.missed, []);
+
+    const caught = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
+    svc.submitStop(caught, { statementId: 's2', elapsedMs: 0, answer: GOOD });
+    const kb = svc.complete(caught, { skipped: [{ statementId: 's2', elapsedMs: 0 }, { statementId: 's3', elapsedMs: 100 }] });
+    assert.deepEqual(kb.summary, { planted: 1, hits: 1, lateHits: 0, misses: 0, falseInterruptions: 0, notReached: 0, cleanPass: false, flagged: 0 });
+    assert.deepEqual(kb.missed, []);
+    assert.deepEqual(completedOf(events, caught).skippedStatementIds, ['s2', 's3']);
+    assert.deepEqual(completedOf(events, caught).notGradedStatementIds, []);
+  });
+
+  test('skipped: a statement skipped and then caught is caught, not notGraded', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    // The s2 stop failed and was skipped; a later stop on s3 inside the grace window catches s2.
+    assert.equal(svc.submitStop(attemptId, { statementId: 's3', elapsedMs: 300, answer: GOOD }).detection, 'late_hit');
+    const body = svc.complete(attemptId, { skipped: [{ statementId: 's2', elapsedMs: 900 }] });
+    assert.equal(body.summary.lateHits, 1);
+    assert.equal(body.summary.misses, 0);
+    assert.deepEqual(body.missed, []);
+    assert.deepEqual(completedOf(events, attemptId).notGradedStatementIds, []);
+    assert.deepEqual(completedOf(events, attemptId).skippedStatementIds, ['s2']);
+  });
+
+  test('skipped: a skipped statement after lastStatementId is notGraded, not notReached', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    const body = svc.complete(attemptId, { lastStatementId: 's1', skipped: [{ statementId: 's2', elapsedMs: 50 }] });
+    assert.equal(body.summary.notReached, 0);
+    assert.equal(body.summary.misses, 0);
+    const c = completedOf(events, attemptId);
+    assert.deepEqual(c.notReachedStatementIds, []);
+    assert.deepEqual(c.notGradedStatementIds, ['s2']);
+  });
+
+  test('skipped: not an array, 21 entries, a non-object entry or an unknown statementId is 400; a repeat complete ignores skipped', () => {
+    const { svc, events } = setup();
+    const id = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
+    const entry = { statementId: 's1' };
+    for (const skipped of ['s2', { statementId: 's2' }, 7, Array(21).fill(entry), ['s2'], [null], [[entry]], [{ statementId: 's9' }], [{}], [{ statementId: 2 }]]) {
+      assert.equal(status(() => svc.complete(id, { skipped })), 400, JSON.stringify(skipped).slice(0, 40));
+    }
+    assert.equal(events(id).filter(e => e.verb === 'completed').length, 0, 'a 400 writes nothing');
+    const ok = svc.complete(id, { skipped: Array(20).fill(entry) });
+    assert.deepEqual(completedOf(events, id).skippedStatementIds, ['s1'], 'request order, no duplicates');
+    assert.deepEqual(svc.complete(id, { skipped: 'garbage', lastStatementId: 's9' }), ok);
+    assert.deepEqual(svc.complete(id, { skipped: [{ statementId: 's2' }] }), ok);
+    assert.equal(events(id).filter(e => e.verb === 'completed').length, 1);
+    const nul = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
+    assert.equal(status(() => svc.complete(nul, { skipped: null })), 200, 'null is absent');
+    assert.deepEqual(completedOf(events, nul).skippedStatementIds, []);
+  });
+
+  test('stopId: the same stopId returns the stored body with no events; the same stopId on another statement is 400; a malformed stopId is 400', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    const first = svc.submitStop(attemptId, { statementId: 's2', elapsedMs: 100, answer: GOOD, stopId: SID_A });
+    const n = events(attemptId).length;
+    assert.deepEqual(svc.submitStop(attemptId, { statementId: 's2', elapsedMs: 5, answer: 'different', stopId: SID_A }), first);
+    assert.equal(events(attemptId).length, n);
+    assert.equal(status(() => svc.submitStop(attemptId, { statementId: 's3', elapsedMs: 5, answer: 'x', stopId: SID_A })), 400);
+    for (const stopId of ['short', 'a'.repeat(65), 'has space1', 'bad/char1', 12345678, ['abcdefgh'], {}]) {
+      assert.equal(status(() => svc.submitStop(attemptId, { statementId: 's3', elapsedMs: 5, answer: 'x', stopId })), 400, String(stopId));
+    }
+    assert.equal(events(attemptId).length, n);
+    assert.equal(status(() => svc.submitStop(attemptId, { statementId: 's3', answer: 'x', stopId: 'a'.repeat(64) })), 200, '64 chars is valid');
+  });
+
+  test('stopId: a new stopId after a late hit is a new stop, a false interruption with its own triple (W-S1)', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    const late = svc.submitStop(attemptId, { statementId: 's3', elapsedMs: 800, answer: GOOD, stopId: SID_A });
+    assert.equal(late.detection, 'late_hit');
+    const again = svc.submitStop(attemptId, { statementId: 's3', elapsedMs: 300, answer: 'the glow is wrong', stopId: SID_B });
+    assert.deepEqual(again, { statementId: 's3', attributedStatementId: 's3', detection: 'false_interruption', assisted: false, result: null, reveal: null });
+    const evs = events(attemptId);
+    assert.deepEqual(evs.map(e => e.verb), ['started', 'stopped', 'explained', 'graded', 'stopped', 'explained', 'graded']);
+    assert.deepEqual(evs.slice(4).map(e => e.object.part), ['stop:s3', 'stop:s3', 'stop:s3']);
+    assert.equal(evs[6].result.outcome, 'false_alarm');
+    assert.equal(evs[5].result.text, 'the glow is wrong');
+    // Try again re-sends a stopId: each gets its own stored body. No stopId: the latest stop on the statement.
+    assert.deepEqual(svc.submitStop(attemptId, { statementId: 's3', answer: 'y', stopId: SID_A }), late);
+    assert.deepEqual(svc.submitStop(attemptId, { statementId: 's3', answer: 'y', stopId: SID_B }), again);
+    assert.deepEqual(svc.submitStop(attemptId, { statementId: 's3', answer: 'y' }), again);
+    assert.equal(events(attemptId).length, 7);
+    const p = projectPracticeAttempt(events(attemptId));
+    assert.deepEqual(p.stops.map(s => [s.stopId, s.detection, s.answer]), [[SID_A, 'late_hit', GOOD], [SID_B, 'false_interruption', 'the glow is wrong']]);
+    const body = svc.complete(attemptId, {});
+    assert.deepEqual([body.summary.lateHits, body.summary.falseInterruptions, body.summary.misses], [1, 1, 0]);
+  });
+
+  test('stopId is stored on stopped only when sent', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    svc.submitStop(attemptId, { statementId: 's1', elapsedMs: 9999, answer: 'x' });
+    svc.submitStop(attemptId, { statementId: 's2', elapsedMs: 0, answer: GOOD, stopId: SID_A });
+    const [plain, withId] = events(attemptId).filter(e => e.verb === 'stopped');
+    assert.equal('stopId' in plain.result, false);
+    assert.equal(withId.result.stopId, SID_A);
+    for (const e of events(attemptId)) assert.deepEqual(validateEvent(e), [], e.verb);
+    assert.deepEqual(projectPracticeAttempt(events(attemptId)).stops.map(s => s.stopId), [null, SID_A]);
+  });
+
+  test('assist after complete returns the same body and writes no event (W-S3)', () => {
+    const { svc, events } = setup();
+    const { attemptId } = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' });
+    svc.complete(attemptId, {});
+    const n = events(attemptId).length;
+    const help = svc.assist(attemptId);
+    assert.equal(help.assisted, true);
+    assert.deepEqual(help.reference.map(r => r.id), ['ref-beds']);
+    assert.equal(events(attemptId).length, n);
+    assert.equal(events(attemptId).filter(e => e.verb === 'assisted').length, 0);
+    const other = svc.startAttempt({ track: TRACK, exercise: 'catch-watering' }).attemptId;
+    assert.deepEqual(svc.assist(other), help, 'same body as any assist');
   });
 });
 
