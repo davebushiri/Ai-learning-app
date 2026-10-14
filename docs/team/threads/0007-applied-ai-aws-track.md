@@ -388,3 +388,167 @@ Reversible defaults so F1c-T11 isn't blocked. The founder can override any of th
 - **OQ-6 (content author):** the module-1 drafts were written by the team in this session, so the lead answers as author. **Accept** PD-1's catch-06 and catch-08 follow-up rubrics and the learning-designer's draft synonym list (with forms failing FR-017 dropped, as T11 says).
 - **OQ-3 (schedule):** `schedule.json` alone satisfies "configurable schedule" for F1c. A UI setting stays under Later.
 - **Still needed before T11 builds:** the 7-day plan and ≤ 6 diagnostic ids from the PM and learning-designer, recorded here.
+
+### learning-designer · 2026-10-14 · PROPOSAL
+**Answering:** the C12 / F1c-T11 content gate (7-day plan, ≤ 6 diagnostic ids) and spec LR-8 (diagnostic composition). Advisory: the PM decides; backend copies the JSON below into `packs/applied-ai/schedule.json`. Exercises are named by id only; nothing here quotes narration, keys or rubrics.
+
+**Diagnostic (6 ids; run in this order, with a break after the third; about 40 min):**
+
+| # | Id | d | Concepts it places |
+|---|---|---|---|
+| 1 | `m1-catch-01-context-window` | 1 | tokens, context window |
+| 2 | `m1-catch-02-rag-vs-finetune` | 1 | prompting vs RAG vs fine-tuning, freshness, citations |
+| 3 | `m1-catch-03-pipeline-clean` | 1 (zero-error) | pipeline, chunking, embeddings, retrieval, grounding, abstention; false-alarm baseline |
+| 4 | `m1-catch-04-embeddings` | 2 | embeddings, similarity, BM25, hybrid |
+| 5 | `m1-catch-05-structured-outputs` | 2 | structured outputs, temperature, validation |
+| 6 | `m1-interview-04-evaluate-rag` | 3 | evaluation, faithfulness, abstention, access control, freshness (the "production" ask) |
+
+- **Why these:** they ramp d1 → d3 and include one zero-error control and one open, unaided explanation. None needs module 2. Error-finding helps once some prior knowledge exists, and weaker learners need support (Große & Renkl 2007; Renkl 2014; **moderate**, school maths, extrapolated here). That is why only one d3 item is included.
+- **Held back on purpose:** `catch-06`, `catch-07`, `catch-08`, the scenario and `interview-01/02/03`. They stay fresh for days 2–3 and for the mocks, so the mocks measure transfer, not memory of a seen item (REVIEW.md H6).
+- **Testing before the lessons is fine here.** Every attempt ends in the reveal, which is corrective feedback. Pretesting followed by feedback improves later learning (Richland, Kornell & Kao 2009; **moderate**, lab text material; cited from memory, not fetched).
+- **Swap if the PM wants d ≤ 2 only:** `m1-interview-03-when-not-rag` instead of #6. I advise against it: it overlaps #2 and leaves evaluation unplaced.
+
+**The 7-day plan (120 min a day, as 3–4 sittings of 25–40 min, each built from 3–8 min exercises):**
+
+| Day | Focus | In-app blocks (kind · min · ids) | Off-app time, counted inside the named block |
+|---|---|---|---|
+| 1 | Placement and foundations | diagnostic 40 · learn 20 (`learn-01`, `learn-02`, `learn-03`) · review 60 | 40 of review: **defend pass 1** |
+| 2 | RAG failure modes (first exposures) | catch 35 (`catch-07`, `catch-06`, `catch-08`) · interview 20 (`interview-02`) · review 65 | 40 of review: **defend pass 2** |
+| 3 | Design under constraints, plus **mock 1** | scenario 45 (`scenario-01`, in 2 sittings: clarify and design, then challenges) · interview 35 (`interview-03`, fresh) · review 40 | interview 35 = **timed mock 1** (30 min + 5 min debrief); 15 of review: debrief notes |
+| 4 | **Agents: module 2 when available.** Fallback: an interleaved "signal ≠ correctness" set | catch 40 (`catch-04`, `catch-06`, `catch-05`) · interview 30 (`interview-04`) · review 50 | 20 of review: **defend, agents framing** |
+| 5 | **Agents part 2: module 2 when available.** Fallback: interleaved "which tool" decisions | catch 35 (`catch-02`, `catch-08`, `catch-01`) · interview 25 (`interview-03`) · review 60 | 30 of review: **defend, eval, security, cost** |
+| 6 | **Full timed mock (60 min)** and repair | interview 75 (`interview-01`, fresh) · review 45 | interview 75 = **mock 2** (60 + 15 debrief); 15 of review: fix the 2 worst answers |
+| 7 | Consolidate: no new material | review 65 · catch 30 (`catch-03`, `catch-07`) · interview 25 (`interview-02`) | 15 of review: final defend pass |
+
+All ids carry the `m1-` prefix (full ids are in the JSON). In-app review = "Review weak spots" (the weakest concept first, FR-056). Answer the **transfer** part every time an item is replayed.
+
+**Defend-my-build passes** (source: `docs/research/applied-ai/defend-my-build.md`). Each pass is retrieval, not rereading: say it aloud closed-book, then check it against the dossier.
+- **Pass 1:** §1, §3, §4 (the founder's role) and §6 "Don't claim". Give a 90-second opener: what it is, what I did, what the AI wrote, what isn't built. Settle the three "Open uncertainties" yourself.
+- **Pass 2:**
+  - sketch the §2 architecture from memory, then check it;
+  - give 3 decisions from §5.1, each with its rejected alternative;
+  - tell 2 bug stories from §5.2, ≤ 2 min each.
+- **Day 4, agents framing:** §6 "Agents" and §4 "Process". Tell the real multi-agent development story, and give §6 item 3 as "how I *would* add one small agent". Never say "built".
+- **Day 5:** §5.3–§5.5. For each, give one "built" line and one "designed, not built" line.
+- **Day 7:** the opener once, plus the "Don't claim" list.
+
+**Mock structure.**
+- **Mock 1 (30 min):**
+  - opener, 3 min;
+  - `interview-03` aloud in the app, 12 min;
+  - two §7 rows (production and users; grader quality), 10 min;
+  - debrief, 5 min.
+- **Mock 2 (60 min):**
+  - opener and "what have you built", 5 min;
+  - RAG design with `interview-01` and its follow-ups, 20 min;
+  - "how do you know it works / production", 10 min (§5.3, §6);
+  - agents, 10 min (a module-2 interview item if available, else the day-4 framing);
+  - one decision and one bug deep-dive, 10 min;
+  - the founder's questions for them, 5 min.
+- **The timer paces the 60-minute format only. No score uses time, and there are no speed bonuses.** Stop latency is logged, not scored. Mock 2 is the one deliberate long sitting, because the real interview is 60 minutes (practice in the target format; inferred, not tested).
+
+**If the interview comes sooner:**
+- **≤ 2 days away:** diagnostic → defend passes 1 and 2 → `learn-02`, `learn-03`, `catch-06` → mock 2 shortened to 30 min → review weak spots.
+- **The day before the interview:** run day 7 (no new material, sleep).
+- **A missed day costs nothing:** `today` advances only on days with practice (FR-055), so there's no streak to break (learning-science.md §5).
+
+**Evidence behind the shape:**
+- **Retrieval practice:** every block, defend prep included, is answer-first-then-check (Roediger & Karpicke 2006; Dunlosky 2013; **strong**). Rereading is low-utility, so there are no reading-only blocks.
+- **Spacing:** the retention interval is about 7 days, so the best gap is about 20–40% of that, 1.5–3 days (Cepeda 2008; **strong**). Every concept is first retrieved on days 1–3 and again 2–5 days later (for example `catch-04`/`05` and `interview-04`: day 1 → day 4; `catch-08`: day 2 → day 5; `interview-02`: day 2 → day 7).
+- **Interleaving look-alikes only** (Brunmair & Richter 2019, g = 0.42; **moderate**, material-dependent, extrapolated):
+  - day 4 mixes the "a signal isn't correctness" misconceptions (REVIEW.md M6);
+  - day 5 mixes the "context window vs RAG vs fine-tuning vs system of record" decisions.
+  - Unrelated items are not mixed.
+- **Practice share:**
+  - by `schedule.json` kind: 780 of 840 min, **92.9%** (the gate is ≥ 60%);
+  - counting all 175 off-app minutes as non-practice: **72%**. Still above the gate, so the folding below doesn't let the plan pass by labelling alone.
+- **Focus-friendly:** short exercises and sittings; the scenario is split (REVIEW.md M3). The evidence for fixed-break timers is **weak** (Biwer 2023), so there's no Pomodoro requirement.
+
+**For backend (format rules, all within practice-v1):**
+- `schedule.json` has no off-app kind. Off-app minutes are folded into the `review` or `interview` block named in the table. The **thread table is the founder's plan**; the JSON is the app's view of it.
+- **Repeated ids are picker replays.** FR-055 `done` is all-time, so "Next" skips an id already completed. That applies to days 4, 5 and 7, which replay items from the picker on purpose.
+- **Module 2 swap:**
+  - When module 2 lands, replace the day 4–5 `catch` and `interview` ids with module-2 ids, and add a `learn` block of about 20 min each day, taken from that day's `review`.
+  - Bump the pack version between sessions, never mid-attempt (B23, R1).
+  - The share stays ≥ 85%.
+
+```json
+{
+  "days": 7,
+  "minutesPerDay": 120,
+  "diagnostic": [
+    "m1-catch-01-context-window",
+    "m1-catch-02-rag-vs-finetune",
+    "m1-catch-03-pipeline-clean",
+    "m1-catch-04-embeddings",
+    "m1-catch-05-structured-outputs",
+    "m1-interview-04-evaluate-rag"
+  ],
+  "plan": [
+    { "day": 1, "blocks": [
+      { "kind": "diagnostic", "minutes": 40 },
+      { "kind": "learn", "minutes": 20, "exercises": ["m1-learn-01-how-llms-answer", "m1-learn-02-rag-pipeline", "m1-learn-03-rag-failures"] },
+      { "kind": "review", "minutes": 60 }
+    ] },
+    { "day": 2, "blocks": [
+      { "kind": "catch", "minutes": 35, "exercises": ["m1-catch-07-access-freshness-clean", "m1-catch-06-retrieval-vs-generation", "m1-catch-08-design-tradeoffs"] },
+      { "kind": "interview", "minutes": 20, "exercises": ["m1-interview-02-retrieval-vs-generation"] },
+      { "kind": "review", "minutes": 65 }
+    ] },
+    { "day": 3, "blocks": [
+      { "kind": "scenario", "minutes": 45, "exercises": ["m1-scenario-01-policy-assistant"] },
+      { "kind": "interview", "minutes": 35, "exercises": ["m1-interview-03-when-not-rag"] },
+      { "kind": "review", "minutes": 40 }
+    ] },
+    { "day": 4, "blocks": [
+      { "kind": "catch", "minutes": 40, "exercises": ["m1-catch-04-embeddings", "m1-catch-06-retrieval-vs-generation", "m1-catch-05-structured-outputs"] },
+      { "kind": "interview", "minutes": 30, "exercises": ["m1-interview-04-evaluate-rag"] },
+      { "kind": "review", "minutes": 50 }
+    ] },
+    { "day": 5, "blocks": [
+      { "kind": "catch", "minutes": 35, "exercises": ["m1-catch-02-rag-vs-finetune", "m1-catch-08-design-tradeoffs", "m1-catch-01-context-window"] },
+      { "kind": "interview", "minutes": 25, "exercises": ["m1-interview-03-when-not-rag"] },
+      { "kind": "review", "minutes": 60 }
+    ] },
+    { "day": 6, "blocks": [
+      { "kind": "interview", "minutes": 75, "exercises": ["m1-interview-01-design-rag"] },
+      { "kind": "review", "minutes": 45 }
+    ] },
+    { "day": 7, "blocks": [
+      { "kind": "review", "minutes": 65 },
+      { "kind": "catch", "minutes": 30, "exercises": ["m1-catch-03-pipeline-clean", "m1-catch-07-access-freshness-clean"] },
+      { "kind": "interview", "minutes": 25, "exercises": ["m1-interview-02-retrieval-vs-generation"] }
+    ] }
+  ]
+}
+```
+I checked this by hand against `validatePracticePack` (`server/services/practice-pack.js:306-342`): 7 entries numbered 1–7, each day summing to 120, no `exercises` on `diagnostic` or `review`, every id an existing module-1 file name, 6 diagnostic ids, and a 92.9% practice share. It hasn't been run, because the pack doesn't exist yet; T11's "schedule defaults" test will run it.
+
+**Later (PM / founder; not in this proposal):**
+- an optional per-block `label` so the app can show "off-app: defend prep" (the architect owns the format, ADR 0008);
+- per-day `done` for ids repeated on a later day;
+- parallel catch sets (H6);
+- **an unverified assumption:** Amazon loops usually include Leadership Principles behavioral questions. The founder decides whether that prep fits.
+
+**Confidence:** high on the validator fit and the spacing and interleaving rationale; medium on the time estimates per exercise (no timed founder runs yet).
+**What would change my mind:**
+- day-1 sittings running over about 40 min, which means cutting the in-app review, not the defend passes;
+- a confirmed interview date inside 2 days, which means using the short-notice path;
+- module 2 landing, which means the swap above.
+
+### learning-designer · 2026-10-14 · RISK
+- **Thin content pool, so most in-app time is replay.** Module 1 has 16 exercises, about 2.5 h of first exposures, in a 14 h plan. Replays test memory of the item, so readiness overstates competence (H6).
+  - Likelihood H · Impact M.
+  - **Mitigation:** the transfer part on every replay; `interview-01` and `interview-03` held fresh for the mocks; module 2 adds fresh items; parallel sets (Later).
+- **"Next" skips replays.** FR-055 `done` is all-time, so the replay blocks on days 4, 5 and 7 show as done, and the founder may read the day as finished.
+  - Likelihood H · Impact L.
+  - **Mitigation:** this entry and the progress page; the picker is one tap; per-day `done` is Later (PM).
+- **The dossier is stale against F1c.** `defend-my-build.md` is at `bb3fb1d`. Since then, per this thread's QA and architect entries:
+  - the practice engine is server-owned and writes events per attempt;
+  - the suite is 475 tests;
+  - §5.4 "answers reach the browser" now applies only to the legacy game.
+  
+  Rehearsing old facts makes the founder under-claim or misstate. Likelihood M · Impact M.
+  - **Mitigation:** the lead refreshes §3 and §5.4 and the test counts, with evidence, before day 2's pass 2 (the file is founder-owned).
+- **Off-app minutes are folded into `review` and `interview`,** so the app's labels misdescribe about 175 min. Likelihood H · Impact L.
+  - **Mitigation:** the thread table is the founder's plan; the share stays ≥ 60% even when those minutes are excluded.
