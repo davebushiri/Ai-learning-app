@@ -497,3 +497,26 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 - Accepted limit; fix through the lexicon. · Owner: content author
 
 **Matcher rules the spec didn't spell out** (principal-architect to confirm at code review): the negation window counts every word and stops at `. ; : ! ?`; the PD-2 exception covers red flags and strong signals; red flags and echoes make every dimension uncertain; lexicon lookups go one way; 4-letter plurals are stripped.
+
+*Filed by qa-engineer while finishing F1c-T01a (2026-10-14).*
+
+### F1c-B20 [major] FR-019 stuffing cap marks concise correct answers `partial`; SC-003 fails (clear → met 80%, valid-alternative → met 50%)
+- **Steps:** `node --test --test-name-pattern="SC-003 labelled" tests/acceptance/F1c.test.js` (in-process `matcherGrade` on `tests/fixtures/practice/labelled-answers.json`, accept-pack lexicon).
+- **Expected:** SC-003 thresholds: `clear` → `met` 100%; `valid-alternative` → `met` ≥ 75%.
+- **Actual:** `clear` 8/10 met (2 partial); `valid-alternative` 4/8 met (4 partial). All 6 misses hit the FR-019 cap: each answer matches enough items for `met` (e.g. scenario-festival design matches 3/3 `mustCover`; interview followUps:0 matches 2/2), but ≤ 2 content words remain after removing every matched form, so status is capped at `partial`. Example: "Let the line go slack and turn away from people so it lands safely." → defense `partial` with both items matched (rest: "lands", "safely"). Removal spans all dimensions and the matched `acceptableCorrections` entry, so a full natural stop answer ("Check for frays before every flight, because sunlight and rubbing weaken the line over time and its rating does not last.") leaves 2 words and is capped on both dimensions.
+- **Evidence:** TAP diagnostics of the SC-003 test (confusion table in the QA report); with the cap disabled in a scratch copy all 43 original rows match their labels, but the 2 new `stuffed` rows (bare keyword lists) then come out `met`, so removing the cap is not the fix. The same cause fails US1.5 and US1.11 at HTTP level.
+- **Suspected file:** `server/services/practice-matcher.js` `grade()` (`stuffed = total - removed.size <= R.stuffedMaxRest`), and FR-019's wording, which doesn't separate a short sentence from a keyword list (e.g. a list has no function words; a sentence does).
+- **Owner:** technical-product-manager with principal-architect (FR-019 rule), then backend-engineer (matcher, `MATCHER_VERSION` bump). SC-003 stays `todo: 'F1c-T03'` until fixed.
+
+### F1c-B21 [minor] Spec contradiction: is `graded` written on a false interruption?
+- **Steps:** spec data table: `graded` "with every stop hit or answer", but its `outcome` lists `false_alarm`. T04 WIP writes `graded` for a false interruption.
+- **Expected vs actual:** acceptance test "FR-050 catch events…" follows the table row (no `graded` on a false interruption); T04 WIP writes one (`started, stopped, explained, graded, stopped, explained, graded, completed, self-rated`).
+- **Evidence:** `node --test --test-name-pattern="FR-050" tests/acceptance/F1c.test.js`.
+- **Suspected file:** `docs/specs/F1c-practice-engine/spec.md` (events table), `server/services/practice.js`.
+- **Owner:** technical-product-manager to rule; QA updates the test to match the ruling.
+
+### F1c-B22 [minor] tasks.md says `PRACTICE_PACKS_DIR` = a pack folder; the loader reads a folder of packs
+- **Steps:** T04 notes "`PRACTICE_PACKS_DIR=tests/fixtures/practice/pack-basic`" and T01b notes "`PRACTICE_PACKS_DIR` set to accept-pack"; `loadPracticePacks` (FR-002) reads `<dir>/<name>/practice.json`.
+- **Expected vs actual:** pointing it at accept-pack itself loads 0 tracks, silently (no warning). QA tests copy accept-pack to `<tmp>/kite-craft` (`acceptPacksDir()` in `tests/acceptance/practice-helpers.mjs`); T01b must do the same.
+- **Suspected file:** `docs/specs/F1c-practice-engine/tasks.md` (T04, T01b notes).
+- **Owner:** technical-product-manager.

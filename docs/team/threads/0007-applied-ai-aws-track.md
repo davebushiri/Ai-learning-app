@@ -150,3 +150,10 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 - **Dissent recorded:** none. The architect's C11 view is adopted.
 - **Wave A is ready to build now:** F1c-T01a, T02, T03 [P] → T04 → T05. No re-review; the architect checks the diff at code review.
 - **Still open, founder:** OQ-1 (fact sign-off), OQ-3, OQ-5 (confirm ARCH-2 before T11 merges). **Content author:** OQ-6. **PM + learning-designer, before T11:** the 7-day plan and ≤ 6 diagnostic ids, recorded here.
+
+### qa-engineer · 2026-10-14 · RISK
+**Answering:** SC-003 / SC-003b, now that T02 and T03 are merged (F1c-T01a).
+- **Failure mode:** matcher@1 misses the SC-003 functional gate on the QA-labelled set (45 rows): `clear` → `met` **80%** (gate 100%), `valid-alternative` → `met` **50%** (gate ≥ 75%). Every other SC-003 threshold passes (incorrect → met 0%, valid-alt → not_met 0%, partial → partial/uncertain 100%, should-flag → uncertain 100%, uncertain on clear+incorrect 0%). All 6 misses are the FR-019 stuffing cap firing on concise, complete sentences (filed **F1c-B20**). Disabling the cap fixes all 6 but lets 2 new keyword-list rows reach `met`, so FR-019 needs a better rule, not removal.
+- **Preview of SC-003b (informational, not the gate):** grading the 24 module-1 rows against the *research drafts* with `draftSynonyms` gives clear 100%, incorrect → met 0%, but valid-alternative → met **16.7%** and partial → partial/uncertain **66.7%**. Consistent with B11/B12. The m1 set has no `should-flag` rows, so that threshold can't be checked there.
+- **Likelihood:** H (measured) · **Impact:** H (US1.5 and US1.11 fail at HTTP level for the same cause; T04 can't be verified green on them).
+- **Mitigation:** PM + architect rule on FR-019 wording; backend fixes the matcher with a `MATCHER_VERSION` bump. SC-003 stays a `F1c-T03` todo, run for real in `npm test` with its confusion table printed, until it passes. Evidence: `node --test --test-name-pattern="SC-003 labelled" tests/acceptance/F1c.test.js`.
