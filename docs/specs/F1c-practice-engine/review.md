@@ -358,3 +358,56 @@ W-B1 and W-B2 are resolved. The Wave A.1 should-fix items (W-S1, W-S3, W-S4, W-S
 
 ### Optional
 - **O3.** T12, T13 and T14 landed as commits titled "WIP … checkpoint". The content is complete and tested. Next time, squash or retitle before the merge, so `git log` reads as finished tickets.
+
+## F1c-T17 code review (2026-10-14, the F1c-B23 fix)
+
+**Reviewer:** principal-architect · **Diff:** `798b1d8..23aa509` (one commit) · **Files:** `web/practice/{app,state,copy}.js`, `web/practice.html`, `tests/practice-web-state.test.js`. That is exactly the ticket's Files line. No server, `api.js`, `web/index.html` or `web/app.js` change.
+
+### Verdict: APPROVED
+
+No blocking findings. F1c-T17 meets FR-059, FR-060 and FR-035 and holds invariants 7, 8 (with the accepted T06 gap) and 9, and ADR 0002 Am. 4. The F1c-T11 merge gate and the F1c-T01b run gate on T17 are cleared once a human merges it. B23 closes when QA records SC-013 in `qa-report.md`.
+
+### Evidence (re-run by me, this turn)
+- `npm test`: `# tests 475 / # pass 389 / # fail 0 / # todo 86` (exit 0). This matches the engineer's report.
+- `node tests/golden/run.mjs --replay`: `replay 1/1: 61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02` (exit 0).
+- The engineer's real-browser check (scratchpad `f1c-t17-check.mjs`: real server in MOCK, a copy of the fixture packs, Chromium; text and voice at 390 and 1280 px), re-run: `checks 196 pass 196 fail 0`. It covers:
+  - 21 skips on `s1`: 1 `complete` request, 200, `skipped` holds 1 entry with the smallest `elapsedMs`, reveal shown;
+  - a **real** pack-version 404 at a stop and at `complete`: `err.rejected` shown (and spoken equal to the shown text in voice), `#net-error` hidden, no Try again or Skip, 0 further requests to the attempt over 2.5 s, `#picker-btn` focused; one click opens the picker with the track re-fetched (200), and a new attempt starts (200);
+  - a forced `NetworkError` and 500 at `complete`, and a 500 at a stop, still show `err.net` with Try again (and Skip at the stop);
+  - 0 unexpected console errors.
+  One check (`Try again reaches reveal`) is a literal `true`. It follows a `waitForSelector('#reveal:not([hidden])')` that throws on timeout, so it isn't vacuous.
+- **Standing checks:**
+  - The subject-word grep finds only `shared/mock-grader.js:16` ("breaker"). That predates this diff and is owned by F1a-T13b.
+  - `messages.create` appears only in `server/ai/gateway.js:56`.
+  - No prompt or `VERSION` changed. No answer fields in the diff. No `innerHTML`. No `UPDATE` or `DELETE` on `event`.
+  - Ownership is clean.
+
+### Checked against the brief
+- **Inv. 7 (degrade, never stall).** The B23 stall is gone on both paths.
+  - `errorKind` (`state.js:110-111`) classifies by the typed class and status only, never `err.message`. A test pins that the duck-typed `{status: 404}` is `'net'`.
+  - `submitStop` (`app.js:220`) and `complete` (`app.js:358`) branch on it. `S.pending` is cleared before the branch.
+  - `rejected()` (`app.js:238-246`) bumps `gen`, so no narration or speech chain can resume. It sets `phase = 'rejected'`, so Stop, Space, Enter-submit and Skip are all inert.
+  - The server's real 4xx surface for these routes is 400, 404 and 409 ("attempt is complete"). A retry can fix none of them, so mapping all of them to `rejected` is correct.
+  - `NetworkError` covers the 12 s deadline. A repeated `complete` after a timeout is idempotent (`practice.js:271`), so `err.net` with Try again remains correct there.
+  - If the re-fetch in `backToPicker` (`app.js:249-253`) fails, the picker shows "Couldn't reach the server." and stays usable.
+- **Inv. 8 (voice-first, text always).** Text: the button works, and focus lands on it. Voice:
+  - `err.rejected` is spoken.
+  - The hands-free way out ("back") is F1c-T06's, per PD-9 and FR-061. Until T06 merges, the copy names a command that isn't live. That is the accepted gap, the same as `intro.catch` in Wave A. See RISK R1 in thread 0007.
+- **Inv. 9 (spoken equals shown).** `rejected()` returns `say($('rejected-msg'), COPY['err.rejected'])`, one string for both. The browser check asserts the spoken text equals the normalized `#rejected-msg` and is spoken exactly once. `btn.picker` is shown only, as the copy table says. Both strings equal the spec table, which the frozen copy test pins.
+- **ADR 0002 Am. 4.** The stored record is provably unchanged by the dedupe.
+  - The server attributes each skip against **graded stops only**, never other skips (`practice.js:281-283`).
+  - `hit` doesn't depend on `elapsedMs`. `late_hit` needs `0 ≤ elapsedMs ≤ GRACE_MS`, and `elapsedMs` is always a non-negative integer (`app.js:184`). So the smallest entry is in grace exactly when any entry on that statement is.
+  - `skippedStatementIds` was already de-duplicated server-side. The `completed` event is therefore identical for the raw and the de-duplicated list.
+  - The cap can no longer be reached. `tests/practice-web-state.test.js` pins `MAX_SKIPPED ≥ LIMITS.narration` against the source.
+  - I added a dated note under Am. 4 recording the client rule, because the amendment said "the client lists each stop". The decision is unchanged.
+
+### Should fix (not blocking)
+- **T17-S1. The commit is titled "WIP F1c-T17: checkpoint …".** This is the third time (Wave A.1 O3). Squash or retitle it with an imperative subject before the merge, for example "Keep one skip per statement and show err.rejected on a 4xx (F1c-B23)", with a body giving the why (inv. 7, the T11 gate). Human merge step; no code change.
+- **T17-S2. The FR-060 DOM wiring has no test in `npm test`.**
+  - What isn't covered: `rejected()` instead of `err.net`; no further request to the attempt; `backToPicker` re-fetching the track.
+  - Where the proof lives today: an untracked scratchpad script. The ticket's named unit tests are all present and pass, which is why this isn't blocking.
+  - Smallest fix: QA's T01b rev-4 e2e tests ("US1.16 / US2.13 …", "US1.16 a 4xx at a stop …") land with no `todo`, as tasks.md already requires. QA records the SC-013 runs, with screenshots, in `qa-report.md` under "F1c-B23". B23 isn't closed on the engineer's report alone.
+
+### Optional
+- **T17-O1.** `app.js:297-298`: `S.stop && statementLi(...)` guards a value already dereferenced on line 297. The guard is dead. Drop it, or move the null check above both lines. This shape predates T17.
+- **T17-O2.** `state.js:111` maps 408 and 429 to `rejected`. The server sends neither today. If a rate limiter or a proxy that returns them is ever added, carve those two into `'net'` (a retry can help), with a test row.

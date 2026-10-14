@@ -343,3 +343,38 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
   - **qa-engineer:** the B23 re-run per T17's acceptance; the T01b additions.
   - **principal-architect:** check T17's diff at code review. No ADR is needed: client-only, no contract change.
   - The thread stays `open` (OQ-1, OQ-3, OQ-5, OQ-6).
+
+### principal-architect · 2026-10-14 · DECISION
+**Answering:** the F1c-T17 code review (F1c-B23 fix), diff `798b1d8..23aa509`
+- **Call: APPROVED. No blocking findings.**
+  - Inv. 7: a 4xx at a stop or at `complete` now shows `err.rejected` with one way out, not an endless Try again.
+  - Inv. 9: `say()` uses one string for display and speech. The browser check asserts spoken = shown.
+  - Inv. 8: holds for text. Voice "back" is F1c-T06's (accepted gap, PD-9).
+  - ADR 0002 Am. 4: the `completed` record is provably unchanged by one-skip-per-statement.
+  - Full reasoning and line refs: `docs/specs/F1c-practice-engine/review.md` "F1c-T17 code review".
+- **Evidence, re-run by me:**
+  - `npm test`: `# tests 475 / # pass 389 / # fail 0 / # todo 86`.
+  - `node tests/golden/run.mjs --replay`: `61 runs, 0 diffs, 0 allow-listed diffs`.
+  - The engineer's real-browser check, re-run: `checks 196 pass 196 fail 0`. It includes a real pack-version 404 at a stop and at `complete`, in text and voice at 390 and 1280 px.
+- **Should fix, not blocking:**
+  - (S1) Retitle or squash the "WIP … checkpoint" commit before the merge.
+  - (S2) The FR-060 DOM wiring is proven only by a scratchpad script. QA's T01b rev-4 e2e tests (no `todo`) and the SC-013 record in `qa-report.md` close B23, not this review.
+- **Docs:** a dated note under ADR 0002 Am. 4 records the client's one-entry-per-statement rule, with the D18 row updated. The decision is unchanged.
+- **Gates:** with T17 merged, F1c-T11's T17 gate and F1c-T01b's run gate clear. T06 may start.
+- **Dissent:** none recorded.
+
+### principal-architect · 2026-10-14 · RISK
+**R1. A voice-only dead end until T06.** `err.rejected` says 'Say "back"', but no recognizer is wired until F1c-T06. T11 is gated on T17, not T06, so the founder's voice-mode content iteration (the likeliest 404 source) can hit a panel the learner can only leave by hand.
+- Likelihood: M · Impact: M
+- **Mitigation:** run T06 straight after T17, as the plan already says. The founder plays in text mode, or keeps the button in reach, until T06 merges.
+
+### principal-architect · 2026-10-14 · RISK
+**R2. A blanket 4xx → `rejected` can mislabel a retryable status.** `errorKind` maps 408 and 429 to `rejected`. The server sends neither today. A future rate limiter, or a hosting proxy (Render), could, and the learner would lose an attempt that a retry would have saved.
+- Likelihood: L · Impact: M
+- **Mitigation:** whoever adds a limiter or a proxy rule also carves 408 and 429 into `'net'`, with a test row in "errorKind: …" (review T17-O2).
+
+### principal-architect · 2026-10-14 · RISK
+**R3. The UI behavior is proven outside `npm test`.**
+- **The gap:** the `#rejected` branch, "no further request to the attempt" and the track re-fetch are checked only by an untracked scratchpad Playwright script. `npm test` covers the pure helpers. A later T06, T09 or T10 edit to `app.js` could route a 4xx back to `netError` with every unit test still green.
+- Likelihood: M · Impact: M
+- **Mitigation:** QA's T01b rev-4 e2e tests land without `todo` before T06 merges. QA records SC-013 in `qa-report.md` (review T17-S2).

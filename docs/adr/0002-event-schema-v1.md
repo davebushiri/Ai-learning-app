@@ -120,3 +120,13 @@ Additive, under the change rule above. Reasons are in [`docs/specs/F1c-practice-
   - **What readers must not assume:** one stop per statement. A new `stopId` on a statement that already has a stop is a new stop, with its own triple (normally `false_interruption`).
   - **How readers join:** they attach `explained` and `graded` to their `stopped` by `seq` within the stop's single `appendEvents` batch, never by `stopId`. Events without `stopId` (older events, or clients that don't send it) stay valid.
   - **Verification:** `tests/practice-catch.test.js` "stopId is stored on stopped only when sent" and "a new stopId after a late hit is a new stop, a false interruption with its own triple (W-S1)".
+- **Note (2026-10-14, F1c-T17 code review, F1c-B23): how the client stays under the 20-entry cap.** This is a client rule, so it is a note; the decision above and the server rule are unchanged.
+  - The client sends at most **one `skipped` entry per `statementId`**, the one with the smallest `elapsedMs` (FR-059, `web/practice/state.js` `recordSkip`). So the list never exceeds `LIMITS.narration` (20) = the cap.
+  - **Why the stored record is the same:**
+    - Skips are attributed against graded stops only, never against each other.
+    - `hit` doesn't depend on `elapsedMs`, and `late_hit` needs `0 ≤ elapsedMs ≤ GRACE_MS`, so the smallest entry yields every attribution any other entry on that statement could.
+    - `skippedStatementIds` is already de-duplicated.
+  - A 4xx on `complete` is now shown as `err.rejected`, never retried (FR-060). The attempt stays without `completed`, the abandoned shape readers already handle.
+  - **Verification:** `tests/practice-web-state.test.js`:
+    - "recordSkip keeps one entry per statement with the smallest elapsedMs, in first-skip order";
+    - "the client skip list fits the server cap: MAX_SKIPPED ≥ LIMITS.narration".
