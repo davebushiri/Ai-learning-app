@@ -15,11 +15,25 @@ const VIAS = ['voice', 'button', 'key'];
 const RATINGS = ['had_it', 'partly', 'missed_it'];
 const STATUSES = ['met', 'partial', 'not_met', 'uncertain'];
 const PRA_ID = /^pra_[0-9A-HJKMNP-TV-Z]{26}$/; // practice routes handle only pra_ ids (ADR 0002 Am. 3)
+const STOP_ID = /^[A-Za-z0-9_-]{8,64}$/; // client id per STOP press, re-sent on Try again (FR-008)
+const MAX_SKIPPED = 20; // FR-009a
 
 const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const strings = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string') : []);
 const bad = msg => new HttpError(400, msg);
 const notFound = msg => new HttpError(404, msg);
+
+// FR-009a: absent or null → []; else an array of at most 20 {statementId: narration id, elapsedMs?}, or 400.
+function skippedOf(skipped, ids) {
+  if (skipped == null) return [];
+  if (!Array.isArray(skipped) || skipped.length > MAX_SKIPPED) throw bad(`skipped must be an array of at most ${MAX_SKIPPED} entries`);
+  return skipped.map(s => {
+    if (!isObj(s) || typeof s.statementId !== 'string' || !ids.includes(s.statementId)) {
+      throw bad('each skipped entry needs a known statementId');
+    }
+    return { statementId: s.statementId, elapsedMs: s.elapsedMs }; // elapsedMs is checked by attribute() (no grace if bad)
+  });
+}
 
 /** Rebuilds one practice attempt from its events (in seq order). Null if there is no `started`. */
 export function projectPracticeAttempt(events) {
@@ -36,7 +50,9 @@ export function projectPracticeAttempt(events) {
   const stopOf = e => p.stops.findLast(s => s.statementId === e.object.statement);
   for (const e of list) {
     if (e.verb === 'assisted') p.assisted = true;
-    else if (e.verb === 'stopped') p.stops.push({ statementId: e.object.statement, ...e.result, answer: null, graded: null });
+    else if (e.verb === 'stopped') {
+      p.stops.push({ statementId: e.object.statement, ...e.result, stopId: e.result?.stopId ?? null, answer: null, graded: null });
+    }
     else if (e.verb === 'explained' && stopOf(e)) stopOf(e).answer = e.result.text;
     else if (e.verb === 'graded' && stopOf(e)) stopOf(e).graded = e.result;
     else if (e.verb === 'completed') p.completed ??= e.result;
@@ -174,8 +190,15 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
     const idx = typeof body.statementId === 'string' ? ids.indexOf(body.statementId) : -1;
     if (idx === -1) throw bad('unknown statementId');
     if (body.answer != null && typeof body.answer !== 'string') throw bad('answer must be a string');
-    const repeat = a.stops.find(s => s.statementId === body.statementId);
-    if (repeat) return stopBody(repeat, ex); // FR-008: same body, no events
+    const stopId = body.stopId ?? null;
+    if (stopId !== null && (typeof stopId !== 'string' || !STOP_ID.test(stopId))) throw bad('stopId must match [A-Za-z0-9_-]{8,64}');
+    // FR-008: a known stopId (or, without one, the latest stop on the statement) replays its stored body, no events.
+    // A new stopId is a new stop, even on a statement that already has one (W-S1).
+    const repeat = stopId === null
+      ? a.stops.findLast(s => s.statementId === body.statementId)
+      : a.stops.find(s => s.stopId === stopId);
+    if (repeat && repeat.statementId !== body.statementId) throw bad('stopId was used on another statement');
+    if (repeat) return stopBody(repeat, ex);
     if (a.stops.some(s => ids.indexOf(s.statementId) > idx)) throw bad('stop is earlier than the last stop');
 
     const answer = body.answer ?? '';
@@ -193,7 +216,8 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
       event(a.context, 'stopped', object, {
         attributedStatementId, detection, elapsedMs,
         via: VIAS.includes(body.via) ? body.via : null,
-        stopLatencyMs: Number.isFinite(body.stopLatencyMs) && body.stopLatencyMs >= 0 ? body.stopLatencyMs : null
+        stopLatencyMs: Number.isFinite(body.stopLatencyMs) && body.stopLatencyMs >= 0 ? body.stopLatencyMs : null,
+        ...(stopId !== null && { stopId })
       }),
       event(a.context, 'explained', object, { text, chars: answer.length }),
       event(a.context, 'graded', object, graded)
@@ -205,19 +229,24 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
   function assist(attemptId) {
     const { a, track, ex } = load(attemptId);
     if (!a.assistAllowed) throw bad('assist is not allowed in a diagnostic');
-    if (!a.assisted) db.appendEvents([event(a.context, 'assisted', { type: 'exercise', id: ex.id }, { kind: 'reference' })]);
+    // After complete the reference is still shown, but nothing is marked assisted (W-S3).
+    if (!a.assisted && !a.completed) db.appendEvents([event(a.context, 'assisted', { type: 'exercise', id: ex.id }, { kind: 'reference' })]);
     return { assisted: true, reference: getReferences(track.id, ex.referenceIds) };
   }
 
   function completeBody(a, track, ex) {
     const c = a.completed;
+    const notGraded = Array.isArray(c.notGradedStatementIds) ? c.notGradedStatementIds : []; // missing reads as []
     return {
       summary: {
         planted: ex.answerKey.planted.length, hits: c.hits, lateHits: c.lateHits, misses: c.misses,
         falseInterruptions: c.falseInterruptions, notReached: c.notReached, cleanPass: c.cleanPass, flagged: c.flagged
       },
       // Stored id lists are the record and are never recomputed (ADR 0002 Am. 2).
-      missed: c.missedStatementIds.map(sid => ({ ...revealOf(plantedOf(ex, sid)), text: textOf(ex, sid) })),
+      // FR-009a: missed and not-graded statements in narration order; only a not-graded item carries notGraded.
+      missed: ex.narration.map(n => n.id)
+        .filter(sid => c.missedStatementIds.includes(sid) || notGraded.includes(sid))
+        .map(sid => ({ ...revealOf(plantedOf(ex, sid)), text: textOf(ex, sid), ...(notGraded.includes(sid) && { notGraded: true }) })),
       answered: a.stops.filter(isAnswered).map(s => {
         const p = plantedOf(ex, s.attributedStatementId);
         return {
@@ -239,18 +268,25 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
     const { a, track, ex } = load(attemptId);
     if (!isObj(body)) throw bad('body must be an object');
     if (ex.type !== 'catch') throw bad('complete is only for catch exercises');
-    if (a.completed) return completeBody(a, track, ex); // FR-009: idempotent
+    if (a.completed) return completeBody(a, track, ex); // FR-009: idempotent, so skipped is ignored on a repeat
     const ids = ex.narration.map(n => n.id);
     let lastIdx = ids.length - 1;
     if (body.lastStatementId != null) {
       lastIdx = typeof body.lastStatementId === 'string' ? ids.indexOf(body.lastStatementId) : -1;
       if (lastIdx === -1) throw bad('unknown lastStatementId');
     }
-    lastIdx = Math.max(lastIdx, ...a.stops.map(s => ids.indexOf(s.statementId)));
+    const skipped = skippedOf(body.skipped, ids);
+    lastIdx = Math.max(lastIdx, ...a.stops.map(s => ids.indexOf(s.statementId)), ...skipped.map(s => ids.indexOf(s.statementId)));
     const caught = new Set(a.stops.filter(isAnswered).map(s => s.attributedStatementId));
+    // FR-009a (ADR 0002 Am. 4): each skip is attributed like a live stop, against the graded stops only
+    // (never against other skips). One that lands on a still-uncaught planted statement makes it not graded.
+    const skippedHits = new Set(skipped.map(s => attribute(a, ex, ids.indexOf(s.statementId), s.elapsedMs))
+      .filter(r => r.detection !== 'false_interruption').map(r => r.attributedStatementId));
     const uncaught = ex.answerKey.planted.map(p => p.statementId).filter(sid => !caught.has(sid));
-    const missedStatementIds = uncaught.filter(sid => ids.indexOf(sid) <= lastIdx);
-    const notReachedStatementIds = uncaught.filter(sid => ids.indexOf(sid) > lastIdx);
+    const notGradedStatementIds = ids.filter(sid => uncaught.includes(sid) && skippedHits.has(sid));
+    const scored = uncaught.filter(sid => !skippedHits.has(sid));
+    const missedStatementIds = scored.filter(sid => ids.indexOf(sid) <= lastIdx);
+    const notReachedStatementIds = scored.filter(sid => ids.indexOf(sid) > lastIdx);
     const count = d => a.stops.filter(s => s.detection === d).length;
     const falseInterruptions = count('false_interruption');
     db.appendEvents([event(a.context, 'completed', { type: 'exercise', id: ex.id }, {
@@ -258,7 +294,8 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
       notReached: notReachedStatementIds.length,
       cleanPass: ex.answerKey.planted.length === 0 && falseInterruptions === 0 && lastIdx === ids.length - 1,
       flagged: a.stops.filter(s => s.graded?.overall === 'uncertain').length,
-      missedStatementIds, notReachedStatementIds
+      missedStatementIds, notReachedStatementIds,
+      skippedStatementIds: [...new Set(skipped.map(s => s.statementId))], notGradedStatementIds
     })]);
     return completeBody(reload(attemptId), track, ex);
   }

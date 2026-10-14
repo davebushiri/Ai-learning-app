@@ -566,13 +566,45 @@ describe('guards', () => {
   });
   const specifiers = file => [...readFileSync(file, 'utf8').matchAll(/(?:from\s+|import\s*\(\s*|import\s+)['"]([^'"]+)['"]/g)].map(m => m[1]);
 
-  test('practice modules and server/ai, server/prompts never import each other', () => {
-    const practice = [...walk(path.join(ROOT, 'server', 'services')), ...walk(path.join(ROOT, 'server', 'routes'))]
-      .filter(f => /^practice/.test(path.basename(f)));
-    assert.ok(practice.length >= 4, practice.join(', '));
-    for (const f of practice) {
-      for (const s of specifiers(f)) assert.doesNotMatch(s, /(^|\/)(ai|prompts)(\/|$)|llm\.js|ai-client/, `${path.relative(ROOT, f)} imports ${s}`);
+  // Every file reachable from `entries` through relative import specifiers, until closure (W-S5).
+  const reachable = entries => {
+    const seen = new Set();
+    const queue = [...entries];
+    while (queue.length) {
+      const f = queue.shift();
+      if (seen.has(f)) continue;
+      seen.add(f);
+      if (!existsSync(f) || !f.endsWith('.js')) continue;
+      for (const s of specifiers(f)) if (s.startsWith('.')) queue.push(path.resolve(path.dirname(f), s));
     }
+    return [...seen];
+  };
+  const forbidden = (files, root) => files.map(f => path.relative(root, f).split(path.sep).join('/'))
+    .filter(r => /^server\/(ai|prompts)\//.test(r) || /(^|\/)(ai-client[^/]*|llm\.js)$/.test(r));
+
+  test('practice modules never reach server/ai or server/prompts, transitively', () => {
+    const practice = [...walk(path.join(ROOT, 'server', 'services')), ...walk(path.join(ROOT, 'server', 'routes'))]
+      .filter(f => /^practice.*\.js$/.test(path.basename(f)));
+    assert.ok(practice.length >= 4, practice.join(', '));
+    const closure = reachable(practice);
+    assert.ok(closure.some(f => f.endsWith(path.join('server', 'packs.js'))), 'the walk follows transitive imports');
+    assert.deepEqual(forbidden(closure, ROOT), []);
+
+    // The walk catches a forbidden module two hops away (so this guard can fail).
+    const tmp = mkdtempSync(path.join(tmpdir(), 'f1c-t13-walk-'));
+    try {
+      for (const d of ['server/services', 'server/ai', 'server/lib']) mkdirSync(path.join(tmp, d), { recursive: true });
+      writeFileSync(path.join(tmp, 'server/services/practice-x.js'), "import { y } from '../lib/helper.js';\n");
+      writeFileSync(path.join(tmp, 'server/lib/helper.js'), "export { z } from '../ai/gateway.js';\nimport '../llm.js';\n");
+      writeFileSync(path.join(tmp, 'server/ai/gateway.js'), 'export const z = 1;\n');
+      writeFileSync(path.join(tmp, 'server/llm.js'), '');
+      assert.deepEqual(forbidden(reachable([path.join(tmp, 'server/services/practice-x.js')]), tmp).sort(), ['server/ai/gateway.js', 'server/llm.js']);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  test('server/ai and server/prompts never import a practice module', () => {
     for (const f of [...walk(path.join(ROOT, 'server', 'ai')), ...walk(path.join(ROOT, 'server', 'prompts'))]) {
       for (const s of specifiers(f)) assert.doesNotMatch(s, /practice/, `${path.relative(ROOT, f)} imports ${s}`);
     }
