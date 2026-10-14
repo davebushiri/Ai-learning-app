@@ -535,5 +535,113 @@
         "overall": "not_met"
       }
     }
+  ],
+  "qaRowsNote": "qa-engineer, 2026-10-14, F1c-T15 (spec SC-012, PD-4; architect overfitting RISK in thread 0007): QA-written answers, not from the research file. keyword-list rows are comma-separated rubric words with at most one function word (expected partial: FR-019 caps them under matcher@1 and matcher@2); short-correct rows are 1-2 sentences of <= 25 words, correct by the draft whyWrong and acceptableCorrections, leaving <= 2 content words after matched forms are removed (expected met under matcher@2; capped to partial under matcher@1, recorded in qa-report.md Wave A.1). Graded against the research drafts with draftSynonyms (SC-012) and, from F1c-T11, against packs/applied-ai (SC-003b).",
+  "qaRows": [
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "partial",
+      "tags": [
+        "keyword-list"
+      ],
+      "text": "working memory, call, training separate, weights, window holds current request, more input fits",
+      "expect": {
+        "explanation": "partial",
+        "correction": "partial",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "partial",
+      "tags": [
+        "keyword-list"
+      ],
+      "text": "different models, incompatible vector spaces, meaningless rankings, re-embed corpus, one model per index",
+      "expect": {
+        "explanation": "partial",
+        "correction": "partial",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "partial",
+      "tags": [
+        "keyword-list"
+      ],
+      "text": "higher recall, more noise, cost, latency, tune k with metrics, retrieve, rerank",
+      "expect": {
+        "explanation": "partial",
+        "correction": "partial",
+        "overall": "partial"
+      }
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "clear",
+      "tags": [
+        "short-correct"
+      ],
+      "text": "Different models give incompatible vector spaces, so rankings are meaningless. Re-embed the whole corpus and keep one model per index.",
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "clear",
+      "tags": [
+        "short-correct"
+      ],
+      "text": "RAG retrieves at query time and adds passages to the prompt; the weights are unchanged and the index is updated, not the model.",
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "clear",
+      "tags": [
+        "short-correct"
+      ],
+      "text": "The schema guarantees fields and types, but values can be fabricated. Validate citations against the index and keep content checks separate from format.",
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "clear",
+      "tags": [
+        "short-correct"
+      ],
+      "text": "Higher recall brings more noise, cost and latency. Tune k with metrics, then retrieve and rerank.",
+      "expect": {
+        "explanation": "met",
+        "correction": "met",
+        "overall": "met"
+      }
+    }
   ]
 }

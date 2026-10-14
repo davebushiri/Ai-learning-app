@@ -497,5 +497,41 @@
       "stuffed"
     ],
     "note": "FR-019: a keyword list of rubric words is capped at partial"
+  },
+  {
+    "exercise": "learn-wind",
+    "part": "teachBack:1",
+    "answer": "the wind back, open space, clear people",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer",
+      "stuffed"
+    ],
+    "note": "FR-019 (F1c-T15): a keyword list padded with exactly one article (function-word share 1/7) is still capped at partial"
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "challenges:1",
+    "answer": "Fly the kites away from the road and put marshals with barrier tape at the edge.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "short-correct"
+    ],
+    "note": "FR-019 (F1c-T15): a concise correct sentence with <= 2 leftover content words is met (capped under matcher@1)"
+  },
+  {
+    "exercise": "scenario-festival",
+    "part": "transfer",
+    "answer": "Keep kites away from the car park, with children behind a barrier.",
+    "class": "clear",
+    "expect": "met",
+    "tags": [
+      "answer",
+      "short-correct"
+    ],
+    "note": "FR-019 (F1c-T15): a concise correct sentence with <= 2 leftover content words is met (capped under matcher@1)"
   }
 ]

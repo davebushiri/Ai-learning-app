@@ -168,3 +168,65 @@ All 6 differing rows are `partial` where `met` was labelled: catch-lines `stop:s
 - Update FR-050 to the B21 ruling and `MATCHER_VERSION` (W-S6). Remove the 25 `F1c-T04` todo markers once B20 and W-B2 are fixed.
 - Add ≥ 2 module-1 keyword-list rows and ≥ 2 short correct module-1 sentences to the labelled sets before `matcher@2` merges (architect RISK, thread 0007).
 - T01b: turn the browser checks above into `tests/e2e/F1c.e2e.mjs`. The pack dir is a folder of packs (B22).
+
+---
+
+# Wave A.1
+
+## F1c-T15: enlarged labelled sets and the SC-012 validity check (2026-10-14)
+
+**Author:** qa-engineer · **Branch:** `team/agents` at `ae7fc73` (T12, T13 and T14 are WIP checkpoints on the branch; T15 is uncommitted in the working tree). Not committed by QA.
+
+### Rows added
+
+| File | Added | Class / expect | Exercises / parts |
+|---|---|---|---|
+| `tests/fixtures/practice/m1-labelled-answers.json` `qaRows` (new; `rows` untouched) | 3 `keyword-list` | `partial` / all dimensions `partial` | 3 different module-1 draft catch exercises (01, 04, 08); each list has at most one function word |
+| same | 4 `short-correct` | `clear` / all dimensions `met` | 4 different module-1 draft catch exercises (02, 04, 05, 08); 16 to 24 words, 1 or 2 sentences |
+| same | `qaRowsNote` | | who, when and why |
+| `tests/fixtures/practice/labelled-answers.json` (accept-pack) | 1 `stuffed` (keyword list padded with exactly one article) | `partial` / `partial` | `learn-wind teachBack:1` |
+| same | 2 `short-correct` | `clear` / `met` | `scenario-festival challenges:1`, `scenario-festival transfer` (neither is a B20 part) |
+
+The accept-pack set is now 48 rows (12 clear, 9 incorrect, 11 partial, 8 valid-alternative, 8 should-flag).
+
+### Validity check (spec SC-012): run on `matcher@1`, before T12 merges
+
+**How:** T12's WIP checkpoint (`a9d7cb5`, `matcher@2`) is already in the working tree, so the run uses `matcher@1` exactly as committed at `303dbe8` (blob `4132545`, `MATCHER_VERSION = 'matcher@1'`, cap `total - removed.size <= stuffedMaxRest`). A Node module hook (`--import`, scratch only) redirects `server/services/practice-matcher.js` to that blob, and the **named tests run unchanged**:
+
+`node --import <scratch>/v1-register.mjs --test --test-name-pattern="SC-012|SC-003 labelled" tests/acceptance/F1c.test.js` → exit 0, `# todo 2`. SC-012 diagnostics:
+
+```
+# matcher@1 m1-catch-01-context-window s2 keyword-list: expected partial, actual partial (explanation partial, correction partial)
+# matcher@1 m1-catch-04-embeddings s6 keyword-list: expected partial, actual partial (explanation partial, correction partial)
+# matcher@1 m1-catch-08-design-tradeoffs s5 keyword-list: expected partial, actual partial (explanation partial, correction partial)
+# matcher@1 m1-catch-04-embeddings s6 short-correct: expected met, actual partial (explanation partial, correction partial)
+# matcher@1 m1-catch-02-rag-vs-finetune s3 short-correct: expected met, actual partial (explanation partial, correction partial)
+# matcher@1 m1-catch-05-structured-outputs s3 short-correct: expected met, actual partial (explanation partial, correction partial)
+# matcher@1 m1-catch-08-design-tradeoffs s5 short-correct: expected met, actual partial (explanation partial, correction partial)
+```
+
+**Result: valid.** Under `matcher@1`, all 4 short-correct rows are `partial` and all 3 keyword-list rows are `partial`, as SC-012 requires. To show the `partial` comes from the FR-019(a) cap and not from too few matched items, the same rows were graded by a scratch copy of the `matcher@1` blob with the cap disabled (`stuffedMaxRest: -1`): all 7 rows are then `met` on both dimensions. So every row matches enough items for `met`, and FR-019(a) is what caps it: the short-correct rows test the cap, and the keyword-list rows test that the cap still fires.
+
+The same `matcher@1` run of "SC-003 labelled set thresholds" on the enlarged accept-pack set: `clear` → `met` 8/12 (66.7%), `valid-alternative` → `met` 4/8 (50%). The 8 misses are the 6 B20 rows plus the 2 new short-correct rows, all `partial` from the cap, and the new `stuffed` row is `partial`. So the new accept-pack rows also exercise FR-019 under `matcher@1`.
+
+### Informational only: the same tests on T12's unmerged WIP (`matcher@2`, working tree)
+
+`node --test --test-name-pattern="fixture:|SC-012|SC-003" tests/acceptance/F1c.test.js` → `# tests 8 · # pass 5 · # fail 0 · # todo 3`. SC-012: 3/3 keyword-list `partial`, 4/4 short-correct `met`. SC-003 on 48 rows: `clear` → `met` 12/12, `valid-alternative` → `met` 8/8, all gates met. This is **not** the T16 verdict: T12 isn't merged, and QA re-runs at T16. The SC-012 marker stays `todo: 'F1c-T12'` as the ticket says.
+
+### Tests (T15)
+
+| Test | Result now |
+|---|---|
+| "fixture: m1 qaRows hold ≥ 2 keyword-list rows expecting partial and ≥ 2 short-correct rows expecting met, each on a planted statement of a module-1 draft catch exercise" (new) | pass. Red first against the HEAD fixtures (`qaRowsNote says who, when and why`) |
+| "fixture: labelled-answers.json has ≥ 40 rows, …" (old → new: ≥ 3 `stuffed`, one padded with exactly one article; ≥ 1 `short-correct` `clear`/`met` on a non-B20 part) | pass. Red first against the HEAD fixture (`keyword-list rows capped at partial (FR-019)`) |
+| "SC-012 FR-019 on module-1 wording: …" (new, `todo: 'F1c-T12'`) | todo. Fails under `matcher@1` (validity, above); passes on T12 WIP |
+| "SC-003b module-1 labelled set thresholds" (old → new: grades `rows` + `qaRows`, still `todo: 'F1c-T11'`) | todo; fails at `packs/applied-ai loads` (T11 not built) |
+
+### Regression (fresh, working tree with T12/T13/T14 WIP plus T15)
+
+- `npm test` → exit 0 · `# tests 464` · `# pass 351` · `# fail 0` · `# todo 113` · `# skipped 0`. Todo reasons: F1a-T12 13, F1a-T13b 27, F1a-T14 22, F1a-T18 1, F1c-T03 1, F1c-T04 25, F1c-T07 12, F1c-T08 10, F1c-T11 1, **F1c-T12 1** (new).
+- `node --test tests/acceptance/F1c.test.js` → `# tests 62 · # pass 12 · # fail 0 · # todo 50`.
+
+### Notes for the lead
+- **Merge order.** The merge order is T15 → T13 → T12, but T12's WIP checkpoint (`a9d7cb5`) is already on `team/agents` ahead of T15. The validity record above is pinned to the `303dbe8` blob, so it stays valid. Please don't treat the branch checkpoint as T12's merge.
+- **LR-9.** The learning-designer may review the 7 module-1 `qaRows` in thread 0007 (advisory).

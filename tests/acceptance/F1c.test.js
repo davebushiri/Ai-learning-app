@@ -140,6 +140,9 @@ test('fixture: accept-pack covers every type, a zero-planted catch, a string int
   assert.ok(schedule.diagnostic.length >= 1 && schedule.plan.length === schedule.days);
 });
 
+// The parts of the 6 rows bug F1c-B20 lists (concise correct answers capped by FR-019 under matcher@1).
+const B20_PARTS = ['catch-lines stop:s3', 'catch-lines stop:s5', 'scenario-festival design', 'interview-launch followUps:0'];
+
 test('fixture: labelled-answers.json has ≥ 40 rows, ≥ 8 per class and the required cases, each on a real part', () => {
   const rows = readLabelled();
   assert.ok(Array.isArray(rows) && rows.length >= 40, `rows: ${rows.length}`);
@@ -161,7 +164,15 @@ test('fixture: labelled-answers.json has ≥ 40 rows, ≥ 8 per class and the re
   assert.ok(tagged('rejected-red-flag').some(r => /wouldn.t/i.test(r.answer) && r.expect === 'met'), 'a rejected red flag row');
   assert.ok(tagged('asserted-red-flag').some(r => r.expect === 'uncertain'), 'an asserted red flag row');
   assert.ok(tagged('two-of-three').length >= 2, '3-item dimensions answered with 2 items (PD-3)');
-  assert.ok(tagged('stuffed').length >= 2 && tagged('stuffed').every(r => r.expect === 'partial'), 'keyword-list rows capped at partial (FR-019)');
+  assert.ok(tagged('stuffed').length >= 3 && tagged('stuffed').every(r => r.expect === 'partial'), 'keyword-list rows capped at partial (FR-019)');
+  const articles = r => (r.answer.toLowerCase().match(/\b(a|an|the)\b/g) ?? []).length;
+  assert.ok(tagged('stuffed').some(r => articles(r) === 1), 'a keyword list padded with exactly one article (F1c-T15, PD-4)');
+  assert.ok(tagged('short-correct').length >= 1, 'a short correct sentence row (F1c-T15)');
+  for (const r of tagged('short-correct')) {
+    assert.equal(r.class, 'clear', `short-correct ${r.part}`);
+    assert.equal(r.expect, 'met', `short-correct ${r.part}`);
+  }
+  assert.ok(tagged('short-correct').some(r => !B20_PARTS.includes(`${r.exercise} ${r.part}`)), 'a short-correct row on a part B20 does not list');
   for (const c of CLASSES) {
     assert.ok(rows.some(r => r.class === c && r.part.startsWith('stop:')), `${c}: stop-level row`);
     assert.ok(rows.some(r => r.class === c && !r.part.startsWith('stop:')), `${c}: answer-level row`);
@@ -180,6 +191,49 @@ test('fixture: m1-labelled-answers.json has one row per research answer with its
     }
   }
   assert.deepEqual(m1.draftSynonyms, src.proposedLexicon.synonyms);
+});
+
+// The learning-designer's draft module-1 exercises (read only; SC-012 grades against them).
+const M1_DRAFTS = path.join(ROOT, 'docs/research/applied-ai/module-1/exercises');
+const readDraft = id => {
+  const f = path.join(M1_DRAFTS, `${id}.json`);
+  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null;
+};
+const QA_TAGS = ['keyword-list', 'short-correct'];
+
+test('fixture: m1 qaRows hold ≥ 2 keyword-list rows expecting partial and ≥ 2 short-correct rows expecting met, each on a planted statement of a module-1 draft catch exercise', () => {
+  const m1 = readM1Labelled();
+  assert.ok(typeof m1.qaRowsNote === 'string' && m1.qaRowsNote.trim(), 'qaRowsNote says who, when and why');
+  assert.ok(Array.isArray(m1.qaRows), 'qaRows is an array');
+  const wordCount = t => t.split(/\s+/).filter(Boolean).length;
+  for (const [i, r] of m1.qaRows.entries()) {
+    const at = `qaRows[${i}]`;
+    assert.deepEqual(keys(r), ['class', 'exercise', 'expect', 'part', 'statementId', 'tags', 'text'], `${at} fields (no research 'expected')`);
+    assert.equal(r.tags.length, 1, `${at} tags`);
+    assert.ok(QA_TAGS.includes(r.tags[0]), `${at} tag ${r.tags[0]}`);
+    const ex = readDraft(r.exercise);
+    assert.ok(ex, `${at}: draft ${r.exercise} exists`);
+    assert.equal(ex.type, 'catch', `${at}: ${r.exercise} is a catch exercise`);
+    assert.equal(r.part, `stop:${r.statementId}`, `${at} part`);
+    assert.ok(ex.answerKey.planted.some(p => p.statementId === r.statementId), `${at}: ${r.statementId} is planted`);
+    assert.doesNotThrow(() => graderInputFor(ex, r.part, r.text), `${at} grader input`);
+    if (r.tags[0] === 'keyword-list') {
+      assert.equal(r.class, 'partial', `${at} class`);
+      assert.deepEqual(r.expect, { explanation: 'partial', correction: 'partial', overall: 'partial' }, `${at} expect`);
+      assert.ok((r.text.match(/,/g) ?? []).length >= 2, `${at}: comma-separated`);
+      assert.doesNotMatch(r.text, /[.;:!?]/, `${at}: a list, not a sentence`);
+    } else {
+      assert.equal(r.class, 'clear', `${at} class`);
+      assert.deepEqual(r.expect, { explanation: 'met', correction: 'met', overall: 'met' }, `${at} expect`);
+      assert.ok(wordCount(r.text) <= 25, `${at}: ${wordCount(r.text)} words > 25`);
+      assert.ok(r.text.split(/[.!?]+/).filter(s => s.trim()).length <= 2, `${at}: one or two sentences`);
+    }
+  }
+  for (const tag of QA_TAGS) {
+    const rs = m1.qaRows.filter(r => r.tags[0] === tag);
+    assert.ok(rs.length >= 2, `${tag}: ${rs.length} rows < 2`);
+    assert.ok(new Set(rs.map(r => r.exercise)).size >= 2, `${tag}: rows on < 2 exercises`);
+  }
 });
 
 test('C3: no F1c test calls the card engine routes (subjects, trades, scenario)', () => {
@@ -270,7 +324,8 @@ test('SC-003b module-1 labelled set thresholds', { todo: 'F1c-T11' }, async t =>
   const { lexicon } = getTrack('applied-ai');
   const asList = v => (Array.isArray(v) ? v : [v]);
   const dimMisses = [];
-  const rows = readM1Labelled().rows.map(r => {
+  const m1 = readM1Labelled();
+  const rows = [...m1.rows, ...m1.qaRows].map(r => {
     const ex = getExercise('applied-ai', r.exercise);
     assert.ok(ex, `exercise ${r.exercise}`);
     const out = matcherGrade(graderInputFor(ex, r.part, r.text, lexicon).input);
@@ -282,6 +337,30 @@ test('SC-003b module-1 labelled set thresholds', { todo: 'F1c-T11' }, async t =>
   const { table, lines, failures } = evaluateThresholds(rows);
   for (const l of [...formatConfusion(table), ...lines, ...dimMisses.map(m => `dimension differs: ${m}`)]) t.diagnostic(l);
   assert.deepEqual(failures, []);
+});
+
+// =============================================================================================
+// F1c-T12 / F1c-T15: SC-012, FR-019 (matcher@2) on module-1 wording
+// =============================================================================================
+
+// Gate for F1c-T12's merge. Validity (spec SC-012): under matcher@1 every short-correct row came out
+// partial, so these rows exercise FR-019(a); the run is recorded in qa-report.md "Wave A.1".
+test('SC-012 FR-019 on module-1 wording: keyword lists partial, short correct sentences met (research drafts, draftSynonyms)', { todo: 'F1c-T12' }, async t => {
+  const { matcherGrade, combineOverall, MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
+  const m1 = readM1Labelled();
+  const lexicon = { synonyms: m1.draftSynonyms };
+  const want = { 'keyword-list': 'partial', 'short-correct': 'met' };
+  const misses = [];
+  for (const r of m1.qaRows) {
+    const tag = r.tags[0];
+    const out = matcherGrade(graderInputFor(readDraft(r.exercise), r.part, r.text, lexicon).input);
+    const ds = [out.dimensions.explanation, out.dimensions.correction];
+    const actual = combineOverall(ds);
+    t.diagnostic(`${MATCHER_VERSION} ${r.exercise} ${r.statementId} ${tag}: expected ${want[tag]}, actual ${actual} (explanation ${ds[0].status}, correction ${ds[1].status})`);
+    if (actual !== want[tag]) misses.push(`${r.exercise} ${r.statementId} ${tag}: ${actual}`);
+  }
+  for (const tag of Object.keys(want)) assert.ok(m1.qaRows.filter(r => r.tags[0] === tag).length >= 2, `${tag}: < 2 rows`);
+  assert.deepEqual(misses, [], `SC-012 needs 100% per tag under ${MATCHER_VERSION}`);
 });
 
 // =============================================================================================
