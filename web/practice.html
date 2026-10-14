@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practice</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="practice/practice.css">
+</head>
+<body class="practice">
+  <header class="topbar">
+    <h1>Practice</h1>
+    <label class="check"><input type="checkbox" id="voice-toggle" checked> Read aloud</label>
+  </header>
+
+  <main>
+    <!-- PICKER -->
+    <section id="picker-screen" class="screen" aria-labelledby="picker-title">
+      <h2 id="picker-title" tabindex="-1">Choose an exercise</h2>
+      <ul id="track-list" class="choice-list" aria-label="Tracks"></ul>
+      <div id="exercise-list" class="exercise-list"></div>
+      <p id="picker-msg" class="muted" aria-live="polite"></p>
+    </section>
+
+    <!-- NARRATION -->
+    <section id="narration-screen" class="screen" aria-labelledby="exercise-title" hidden>
+      <h2 id="exercise-title" tabindex="-1"></h2>
+      <p id="intro" class="muted"></p>
+      <ol id="statements" class="transcript" aria-live="polite"></ol>
+      <p id="end-msg" aria-live="polite"></p>
+      <button id="stop-btn" class="stop" type="button" aria-keyshortcuts="Space">Stop</button>
+      <p id="stop-hint" class="hint muted">Space works too.</p>
+      <button id="assist-btn" class="secondary" type="button" hidden></button>
+      <div id="reference-box" hidden>
+        <h3 id="reference-title" tabindex="-1">Reference</h3>
+        <p id="assist-msg" aria-live="polite"></p>
+        <pre id="reference" class="reference"></pre>
+      </div>
+    </section>
+
+    <!-- ANSWER -->
+    <section id="answer-panel" class="practice-panel" hidden>
+      <label for="answer-input" id="answer-prompt"></label>
+      <textarea id="answer-input" rows="4" maxlength="2000"></textarea>
+      <div class="row">
+        <button id="submit-btn" class="primary" type="button">Submit</button>
+      </div>
+      <p class="muted hint-left">Enter submits. Shift+Enter starts a new line.</p>
+    </section>
+
+    <!-- NETWORK ERROR -->
+    <section id="net-error" class="practice-panel error" role="alert" hidden>
+      <p id="net-error-msg"></p>
+      <div class="row">
+        <button id="retry-btn" class="primary" type="button">Try again</button>
+        <button id="skip-btn" class="secondary" type="button">Skip this stop</button>
+      </div>
+    </section>
+
+    <!-- FEEDBACK -->
+    <section id="feedback-panel" class="practice-panel" hidden>
+      <p id="feedback-text" aria-live="polite"></p>
+      <ul id="feedback-dims" class="dims"></ul>
+      <p id="feedback-corrected" class="corrected-line" hidden></p>
+      <button id="continue-btn" class="primary" type="button">Continue</button>
+    </section>
+
+    <!-- REVEAL -->
+    <section id="reveal" class="screen" aria-labelledby="reveal-title" hidden>
+      <h2 id="reveal-title" tabindex="-1">Results</h2>
+      <p id="summary-line" class="summary"></p>
+      <ul id="missed-list" class="missed"></ul>
+      <h3>Reference</h3>
+      <pre id="reveal-reference" class="reference"></pre>
+      <h3>Sources</h3>
+      <ul id="sources-list" class="sources"></ul>
+      <h3 id="answered-title">Your answers</h3>
+      <ul id="answered-list" class="answered"></ul>
+      <p id="next-hint" class="muted"></p>
+      <button id="next-btn" class="primary" type="button"></button>
+    </section>
+  </main>
+
+  <script type="module" src="practice/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+/* Practice page only; styles.css is linked read-only. */
+.practice .topbar label.check { font-size: .95rem; }
+.practice .screen h2 { margin: 0; }
+.choice-list, .exercise-list ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.choice-list button, .exercise-list button { width: 100%; text-align: left; }
+.choice-list button[aria-pressed="true"] { outline: 2px solid var(--hazard); }
+.exercise-list h3 { margin: 12px 0 6px; font-size: 1rem; color: var(--muted); }
+
+.transcript li.interrupted { border-left-color: var(--danger); }
+.transcript li.corrected { border-left-color: var(--ok); }
+.transcript li .corrected-text { display: block; margin-top: 6px; color: var(--ok); }
+.practice .stop { font-size: 2rem; }
+
+.practice-panel {
+  background: var(--panel); border: 2px solid var(--hazard); border-radius: var(--radius);
+  padding: 16px; margin-top: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.practice-panel.error { border-color: var(--danger); }
+.practice-panel p { margin: 0; }
+#answer-prompt { font-weight: 700; }
+.hint-left { font-size: .85rem; }
+
+.dims, .answered, .sources { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.dims ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: .95rem; }
+.corrected-line { color: var(--ok); }
+.answered > li { background: var(--panel); padding: 12px 14px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; }
+.answered blockquote { margin: 0; padding-left: 10px; border-left: 3px solid #3a3f45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.answered button[aria-pressed="true"] { background: var(--hazard); color: #111; font-weight: 700; }
+.reference {
+  white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; margin: 0;
+  background: var(--panel); padding: 12px 14px; border-radius: var(--radius);
+}
+.sources a { color: var(--hazard); overflow-wrap: anywhere; }
+.summary { font-size: 1.2rem; font-weight: 700; margin: 0; }
+button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .practice * { transition: none !important; animation: none !important; }
+}
