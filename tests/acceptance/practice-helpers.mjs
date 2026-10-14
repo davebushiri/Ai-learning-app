@@ -6,7 +6,8 @@
 // by the tests themselves, lazily, for the in-process labelled sets (spec SC-003, SC-003b).
 
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startServer } from '../helpers/server.mjs';
@@ -117,8 +118,20 @@ export const readM1Labelled = () => readJson(path.join(FIXTURES, 'm1-labelled-an
 // Server and HTTP
 // ---------------------------------------------------------------------------
 
+// PRACTICE_PACKS_DIR (spec FR-002) is a directory OF packs: the loader reads <dir>/<name>/practice.json.
+// accept-pack is one pack, so tests point the server at a temp parent holding a copy of it as
+// <tmp>/kite-craft (made once per process, removed on exit).
+let acceptParent = null;
+export function acceptPacksDir() {
+  if (acceptParent) return acceptParent;
+  acceptParent = mkdtempSync(path.join(tmpdir(), 'f1c-accept-'));
+  cpSync(ACCEPT_PACK_DIR, path.join(acceptParent, TRACK), { recursive: true });
+  process.once('exit', () => rmSync(acceptParent, { recursive: true, force: true }));
+  return acceptParent;
+}
+
 // Every F1c server runs MOCK (no AI call is made by the practice engine anyway) on a free port.
-export const startPractice = ({ packsDir = ACCEPT_PACK_DIR, dbPath, env = {} } = {}) =>
+export const startPractice = ({ packsDir = acceptPacksDir(), dbPath, env = {} } = {}) =>
   startServer({ MOCK: '1', PRACTICE_PACKS_DIR: packsDir, ...(dbPath ? { DB_PATH: dbPath } : {}), ...env });
 
 export function api(base) {

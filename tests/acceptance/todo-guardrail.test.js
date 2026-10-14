@@ -91,7 +91,8 @@ test('guardrail scanner: accepts ticket IDs with and without a suffix', () => {
   const src = `test('a', { ${WORD}: 'F1a-T12' }, f);\ntest('b', { ${WORD}: "F1a-T13b" }, f);\nt.${WORD}('F1a-T17d');\ntest('c', { ${WORD}: 'F1c-T04' }, f);`;
   const { reasons, violations } = scanTodos(src);
   assert.deepEqual(violations, []);
-  assert.deepEqual(reasons.map(r => r.reason), ['F1a-T12', 'F1a-T13b', 'F1a-T17d', 'F1c-T04']);
+  // Property-form reasons are listed before call-form ones (scan order), so F1c-T04 precedes F1a-T17d.
+  assert.deepEqual(reasons.map(r => r.reason), ['F1a-T12', 'F1a-T13b', 'F1c-T04', 'F1a-T17d']);
 });
 
 test('guardrail scanner: flags a bad reason, a non-literal reason, shorthand, and test.todo without a reason', () => {

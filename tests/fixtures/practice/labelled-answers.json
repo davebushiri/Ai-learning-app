@@ -473,5 +473,29 @@
       "long-unmatched"
     ],
     "note": "FR-021(a)"
+  },
+  {
+    "exercise": "catch-lines",
+    "part": "stop:s3",
+    "answer": "heavier line, more drag, kite lower, thinner line, flies higher",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "stop",
+      "stuffed"
+    ],
+    "note": "FR-019: a keyword list of rubric words is capped at partial"
+  },
+  {
+    "exercise": "interview-launch",
+    "part": "interview",
+    "answer": "wind direction, open space, helper holds kite",
+    "class": "partial",
+    "expect": "partial",
+    "tags": [
+      "answer",
+      "stuffed"
+    ],
+    "note": "FR-019: a keyword list of rubric words is capped at partial"
   }
 ]

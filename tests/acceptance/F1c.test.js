@@ -1,5 +1,5 @@
 // F1c acceptance tests, HTTP level (F1c-T01a). Written from docs/specs/F1c-practice-engine/spec.md
-// (revision 2) before the engine exists. A test waiting on a ticket is declared { todo: 'F1c-T##' };
+// (revision 2) before the engine exists. A test waiting on a ticket carries that ticket's ID as its todo reason;
 // QA removes the marker when verifying that ticket (tasks.md "todo mapping").
 //
 // Fixtures: tests/fixtures/practice/accept-pack (QA-owned, fictional subject "Kite Craft"), and the
@@ -14,7 +14,7 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, m
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
-  ACCEPT_PACK_DIR, CLASSES, FR004_KEYS, LEAK_ALLOW, PRA_ID_RE, ROOT, TRACK,
+  ACCEPT_PACK_DIR, CLASSES, acceptPacksDir, FR004_KEYS, LEAK_ALLOW, PRA_ID_RE, ROOT, TRACK,
   allEvents, api, eventsFor, evaluateThresholds, formatConfusion, graderInputFor, ok, practiceLeakScan,
   readLabelled, readM1Labelled, readPackDir, request, startPractice, tempDbPath
 } from './practice-helpers.mjs';
@@ -77,7 +77,8 @@ test('helper: practiceLeakScan reports every FR-004 key at any depth by its JSON
 
 test('helper: practiceLeakScan allow patterns: [] matches any index and allows everything beneath', () => {
   const schedule = { plan: [{ day: 1, blocks: [{ kind: 'catch', minutes: 30 }, { kind: 'review', x: { reveal: 1 } }] }], kind: 'top' };
-  assert.deepEqual(practiceLeakScan(schedule, { allow: LEAK_ALLOW.schedule }), ['kind']);
+  // Only the kind at plan[].blocks[].kind is allowed: a reveal elsewhere in a block is still a leak.
+  assert.deepEqual(practiceLeakScan(schedule, { allow: LEAK_ALLOW.schedule }), ['plan[0].blocks[1].x.reveal', 'kind']);
   assert.deepEqual(practiceLeakScan({ reveal: { whyWrong: 'w', correctedText: 'c' }, result: { reveal: 1 } }, { allow: LEAK_ALLOW.stop }), ['result.reveal']);
   assert.deepEqual(practiceLeakScan({ concepts: [{ readiness: { transfer: true } }, { transfer: 1 }] }, { allow: LEAK_ALLOW.progress }), ['concepts[1].transfer']);
   assert.deepEqual(practiceLeakScan({ revealed: 1, reference2: 1 }, { allow: ['reveal', 'reference'] }), [], 'a pattern is a whole path, not a prefix of a key');
@@ -160,6 +161,7 @@ test('fixture: labelled-answers.json has ≥ 40 rows, ≥ 8 per class and the re
   assert.ok(tagged('rejected-red-flag').some(r => /wouldn.t/i.test(r.answer) && r.expect === 'met'), 'a rejected red flag row');
   assert.ok(tagged('asserted-red-flag').some(r => r.expect === 'uncertain'), 'an asserted red flag row');
   assert.ok(tagged('two-of-three').length >= 2, '3-item dimensions answered with 2 items (PD-3)');
+  assert.ok(tagged('stuffed').length >= 2 && tagged('stuffed').every(r => r.expect === 'partial'), 'keyword-list rows capped at partial (FR-019)');
   for (const c of CLASSES) {
     assert.ok(rows.some(r => r.class === c && r.part.startsWith('stop:')), `${c}: stop-level row`);
     assert.ok(rows.some(r => r.class === c && !r.part.startsWith('stop:')), `${c}: answer-level row`);
@@ -180,7 +182,7 @@ test('fixture: m1-labelled-answers.json has one row per research answer with its
   assert.deepEqual(m1.draftSynonyms, src.proposedLexicon.synonyms);
 });
 
-test('C3: no F1c test calls /api/subjects, /api/trades or /api/scenario', () => {
+test('C3: no F1c test calls the card engine routes (subjects, trades, scenario)', () => {
   const files = ['tests/acceptance/F1c.test.js', 'tests/acceptance/practice-helpers.mjs', 'tests/e2e/F1c.e2e.mjs']
     .map(f => path.join(ROOT, f)).filter(existsSync);
   const banned = new RegExp(`/api/(${['subj' + 'ects', 'tra' + 'des', 'scen' + 'ario'].join('|')})(?![a-z])`);
@@ -191,16 +193,16 @@ test('C3: no F1c test calls /api/subjects, /api/trades or /api/scenario', () => 
 // F1c-T02: pack format and loader; SC-010
 // =============================================================================================
 
-test('accept-pack validates with 0 problems and loads as track kite-craft', { todo: 'F1c-T02' }, async () => {
+test('accept-pack validates with 0 problems and loads as track kite-craft', async () => {
   const { validatePracticePack, loadPracticePacks, listTracks } = await import('../../server/services/practice-pack.js');
   const { openDb } = await import('../../server/db.js');
   assert.deepEqual(validatePracticePack(PACK), []);
-  const tracks = loadPracticePacks(ACCEPT_PACK_DIR, openDb(':memory:'), { getPack: () => null });
+  const tracks = loadPracticePacks(acceptPacksDir(), openDb(':memory:'), { getPack: () => null });
   assert.ok(tracks.has(TRACK));
   assert.deepEqual(listTracks(), [{ id: TRACK, title: 'Kite Craft', version: 1 }]);
 });
 
-test('SC-010 invalid practice pack: server up, one [practice] warning, listSubjects() unchanged and no [packs] warning', { todo: 'F1c-T02' }, async t => {
+test('SC-010 invalid practice pack: server up, one [practice] warning, listSubjects() unchanged and no [packs] warning', async t => {
   const { loadPacks, listSubjects } = await import('../../server/packs.js');
   const { loadPracticePacks, listTracks } = await import('../../server/services/practice-pack.js');
   const { openDb } = await import('../../server/db.js');
@@ -234,6 +236,9 @@ test('SC-010 invalid practice pack: server up, one [practice] warning, listSubje
 // F1c-T03: SC-003 matcher thresholds on the QA-labelled set
 // =============================================================================================
 
+// Runs for real (T03 is merged) and prints the confusion table. It stays a todo on F1c-T03 because the
+// matcher misses two thresholds (bug F1c-B20, FR-019 stuffing cap on concise correct answers); QA removes
+// the marker when B20 is fixed and this passes.
 test('SC-003 labelled set thresholds', { todo: 'F1c-T03' }, async t => {
   const { matcherGrade, combineOverall, MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
   const lexicon = PACK.manifest.lexicon;
@@ -443,7 +448,8 @@ test('US6.3 diagnostic attempt: no assist; only schedule.diagnostic ids; bad mod
   assert.equal(diag.assistAllowed, false);
   assert.equal((await A.assist(diag.attemptId)).status, 400);
   assert.equal((await A.start('catch-clean', { mode: 'diagnostic' })).status, 400, 'not in schedule.diagnostic');
-  for (const mode of ['exam', 1, null]) assert.equal((await A.start('catch-lines', { mode })).status, 400, `mode ${mode}`);
+  // A JSON null for the optional mode is not specified either way (T04: `mode?`), so only clearly bad values are asserted.
+  for (const mode of ['exam', 1, 'DIAGNOSTIC']) assert.equal((await A.start('catch-lines', { mode })).status, 400, `mode ${mode}`);
   assert.equal(ok(await A.start('catch-lines', { mode: 'review' }), 'review mode').assistAllowed, true);
 });
 
@@ -919,16 +925,17 @@ test('edge: pack version bump: events for exercises absent from the new version 
     await stopOk(A, attemptId, { statementId: 's3', answer: A_S3_MET });
   } finally { await v1.stop(); }
   // v2: catch-lines removed from the manifest, the schedule and the folder.
-  cpSync(ACCEPT_PACK_DIR, dir, { recursive: true });
-  rmSync(path.join(dir, 'exercises', 'catch-lines.json'));
-  const m = JSON.parse(readFileSync(path.join(dir, 'practice.json'), 'utf8'));
+  const v2dir = path.join(dir, TRACK);
+  cpSync(ACCEPT_PACK_DIR, v2dir, { recursive: true });
+  rmSync(path.join(v2dir, 'exercises', 'catch-lines.json'));
+  const m = JSON.parse(readFileSync(path.join(v2dir, 'practice.json'), 'utf8'));
   m.version = 2;
   m.modules[0].exercises = m.modules[0].exercises.filter(id => id !== 'catch-lines');
-  writeFileSync(path.join(dir, 'practice.json'), JSON.stringify(m));
-  const s = JSON.parse(readFileSync(path.join(dir, 'schedule.json'), 'utf8'));
+  writeFileSync(path.join(v2dir, 'practice.json'), JSON.stringify(m));
+  const s = JSON.parse(readFileSync(path.join(v2dir, 'schedule.json'), 'utf8'));
   s.diagnostic = ['interview-launch'];
   for (const d of s.plan) for (const b of d.blocks) if (b.exercises) b.exercises = b.exercises.filter(id => id !== 'catch-lines');
-  writeFileSync(path.join(dir, 'schedule.json'), JSON.stringify(s));
+  writeFileSync(path.join(v2dir, 'schedule.json'), JSON.stringify(s));
   const v2 = await startPractice({ dbPath: tmp.dbPath, packsDir: dir });
   t.after(() => v2.stop());
   assert.deepEqual(ok(await api(v2.url).tracks(), 'tracks'), [{ id: TRACK, title: 'Kite Craft', version: 2 }]);
