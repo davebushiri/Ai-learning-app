@@ -48,8 +48,9 @@ async function loadPicker() {
     b.dataset.track = t.id;
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => pickTrack(t.id));
-    list.append(el('li')).append?.call(null);
-    list.lastChild.append(b);
+    const li = el('li');
+    li.append(b);
+    list.append(li);
   }
   if (tracks.length === 1) pickTrack(tracks[0].id, { focus: false });
 }
@@ -78,8 +79,9 @@ async function pickTrack(id, { focus = true } = {}) {
       b.type = 'button';
       b.dataset.exercise = e.id;
       b.addEventListener('click', () => start(e.id));
-      ul.append(el('li'));
-      ul.lastChild.append(b);
+      const li = el('li');
+      li.append(b);
+      ul.append(li);
     }
     box.append(el('h3', m.title), ul);
   }
