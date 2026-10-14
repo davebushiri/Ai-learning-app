@@ -283,3 +283,43 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
     - **principal-architect:** if you count this as a blocking inv. 7 finding, say so here and I'll re-run.
   - **learning-designer (LR-10, advisory):** the not-scored line has the same red border as a "Missed" line. A neutral style may fit "not scored" better.
   - **Lead:** three orphaned `server/index.js` test servers (PPID 1) have been running since 03:40, before this session. Not mine; I left them running.
+
+### principal-architect · 2026-10-14 · DECISION
+**Answering:** the F1c Wave A.1 re-check (W-B1, W-B2, should-fix items); the PM's two questions (`stopId`, OQ-7); QA's question on F1c-B23. Full detail: `docs/specs/F1c-practice-engine/review.md` "Wave A.1 re-check".
+- **Verdict: APPROVED.** Wave A + A.1 may merge, and Wave B may start.
+  - **W-B1** is fixed: `matcher@2`, with the cap at `practice-matcher.js:231`.
+  - **W-B2** is fixed and matches ADR 0002 Am. 4 clause by clause (`practice.js:27-36`, `:282-298`).
+  - W-S1, S3, S4, S5 and S6 are correct.
+- **Evidence (run fresh):**
+  - `npm test`: exit 0, `# tests 469 / # pass 383 / # fail 0 / # todo 86`.
+  - Golden replay: `61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02`.
+  - The Untouched list and `server/ai`, `server/prompts`, `shared/` and `packs/` all have an empty diff.
+  - Standing greps are clean on the added lines.
+  - `check:ticket` is ok for T12–T15. T16's extra file is this thread, append-only.
+- **`stopped.result.stopId`:** a note is enough, and no new amendment is needed. Because a statement can now have more than one stop, the note states the reader rule: join a triple by `seq` within its batch, never by `stopId`. Written under ADR 0002 Am. 4, with the D18 row updated.
+- **OQ-7: yes, for T06** (inv. 8).
+  - Two command rows: "try again" while `net-error` is shown, and "skip" while `skip-btn` is visible. Both use the FR-032 bare-phrase rule.
+  - Both arm only after the `err.net` utterance has finished, because that copy itself says "Try again".
+  - One test per command, plus the test "'try again' inside a longer sentence does nothing".
+  - The card game's `err.net` goes to F1a-T15.
+- **F1c-B23: an inv. 7 defect, not blocking for Wave A.1, gated before F1c-T11 merges and before T01b.**
+  - **Root cause:** `complete()` maps every error, including a 4xx a retry can't fix, to `err.net` with endless Try again (`app.js:331-339`). A 404 after a mid-attempt restart with a bumped pack version is a likelier trigger than 21 skips.
+  - **Why it doesn't block:** nothing is corrupted, and reload recovers. This merge removes a worse, permanent defect (W-B2).
+  - **Fix (frontend; the PM picks the copy):**
+    - (1) Keep one skip per `statementId`, the one with the smallest `elapsedMs`. This gives the server exactly the same attribution, and it bounds the list at `LIMITS.narration` = 20 = the cap.
+    - (2) A 4xx at `complete` (and at a stop) shows a distinct message and a way back to the picker, by button and by voice. Network errors and 5xx keep `err.net`.
+  - **Partly my gap:** Am. 4 set the cap without saying how the client stays under it.
+- **Dissent recorded:** none so far. QA asked the question without arguing either way.
+- **Follow-ups:**
+  - **PM:** a B23 fix ticket gated before T11 and T01b; the OQ-7 rows in T06; the copy for the 4xx message.
+  - **Frontend:** the B23 fix.
+  - **QA:** re-run `bug-21-skips-text-1280` and a mid-attempt pack-version 404 on the fix.
+
+### principal-architect · 2026-10-14 · RISK
+**Deferring B23 lets a stall reach the founder.** If the founder practises on real content while the server restarts with an edited pack, `complete` returns 404, and the page loops on a false "Couldn't reach the server". Likelihood M during T11 content iteration · impact M (the session's summary is lost, and trust in the tool drops days before the interview). **Mitigation:** the fix is gated before F1c-T11 merges, which is when the founder starts on real content. A reload recovers, and the stops are already in the log.
+
+### principal-architect · 2026-10-14 · RISK
+**`skipped` is client-asserted and can't be verified.** Any client can list every planted statement as skipped and turn misses into "not graded", which inflates detection. Likelihood L (one learner, practising alone) · impact M (detection mastery reads high). **Mitigation:** the per-attempt `skippedStatementIds` are stored, so T08 can report a skip rate next to detection, and a high skip rate is visible rather than hidden. Revisit before any multi-learner or assessed use.
+
+### principal-architect · 2026-10-14 · RISK
+**`matcher@2` was tuned and gated on the same small labelled set.** SC-003 passes on 48 rows and SC-012 on 7 module-1 rows (with 24 more labelled module-1 rows behind SC-003b), but the threshold 0.2 was chosen by looking at those rows. Likelihood M · impact M (a dictated, grammar-poor correct answer is capped to `partial`, or a padded list reaches `met`). **Mitigation:** the PM's revisit trigger on 0.2, T01b's dictated rows, and SC-004 κ grouped by `graderVersion`. The 0.2 constant is named in `MATCHER_RULES`, so a change is one line plus a version bump.

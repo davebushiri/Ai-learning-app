@@ -292,3 +292,69 @@ The engine is well built. Answers stay on the server, events are append-only and
 - QA removes the `F1c-T03` todo on SC-003 once it passes.
 
 The PM owns the number: 0.2 is a provisional product threshold, named in `MATCHER_RULES` like every other ratio.
+
+## Wave A.1 re-check (2026-10-14)
+
+**Reviewer:** principal-architect · **Reviewed:** the diff `303dbe8..c82f8de` and the test output only, as offered in the Wave A review. That covers T12 `a9d7cb5`, T13 `b7024e7` `4737dba`, T14 `ae7fc73`, T15 `be0fc29`, T16 `ad5950f`, and the B23 filing `c82f8de`. Checked against the CLAUDE.md invariants, ADR 0002 Am. 4, ADR 0004 Am. 1 and spec revision 3.
+
+### Verdict: APPROVED
+
+W-B1 and W-B2 are resolved. The Wave A.1 should-fix items (W-S1, W-S3, W-S4, W-S5, W-S6) are correct. F1c Wave A + A.1 may merge, and Wave B may start. F1c-B23 is an invariant-7 defect, but it doesn't block this merge. It is gated before F1c-T11 and T01b (see below).
+
+**Evidence (run fresh in this re-check):**
+- `npm test`: exit 0, `# tests 469 / # pass 383 / # fail 0 / # todo 86`. No `F1c-T03`, `T04`, `T12` or `T13` todo remains. The remaining todos are `F1a-T12` 13, `F1a-T13b` 27, `F1a-T14` 22, `F1a-T18` 1, `F1c-T07` 12, `F1c-T08` 10 and `F1c-T11` 1.
+- Golden replay, `node tests/golden/run.mjs --replay`: `61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02`. This is the same digest as at Wave A, so SC-002 holds.
+- `git diff 303dbe8..c82f8de` is empty on `server/db.js`, `server/ai/`, `server/prompts/`, `shared/`, `packs/`, `web/index.html`, `web/app.js` and `web/speech.js`. The spec's Untouched list holds.
+- `check:ticket`, per commit: T12, T13 (×2), T14 and T15 report `ok, all listed`. T16 also touched `docs/team/threads/0007…`. That file is append-only for everyone, and the diff only adds lines, so this is acceptable.
+- **Standing greps:**
+  - Deny-list words: 0 hits in lines this range adds under `server/ shared/ web/ scripts/`. The legacy card-game hits are pre-existing and unchanged.
+  - `messages.create`: only in `server/ai/gateway.js`.
+  - No `UPDATE` or `DELETE` on `event`.
+  - No `innerHTML` in `web/practice`.
+  - No `practice*` → `server/ai`/`server/prompts` import. This is now a transitive test, and it is shown able to fail (W-S5).
+
+### Blocking findings: resolved
+- **W-B1 (B20), resolved.**
+  - **Code:** `practice-matcher.js:231` caps only when `rest ≤ 2` **and** `functionShare < 0.2`, and `MATCHER_VERSION` is `matcher@2` (`:8`). The new constant is named in `MATCHER_RULES` (`:19`), and `functionShare` counts every word before stopword removal (`:90`), as proposed.
+  - **Tests:** `tests/practice-matcher.test.js` has the three named T03 tests, plus a strict-boundary test (share 0.2 is not capped; 1/6 is).
+  - **Gates:** SC-003 passes on 48 rows, and SC-012 passes on the enlarged sets (7/7). No subject words were added.
+- **W-B2, resolved, and it matches ADR 0002 Am. 4 clause by clause.**
+  - **Request:** `skippedOf` (`practice.js:27-36`) maps absent or `null` to `[]`. It returns 400 for a non-array, more than 20 entries, or an unknown `statementId`.
+  - **Attribution:** `attribute()` runs per entry against graded stops only (`:282-284`), the same rule as a live stop. A recorded stop always wins over a skip, so a stop that reached the server but lost its response is still caught.
+  - **Stored record:** caught, missed, not-graded and not-reached are disjoint and cover every planted statement (`:285-289`). `skippedStatementIds` and `notGradedStatementIds` are always written (`:297-298`). A repeat `complete` reads them back and never recomputes them (`:271`, `:239`, missing → `[]`).
+  - **Response:** `notGraded: true` appears only when true (`:249`). `missedLine` (`state.js:69-73`) never says "Missed" for it.
+  - **Client:** `onSkip` records `{statementId, elapsedMs}` (`app.js:277`), and `completeRequest` sends it.
+  - The two Am. 4 verification tests are present (`tests/practice-catch.test.js:386`, `:399`).
+
+### Should-fix items: verified
+- **W-S1 (stopId): correct.**
+  - A known `stopId` replays its stored body with no events (`practice.js:197-201`). The same `stopId` on another statement is a 400. A new `stopId` is a new stop, attributed by the unchanged FR-012 rule, so the review's example now gives a `false_interruption` with its own triple (`tests/practice-catch.test.js:512`).
+  - Without a `stopId`, the old rule holds. `findLast` equals the old `find`, because a client that sends no ids can never create a second stop on one statement.
+  - **Projection:** the `explained`/`graded` events attach to the latest stop on the statement (`:50`). That is right, because a stop's triple is one `appendEvents` batch.
+- **W-S3, correct.** No `assisted` event after `complete` (`:233`), with a test at `:547`.
+- **W-S4, correct.** `err.rate` is shown and spoken under the row with Try again (`app.js:414-446`), and the pressed state changes only after the server confirms. FR-035 holds, because `say()` is used.
+- **W-S5, correct.** The walk is transitive, and it includes a two-hop fixture that proves the guard can fail (`tests/practice-catch.test.js:560-600`).
+- **W-S6, correct.** FR-050 asserts `MATCHER_VERSION` (`tests/acceptance/F1c.test.js:581`). No hard-coded `matcher@1` remains in an assertion.
+- **W-S2** is deferred to T06 (PD decision). I agree, for the reason the PM gave.
+
+### Rulings on pending questions
+- **`stopped.result.stopId`: a note, not a new amendment.** It is an additive optional field under ADR 0002's change rule. It does change one thing readers rely on, though: a statement can now have more than one `stopped` event. So it is recorded as a dated note under ADR 0002 Am. 4, with the D18 row updated. The note says:
+  - `stopId` is opaque and present only when sent;
+  - readers must not assume one stop per statement;
+  - readers attach `explained` and `graded` by `seq` within the stop's batch, never by `stopId`.
+- **OQ-7: yes, for T06.** Invariant 8 requires it. T06 adds two rows to the command table. "try again" is active only while `net-error` is shown. "skip" is active only while `skip-btn` is visible. Both follow the FR-032 bare-phrase rule (a final segment equal to the phrase).
+  - **Echo guard (the `err.net` copy itself says "Try again"):** the two commands arm only after the `err.net` utterance resolves.
+  - **Tests:** one test per command in `commands.js`, plus "a segment containing 'try again' inside a longer sentence does nothing".
+  - The copy is unchanged, because `err.net` already names both words. The card game's `err.net` is F1a's (`web/app.js` is Untouched) and goes to F1a-T15's voice work.
+  - The way out that B23's fix adds must also have a voice command.
+- **F1c-B23: an invariant-7 defect, not blocking for Wave A.1, and gated before F1c-T11 merges and before T01b.**
+  - **Why it's real:** `complete()` (`app.js:331-339`) maps every error, including an `ApiError` 4xx that a retry can never fix, to `err.net` with endless Try again. That is a stall with an untrue message. 21 skips is one trigger. A more reachable one is a 404 "attempt exercise is not loaded" after a server restart with a bumped pack version mid-attempt, which is likely during T11 content iteration. `submitStop` (`:214-219`) has the same mapping, but its Skip is a way out.
+  - **Why it doesn't block this merge:** the 21-skip trigger needs 21 failed stop requests in one exercise followed by a `complete` that reaches the server. Nothing is corrupted: an attempt without `completed` is the abandoned-attempt shape readers already handle, and a reload recovers. Wave A.1 removes a worse defect (permanent false misses, W-B2). Holding it would keep that defect live to avoid a far rarer one.
+  - **Owned by me in part:** Am. 4's cap of 20 equals `LIMITS.narration` (`practice-pack.js:18`), but I didn't say how the client stays under it.
+  - **Smallest fix (frontend; the PM picks the copy):**
+    - (1) `onSkip` keeps **one entry per `statementId`, the one with the smallest `elapsedMs`**. This preserves the server's result exactly. A `hit` on the statement doesn't depend on `elapsedMs`, and a `late_hit` needs `elapsedMs ≤ GRACE_MS`, so the minimum entry yields every attribution any other entry on that statement could. The list is then at most `LIMITS.narration` = 20 entries, so the cap can't be reached. Add a pure `state.js` helper with a unit test, plus a test that `MAX_SKIPPED ≥ LIMITS.narration`.
+    - (2) In `complete()`, an `ApiError` with a 4xx status shows a distinct message (not `err.net`) and a way back to the picker, by button and by voice. `NetworkError` and 5xx keep `err.net` with Try again. `submitStop` gets the same distinction for 4xx.
+  - The server rule stays as it is.
+
+### Optional
+- **O3.** T12, T13 and T14 landed as commits titled "WIP … checkpoint". The content is complete and tested. Next time, squash or retitle before the merge, so `git log` reads as finished tickets.

@@ -115,3 +115,8 @@ Additive, under the change rule above. Reasons are in [`docs/specs/F1c-practice-
     - "a false interruption writes graded with outcome false_alarm and overall null";
     - "a skipped stop on a planted statement is notGraded, not missed; caught, missed, notGraded and notReached are disjoint and cover every planted statement".
   - `tests/acceptance/F1c.test.js` FR-050: QA changes the expected verb list to include the second `graded`.
+- **Note (2026-10-14, F1c Wave A.1 re-check, W-S1): `stopped.result.stopId`.** This is an additive optional field under the change rule, so it is recorded here rather than in a new amendment. The decision above is unchanged.
+  - `stopId` is a string matching `^[A-Za-z0-9_-]{8,64}$`. The client sends it, and it is written only when sent. It is an opaque idempotency key, one per STOP press, and is re-sent on Try again.
+  - **What readers must not assume:** one stop per statement. A new `stopId` on a statement that already has a stop is a new stop, with its own triple (normally `false_interruption`).
+  - **How readers join:** they attach `explained` and `graded` to their `stopped` by `seq` within the stop's single `appendEvents` batch, never by `stopId`. Events without `stopId` (older events, or clients that don't send it) stay valid.
+  - **Verification:** `tests/practice-catch.test.js` "stopId is stored on stopped only when sent" and "a new stopId after a late hit is a new stop, a false interruption with its own triple (W-S1)".
