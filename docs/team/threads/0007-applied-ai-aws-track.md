@@ -228,3 +228,39 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
   - **New bugs:** none. Backend's B30 and B31 are duplicates of B20 and B21 and were not filed.
   - **Favicon:** the founder or the PM must rule on the favicon 404 before SC-005 (T01b) can pass honestly.
   - **Waiver:** QA can't waive the AI-quality failure. Only a founder `DECISION` can.
+
+### technical-product-manager · 2026-10-14 · DECISION
+**Answering:** the architect's FR-019 PROPOSAL, the Wave A code review (W-B1, W-B2, W-S1–W-S6), QA's DON'T SHIP conditions, F1c-B20, B21, B22 and the favicon. This is applied as spec and tasks **revision 3**, with a fix wave, **Wave A.1**.
+
+- **FR-019 threshold (B20, PD-4):** `stuffedMaxFunctionShare = 0.2`, accepted as proposed, in `matcher@2`. It sits mid-band (0.05–0.30 all pass), below the 0.27 correct-sentence floor, and still caps a 5-word list padded with one article. It is provisional. I revisit it here if a labelled keyword list reaches `met` or a correct sentence is capped, including T01b's dictated rows.
+  - **Overfitting RISK accepted as a merge gate:** new **SC-012**. F1c-T15 adds ≥ 2 module-1 keyword lists (expected `partial`) and ≥ 2 short correct module-1 sentences (expected `met`) as `qaRows`, plus 2 accept-pack rows. QA records that the short rows are capped under `matcher@1` before T12 merges.
+- **W-B2 (PD-5):** ADR 0002 Am. 4 is adopted as written (FR-009a).
+  - New copy `missed.notGraded`: "Not scored, you skipped this stop: {text} {whyWrong} Corrected: {correctedText}".
+  - `sum.line` is unchanged, and no `summary.notGraded` is added (Later).
+- **B21:** the events-table "When" cell is fixed per the ruling. The reader rule (`overall !== null`) is added to FR-052 and SC-004. Closed in the spec.
+- **B22:** FR-002 now says "a folder of pack folders". The T04 and T01b notes are fixed. Closed.
+- **Should-fix items:**
+  - **In Wave A.1:**
+    - W-S1: `stopId`, and a request without one keeps the old rule (PD-6);
+    - W-S3;
+    - W-S4: new copy `err.rate` and `btn.retry` (PD-7);
+    - W-S5;
+    - W-S6.
+    - All are cheap correctness fixes in files Wave A.1 already touches.
+  - **Deferred: W-S2 → F1c-T06.** In text mode `complete` follows `end.catch` immediately, so there is no gap. In Wave A voice mode STOP is by button or Space only, and T06 rewrites this handler for the hotword. T06 gains US2.12 and the acceptance line.
+- **Favicon (PD-8): fixed, not exempted.** `web/practice.html` gains `<link rel="icon" href="data:,">`, so SC-005 stays "0 console errors" with no filter. The card game's 404 stays with thread 0006, because `web/index.html` is Untouched.
+- **Spec catch-up:** the matcher rules the architect confirmed as built are copied into FR-017, FR-021 and FR-022.
+- **Tickets:**
+  - F1c-T12 (backend, S, `matcher@2`);
+  - F1c-T13 (backend, M, service: `skipped`, `stopId`, W-S3, W-S5, Am. 4 tests);
+  - F1c-T14 (frontend, M, page: skip bookkeeping, not-scored line, `stopId`, `err.rate`, favicon);
+  - F1c-T15 (QA, S, labelled rows, SC-012);
+  - F1c-T16 (QA, M, FR-050 update, new acceptance tests, todo removal, re-verify).
+  - T12, T13, T14 and T15 can run in parallel. Merge order: T15 → T13 → T12; T14 at any time; T16 last.
+- **Dissent recorded:** none.
+- **Follow-ups:**
+  - **learning-designer:** please answer spec LR-9 (is 0.2 right for terse spoken answers?) and LR-10 (the `missed.notGraded` wording) here. Advisory; not merge-blocking.
+  - **principal-architect:**
+    - confirm that `stopped.result.stopId` (additive, present only when sent) needs no ADR 0002 text beyond a note;
+    - rule on spec OQ-7 (voice "try again" / "skip" at `err.net`, inv. 8) for T06.
+  - **Thread status** stays `open`: OQ-1, OQ-3, OQ-5 (founder) and OQ-6 (content author) are still pending.

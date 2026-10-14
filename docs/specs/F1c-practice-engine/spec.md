@@ -1,8 +1,8 @@
 # F1c: Practice engine, Applied AI track module 1
 
-**Status:** Approved (revision 2: design review applied)
-**Phase:** F1 (interrupt priority, founder direction in [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)) | **Links:** [user-flow.md](../../foundation/user-flow.md), [data-and-evidence.md](../../foundation/data-and-evidence.md), [voice-first.md](../../foundation/voice-first.md), ADRs [0001](../../adr/0001-sqlite-storage-and-append-only-event-log.md)–[0006](../../adr/0006-pack-format-v1.md), [0008](../../adr/0008-practice-engine-and-practice-pack-format-v1.md), [0002 Amendment 3](../../adr/0002-event-schema-v1.md), [0006 Amendment 3](../../adr/0006-pack-format-v1.md); design review in [`review.md`](review.md)
-**Revision:** 2 (2026-10-13). Revision 2 applies the design review's C1–C15, the learning-designer's matcher findings B2 and B3 and follow-up drafts B4 ([`docs/research/applied-ai/module-1/REVIEW.md`](../../research/applied-ai/module-1/REVIEW.md)), and product decisions PD-1 to PD-3 (below). Revision 1: first draft.
+**Status:** Approved (revision 3: Wave A.1 fix wave added after the Wave A code review)
+**Phase:** F1 (interrupt priority, founder direction in [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)) | **Links:** [user-flow.md](../../foundation/user-flow.md), [data-and-evidence.md](../../foundation/data-and-evidence.md), [voice-first.md](../../foundation/voice-first.md), ADRs [0001](../../adr/0001-sqlite-storage-and-append-only-event-log.md)–[0006](../../adr/0006-pack-format-v1.md), [0008](../../adr/0008-practice-engine-and-practice-pack-format-v1.md), [0002 Amendments 3 and 4](../../adr/0002-event-schema-v1.md), [0006 Amendment 3](../../adr/0006-pack-format-v1.md); design review and Wave A code review in [`review.md`](review.md); Wave A QA report in [`qa-report.md`](qa-report.md)
+**Revision:** 3 (2026-10-14). Revision 3 applies the Wave A code review (W-B1, W-B2, W-S1, W-S3–W-S6; W-S2 moves to F1c-T06), ADR 0002 Amendment 4, the QA report's ship conditions, bugs F1c-B20, B21 and B22, and product decisions PD-4 to PD-8 (below). It adds Wave A.1 (F1c-T12 to T16) in tasks.md. Revision 2 (2026-10-13) applies the design review's C1–C15, the learning-designer's matcher findings B2 and B3 and follow-up drafts B4 ([`docs/research/applied-ai/module-1/REVIEW.md`](../../research/applied-ai/module-1/REVIEW.md)), and product decisions PD-1 to PD-3 (below). Revision 1: first draft.
 
 ## Problem
 The founder has a 60-minute technical interview on AI fluency (RAG, agents, embeddings, production evidence) this week or next. The only working loop is the trades game. It has one mode, needs exactly 3 mistakes per card, has no mastery and still leaks answers on its legacy route. F1c adds a **separate, server-owned practice engine** (ADR 0008) that runs the Applied AI track, module 1 (LLM foundations and RAG), in four modes. It grades offline, because there is no API key. The founder's constraints are small increments, reuse, no rebuild, and nothing that takes over the founder's preparation time.
@@ -114,6 +114,24 @@ Rules: `plan` has exactly `days` entries numbered `1..days`. Each day's minutes 
 - **PD-2 (negation polarity; REVIEW.md B2, option (a)).** Negators are content tokens, never stopwords. The negation check skips a rubric item that itself contains a negator. A red flag counts only when it isn't negated (FR-021, FR-022). **Why:** correcting a misconception usually means saying "not", so the revision-1 rule made right answers `uncertain` and penalized answers that reject an anti-pattern. Authors may still rephrase items positively where that reads naturally.
 - **PD-3 (met threshold; REVIEW.md B3).** `met` needs `ceil(n × 2/3 − 1e-9)` matched items, so a 3-item dimension needs 2, not 3 (FR-018). The same epsilon applies to the item-coverage ratio (FR-017).
 
+## Product decisions (revision 3, Wave A.1)
+- **PD-4 (FR-019 stuffing threshold, F1c-B20 / W-B1).** I accept the architect's `matcher@2` rule and set `stuffedMaxFunctionShare = 0.2` (FR-019).
+  - **Why 0.2:** every value from 0.05 to 0.30 passes SC-003 on the measured sets. 0.2 sits below the lowest function-word share measured on a correct concise sentence (0.27) and above a 5-word keyword list padded with one article (1/6 ≈ 0.17), so that list is still capped.
+  - **It is provisional.** I revisit it in thread 0007 if either of these happens: a labelled keyword list reaches `met`, or a correct sentence is capped (including the dictated rows QA adds in F1c-T01b, per the architect's dictation RISK).
+  - **The evidence is thin** (2 keyword lists). So the merge also needs the enlarged labelled sets, SC-012 below.
+- **PD-5 (skip = not scored, W-B2).** I adopt ADR 0002 Amendment 4 as written.
+  - The reveal lists a skipped planted statement with the copy `missed.notGraded`. It never uses the word "Missed" for it, and it is never counted in `summary.misses`.
+  - `sum.line` is unchanged, and no `summary.notGraded` count is added (Later). The not-scored line is enough to explain the gap, and adding a count would change a copy string that the founder already knows.
+- **PD-6 (repeat stops, W-S1).** Repeat detection is keyed on a client `stopId` (FR-008).
+  - A retry ("Try again") reuses the `stopId` and gets the stored body.
+  - A new STOP press on the same statement is a new stop. That is the FR-037 replay path, after a late hit or a false interruption.
+  - Requests without `stopId` keep the revision-2 rule, so older clients and tests behave as before.
+- **PD-7 (self-rating failure is visible, W-S4).** A failed self-rating shows and speaks `err.rate` under that row, with a Try again button (inv. 7). A lost rating silently removes an SC-004 data point.
+- **PD-8 (favicon vs SC-005).** **Fixed, not exempted.** `web/practice.html` declares an empty inline icon (`<link rel="icon" href="data:,">`), so the browser never requests `/favicon.ico` on the practice page, and SC-005's "0 console errors" stays literal with no filter. The card game's own 404 on `/` stays with thread 0006 and F1a, because `web/index.html` is on the Untouched list.
+- **Deferred from the Wave A code review, with reasons:**
+  - **W-S2 (a STOP in the gap after the last statement) → F1c-T06.** In text mode, `end.catch` is shown and `complete` is called at once, so there is no gap. In Wave A voice mode, STOP is by button or Space only. The gap only matters once the hotword lands in T06, which rewrites this handler anyway. T06 gains the acceptance line and test.
+  - **O1 (backend appending bugs to tasks.md)** is a process note: bugs go through QA or thread 0007. **O2 (T05's manual browser record)** is collected by QA in F1c-T16.
+
 ## User stories (prioritized; each independently testable)
 
 **Hands-free rule (inv. 8, C11):** one tap starts a session (browsers require a user activation before audio and the mic). Everything after that tap chains by voice: within an exercise, from the reveal or `done` to the next exercise, and from the progress page into review or the diagnostic.
@@ -135,6 +153,9 @@ The learner opens `/practice.html`, picks the track and a catch exercise, and re
 10. Given the stop request fails at the network level, then `err.net` appears, the typed answer is kept, and "Try again" re-posts it idempotently (FR-008).
 11. Given an answer that corrects the statement with a negation ("it is not fully deterministic") against a rubric item that itself contains a negator, then that item is matched and the dimension is not made `uncertain` by the negation rule (FR-021(b), PD-2).
 12. Given the reveal, when the learner presses **Next**, then the next exercise starts: the next one in today's plan once F1c-T10 has merged, the picker before that (FR-058).
+13. Given a stop on planted `s3` whose request failed (`err.net`), when the learner presses **Skip this stop** and the set runs to the end without `s3` being caught, then the `complete` request carries `skipped: [{statementId: "s3", elapsedMs}]`. The reveal shows `s3` with the copy `missed.notGraded`, and the word "Missed" appears in no line about `s3`. `summary.misses` doesn't count `s3`, and the stored `completed` event lists `s3` in `notGradedStatementIds`, not in `missedStatementIds` (FR-009a, PD-5).
+14. Given a late hit on `s3` from a stop 800 ms into clean `s4`, when `s4` replays and the learner stops on `s4` again, then the second stop is a new stop: detection `false_interruption`, the copy `fb.false` appears, and a second `stopped`/`explained`/`graded` triple is written. Pressing **Try again** after a failed stop request re-sends the same `stopId` and gets the stored body, with no new events (FR-008, PD-6).
+15. Given the reveal, when a self-rating request fails, then `err.rate` appears under that row with a **Try again** button, and the rating buttons keep their previous pressed state. Try again re-posts the same rating, and on success the button gets `aria-pressed="true"` and the error is removed (PD-7).
 
 ### US2: Catch-and-correct in voice mode (P1)
 The same loop, hands-free: statements are spoken. Saying "stop" cuts speech immediately, and the learner dictates into an editable transcript, then says "send". Feedback and the corrected statement are spoken, and narration resumes. At the reveal, "next" moves on.
@@ -150,6 +171,9 @@ The same loop, hands-free: statements are spoken. Saying "stop" cuts speech imme
 7. Given speech recognition is unavailable or permission is denied, then `mic.denied` is shown and spoken, the session continues in text mode, and the Stop button and Space keep working (FR-036).
 8. Given voice mode, then the Stop button and Space still stop narration at any time.
 9. Given the reveal or `done` state, then `next.hint` is spoken and shown, and when the recognizer yields a final segment "next", the next exercise starts exactly as the Next button would (FR-058).
+10. **(Wave A.1, voice twin of US1.13.)** Given voice mode and a skipped stop on planted `s3`, then `err.net` is spoken exactly as shown when the request fails. At the reveal, the `missed.notGraded` line for `s3` is spoken exactly as shown, in the position where missed lines are spoken (after `sum.line`) (FR-035).
+11. **(Wave A.1, voice twin of US1.15.)** Given voice mode and a failed self-rating, then `err.rate` is spoken exactly as shown. Retrying is by the Try again button; the voice rating commands arrive with F1c-T06, and saying the rating again then retries it.
+12. **(F1c-T06, deferred W-S2.)** Given voice mode and the last statement has finished, when the learner stops (hotword, button or Space) while `end.catch` is being spoken, then the stop is posted for the last statement, with `elapsedMs` measured from that statement's start, and is graded like any stop on it (edge case "stop in the gap").
 
 ### US3: Learn mode with teach-back (P2)
 The learner hears (voice) or reads (text) an error-free explanation. They answer each teach-back question by voice or text. After the last answer they see the rubric and reference, rate themselves, then answer the follow-up and transfer questions.
@@ -210,7 +234,8 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 | `end.catch` | That's the end of the set. | Narration finished |
 | `sum.line` | Caught {hits} of {planted}. Missed {misses}. Stopped on {f} accurate statement. / …{f} accurate statements. | Reveal (singular only when f = 1) |
 | `end.clean` | This set had no errors, and you didn't stop on any accurate statement. Well judged. | `cleanPass: true` |
-| `missed.item` | Missed: {text} {whyWrong} Corrected: {correctedText} | Each missed planted statement |
+| `missed.item` | Missed: {text} {whyWrong} Corrected: {correctedText} | Each missed planted statement (a `missed[]` item without `notGraded`) |
+| `missed.notGraded` | Not scored, you skipped this stop: {text} {whyWrong} Corrected: {correctedText} | **(Wave A.1, PD-5)** Each `missed[]` item with `notGraded: true`. Shown in `#missed-list`, and spoken in the same position as `missed.item` |
 | `status.met` / `.partial` / `.not_met` / `.uncertain` | Covered / Partly covered / Not covered / Uncertain: flagged for review | Status labels |
 | `dim.*` | Explanation / Correction / Transfer / Trade-offs / Defense, rendered as "{dim}: {status}" | Dimension rows in feedback and reveal. Spoken after the feedback text, one per row |
 | `selfrate.prompt` | Compare your answer with the reference. How did you do? | Per answered part at reveal |
@@ -227,7 +252,9 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 | `clarify.none` | The customer doesn't have more on that. | No match |
 | `sc.design` | Describe your design. | After "ready" |
 | `sc.challenge` | The customer pushes back: {question} | Each challenge |
-| `err.net` | Couldn't reach the server. Your answer is still here. Try again, or skip and this stop won't be scored. | Stop request failed; buttons "Try again", "Skip this stop" ("Skip" not shown for non-stop answers) |
+| `err.net` | Couldn't reach the server. Your answer is still here. Try again, or skip and this stop won't be scored. | Stop request failed; buttons "Try again", "Skip this stop" ("Skip" not shown for non-stop answers). From Wave A.1 the promise holds: a skipped stop is never scored as a miss (FR-009a) |
+| `err.rate` | Couldn't save your rating. Try again. | **(Wave A.1, PD-7)** A self-rating request failed. Shown under that answered part's rating buttons, and spoken in voice mode |
+| `btn.retry` | Try again | **(Wave A.1)** Button label (shown only), the `button.rate-retry` next to `err.rate` |
 | `mic.denied` | The microphone isn't available. Type your answer instead. | No recognizer, permission denied, or 3 recognizer errors in a row |
 | `src.unverified` | (not yet verified) | Shown only, after a source with `verified: false` |
 | `progress.provisional` | Readiness thresholds are a provisional product choice. | Progress page, shown and spoken on open |
@@ -257,17 +284,32 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 - **Hotword missed:** the button and Space always work.
 - **Wrong stop:** a false interruption costs nothing beyond the count.
 - **Grade looks wrong:** self-rate "I missed it" or "I had it". The disagreement is recorded for κ.
-- **Network failure:** "Try again" or "Skip this stop".
+- **Network failure:** "Try again" (re-sends the same `stopId`; never double-counted) or "Skip this stop" (shown as `missed.notGraded` at the reveal; never a miss).
+- **Self-rating failure (Wave A.1):** `err.rate` plus the Try again button; pressing a rating button again also retries.
 - **Mic failure:** automatic switch to text mode.
 - **Command not heard ("next", "review", "diagnostic"):** the matching button always works.
 
 ## Edge cases
 - **Unknown track or exercise** → 404 `{error}`. **Unknown attempt** → 404. **Bad JSON** → 400. **Body over 1 MB** → 413 (`readBody`).
 - **Engine isolation (ADR 0002 Amendment 3):** an `att_` id on any `/api/practice/attempts/:id/*` route → 404. A `pra_` id on the card engine's `/api/attempts/:id/*` routes → 404 (F1a-T12).
-- **Stop on an unknown `statementId`** → 400. **Stop on a statement earlier than the last graded stop** → 400. **Stop on the same `statementId` as an already-graded stop** → 200 with the stored body, and no new events. **Stop after complete** → 409. **Stop on a non-catch attempt** → 400.
+- **Stop on an unknown `statementId`** → 400. **Stop on a statement earlier than the last graded stop** → 400. **Stop after complete** → 409. **Stop on a non-catch attempt** → 400.
+- **Repeat and re-stop (FR-008, PD-6; revision 3):**
+  - A stop whose `stopId` matches a stored stop on the same `statementId` → 200 with that stored body, and no new events.
+  - The same `stopId` on a different `statementId` → 400.
+  - A malformed `stopId` (not a string matching `^[A-Za-z0-9_-]{8,64}$`) → 400.
+  - A new `stopId` on a statement that already has a stop → a new stop, attributed by FR-012 against the stops graded so far. The statement is clean or already caught, so this is normally a `false_interruption`.
+  - A stop **without** `stopId` on a statement that already has a stop → 200 with the stored body of the latest stop on that statement, and no new events (the revision-2 rule).
+  - **Accepted risk:** if a stop was graded on the server but its response was lost, and the learner then presses Skip and stops again on the same planted statement, the new stop is a `false_interruption` and the learner hears `fb.false`. This needs a lost response plus a skip plus a re-stop. The reveal still lists the statement as caught.
+- **Skipped stops at complete (FR-009a, ADR 0002 Am. 4):**
+  - A skipped entry that FR-012 attributes to a planted statement still uncaught at complete makes that statement **not graded**.
+  - A skipped entry on a clean statement, or on a statement that is caught by the time of complete, changes no count. A skip that would have been a false interruption is not counted as one, so `cleanPass` can still be true.
+  - A skipped statement after `lastStatementId` extends the reached range, so its statement is never `notReached`.
+  - A repeat `complete` ignores `skipped` and returns the stored body (FR-009).
+- **Stop in the gap after the last statement:** attributed to the last statement. The client half moves to F1c-T06 (W-S2, PD-8 deferrals); the server already accepts it.
+- **Assist after complete (W-S3):** returns the same body as any assist, and writes no `assisted` event.
 - **Answer text:** empty → allowed, and all dimensions are `not_met`. Over 2000 chars → truncated server-side, and `explained.result.chars` holds the original length.
 - **`elapsedMs` missing, negative or non-integer** → treated as a large value (no grace attribution). It is a client claim, an accepted risk as in ADR 0003.
-- **Grace attribution only applies** if the previous statement is planted and uncaught. A stop in the gap after the last statement is attributed to the last statement.
+- **Grace attribution only applies** if the previous statement is planted and uncaught.
 - **Early complete** (the learner leaves mid-narration): planted statements after `lastStatementId` are `notReached`, never `missed`.
 - **Invalid practice pack:**
   - The server starts, logs one `[practice] <dir> skipped: <reasons>` warning, and `GET /api/practice/tracks` omits it.
@@ -277,7 +319,7 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 - **Pack version bump:** events for exercise ids absent from the current pack version are left out of mastery and readiness, and counted in `counts` (C9).
 - **Reference markdown** is shown with `textContent` in a `white-space: pre-wrap` block. HTML in it appears as literal text.
 - **Source links:** a source whose `url` fails the `https://` check never loads (validator), so the client never builds a non-https link (FR-039).
-- **Self-rating:** before complete, or for a part with no learner answer (a miss) → 400. Repeat ratings append, and the latest wins in projections.
+- **Self-rating:** before complete, or for a part with no learner answer (a miss or a not-graded statement) → 400. Repeat ratings append, and the latest wins in projections. A failed request shows `err.rate` (PD-7).
 - **Hotword echo:** TTS audio heard by the mic. Handled by FR-032. Headphones are recommended in the intro help text (shown only).
 - **Assist is idempotent.** A second call returns the same reference and writes no second `assisted` event.
 - **A concept with no exercise that can satisfy a readiness criterion** shows that criterion as "n/a" (FR-054). It is never counted as met.
@@ -294,7 +336,7 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
   - use `Map` registries;
   - store canonical JSON of the manifest, schedule, exercises and references through `db.putPack`, and refuse on `'conflict'`.
   - A directory without `practice.json` is ignored silently by this loader. `server/packs.js` skips, silently, a directory with `practice.json` and no `pack.json` (ADR 0008 ARCH-1).
-  - The directory defaults to `packs/`, and `PRACTICE_PACKS_DIR` overrides it, so tests can load fixture packs.
+  - The directory defaults to `packs/`, and `PRACTICE_PACKS_DIR` overrides it, so tests can load fixture packs. **It is a folder of pack folders** (`<dir>/<packFolder>/practice.json`), never a single pack folder. Pointing it at a pack folder itself loads 0 tracks, with no warning (F1c-B22). Examples: `PRACTICE_PACKS_DIR=tests/fixtures/practice` loads both fixture tracks; the acceptance tests copy `accept-pack` into `<tmp>/kite-craft` with `acceptPacksDir()` from `tests/acceptance/practice-helpers.mjs`.
 - **FR-003:** Engine code (`server/**/practice*`, `web/practice*`) MUST contain no subject words. It passes the deny-list test with the Applied AI words and the track id `applied-ai` added (F1c-T01a; C15) and an unchanged allow-list. Engine code reads the track id from the pack, never from a literal.
 
 **Server owns answers**
@@ -317,8 +359,23 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
   - write `stopped`, `explained` and `graded` in one `appendEvents` call, after grading, with no `await` between reading the attempt's events and appending;
   - return the stop response.
   - Order and replay rules are as in the edge cases. Grading is synchronous, so no in-flight state exists (ADR 0008 ARCH-7).
-- **FR-008:** A repeated stop on the same `statementId` MUST return a body identical to the first, and write no events.
+- **FR-008 (repeat stops; revision 3, PD-6, W-S1):** the stop request MAY carry `stopId: string` (`^[A-Za-z0-9_-]{8,64}$`, else 400), a random id the client makes once per STOP press and re-sends on Try again.
+  - A stop whose `stopId` equals a stored stop's `stopId` on the same `statementId` MUST return a body identical to that stop's first response, and write no events. On a different `statementId` it MUST return 400.
+  - A stop with a new `stopId` MUST be processed as a new stop (FR-007, FR-012), even when the statement already has a stop.
+  - A stop without `stopId` on a statement that already has a stop MUST return the stored body of the latest stop on that statement, and write no events (the revision-2 rule).
+  - The server stores `stopId` in `stopped.result.stopId`, only when the request carried one (additive; readers treat a missing value as `null`).
 - **FR-009:** `POST /api/practice/attempts/:id/complete` MUST be idempotent. It writes `completed` once, and returns the summary, missed reveals, answered parts with results and rubrics, references, sources, `followUp.question` and `transfer.scenario`.
+- **FR-009a (skipped stops; revision 3, ADR 0002 Am. 4, PD-5, W-B2):** the complete body MAY carry `skipped: [{statementId: string, elapsedMs?: number}]`.
+  - **Validation:** `skipped` is absent, `null` or an array of at most 20 objects, and each `statementId` is a narration id of the exercise. Anything else → 400. `elapsedMs` follows the stop rule: missing, negative or non-integer means no grace attribution.
+  - **Attribution:** each entry is attributed with the FR-012 rule, independently, against the stops graded so far. An entry that comes out `hit` or `late_hit` on a planted statement that is still uncaught makes that statement **not graded**.
+  - **Reached range:** `lastIdx` = the maximum of `lastStatementId`'s index, every stop's index and every skipped entry's index.
+  - **Stored record, in `completed.result`:**
+    - `skippedStatementIds`: the entries' `statementId`s, in request order, without duplicates;
+    - `notGradedStatementIds`: the not-graded planted ids, in narration order, without duplicates;
+    - both are always written, possibly `[]`;
+    - `missedStatementIds` and `misses` exclude not-graded ids. Caught, missed, not-graded and not-reached are disjoint and together cover every planted statement.
+  - **Response:** `missed[]` lists the union of `missedStatementIds` and `notGradedStatementIds` in narration order. Each item for a not-graded statement carries `notGraded: true`; other items have no `notGraded` key. Both lists are read from the stored event (a missing `notGradedStatementIds` reads as `[]`), never recomputed. `summary` keeps its shape.
+  - After the first `complete`, a repeat call ignores `skipped` and `lastStatementId` (FR-009).
 - **FR-010:** On a hit, the stop response MUST include `reveal: {statementId, misconception, whyWrong, exceptions, correctedText}`, where `correctedText = acceptableCorrections[0]`, and `result: {explanation, correction, overall}`. On a false interruption, `reveal` and `result` are `null`.
 - **FR-011:** `overall` MUST be:
   - `uncertain` if either dimension is uncertain;
@@ -339,13 +396,13 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
     - `tradeoffs` (the common follow-up, when it has a rubric);
     - `defense` (rubric-bearing interview follow-ups and scenario challenges).
   - It never returns a numeric score to the client.
-- **FR-014:** Each `graded.result` MUST record `graderSource: "matcher"` and `graderVersion` (`MATCHER_VERSION`, e.g. `"matcher@1"`). Any change to matcher rules bumps it.
+- **FR-014:** Each `graded.result` MUST record `graderSource: "matcher"` and `graderVersion` (`MATCHER_VERSION`; `"matcher@2"` from Wave A.1). Any change to matcher rules bumps it. Grades already stored under an older version are never regraded or rewritten (inv. 6), and SC-004 κ is reported per `graderVersion`.
 - **FR-015:** After `POST …/assist` (only when `mode ≠ diagnostic`), every later `graded` in the attempt MUST carry `assisted: true`. Earlier ones keep `false`. No hint, reference or correction is sent before an answer unless assist was requested.
 - **FR-016:** `POST …/self-ratings {part, rating: "had_it" | "partly" | "missed_it"}` MUST write `self-rated` with the matcher's `overall` (or dimension status) for that part copied into `result.matcherStatus`, or `null` for a self-rated-only part. This allows κ to be computed from single events.
 - **FR-017 (item match):** a rubric item MUST count as matched when any of its `|` alternatives is matched (C1). An alternative with n content tokens is matched when at least `ceil(0.6 × n − 1e-9)` of them appear in the answer; alternatives with n ≤ 2 need all of them.
   - **Content tokens:** stopword-free tokens of ≥ 2 chars, after lowercasing and removing apostrophes (`wouldn't` → `wouldnt`). **Negators are content tokens and never stopwords** (PD-2).
   - **Negators:** `not`, `no`, `never`, `isnt`, `arent`, `doesnt`, `dont`, `didnt`, `cannot`, `cant`, `wont`, `wouldnt`, `shouldnt`, `without` (`MATCHER_RULES.negators`).
-  - **Token match:** matched at word start with light stemming (the mock-grader technique). Each token may also be satisfied by any of its pack `lexicon.synonyms` forms.
+  - **Token match:** matched at word start with light stemming (the mock-grader technique), and plain plurals of 4-letter words are stripped ("runs" → "run"). Each token may also be satisfied by any of its pack `lexicon.synonyms` forms. Lexicon lookups go one way: a rubric token equal to a key (or its stem) is satisfied by that key's forms, never the reverse. (Confirmed as built, Wave A code review.)
   - `matched` and `missing` report the whole item string, alternatives included.
   - The matched forms are removed before the stuffing check.
 - **FR-018 (status):**
@@ -354,16 +411,21 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
   - `not_met` if none matched and the answer has < 20 content words.
   - Answers with < 3 content words are `not_met`.
   - All ratios, counts and the epsilon are named constants in `MATCHER_RULES` (provisional).
-- **FR-019 (stuffing):** if ≤ 2 content words remain after removing matched forms, the status MUST be capped at `partial`.
+- **FR-019 (stuffing; `matcher@2`, revision 3, PD-4, F1c-B20):** a `met` status MUST be capped at `partial` when **both** of these hold:
+  - (a) ≤ `stuffedMaxRest` (2) content words remain after removing every matched form (all dimensions and the matched `acceptableCorrections` entry), unchanged from `matcher@1`;
+  - (b) the answer's **function-word share** is < `stuffedMaxFunctionShare` (**0.2**, provisional, PD-4).
+  - **Function-word share** = (the number of the answer's words that are in the matcher's existing generic-English `STOPWORDS` list) ÷ (the number of the answer's words). "The answer's words" are every word token, before stopword and length filtering: the same tokens the negation window counts. An answer with 0 words has share 0. `STOPWORDS` is unchanged, holds no negator and no subject word, and the rule adds no vocabulary.
+  - **Why:** a keyword list has no grammar, and a concise correct sentence always does. Condition (a) alone capped concise correct sentences (F1c-B20).
 - **FR-020 (alternatives):**
   - `correction` is `met` if `rubric.correct` is met, or if any one `acceptableCorrections` entry, treated as a single item, is matched.
   - A scenario design is matched against each `acceptableArchitectures[].mustInclude` set that exists, and the best one counts.
   - Wording is never penalized: no length, order or phrasing rule exists beyond FR-017–FR-022.
 - **FR-021 (uncertain):** the dimension MUST be `uncertain`, with confidence `low` and no score, when any of these holds:
   - (a) none matched and the answer has ≥ 20 content words;
-  - (b) a negator occurs within 3 tokens before a token that matched an item, **unless that item's matched alternative itself contains a negator** (PD-2);
+  - (b) a negator occurs within 3 tokens before a token that matched an item, **unless that item's matched alternative itself contains a negator** (PD-2). The window counts every word, stopwords included, and stops at a sentence or clause break (`. ; : ! ?`);
   - (c) the answer covers ≥ 80% of the content tokens of the flawed statement's text, and no correction alternative is matched.
-- **FR-022 (red flags):** a `redFlags` item counts as matched only when it matches under FR-017 **and** no negator occurs within 3 tokens before any of its matched tokens (PD-2). A matched red flag MUST make its dimension `uncertain`, and MUST be listed at reveal. A negated red flag is neither counted nor listed.
+  - A matched red flag (FR-022) or an echo (c) makes **every** dimension of that answer `uncertain`. (Confirmed as built, Wave A code review.)
+- **FR-022 (red flags):** a `redFlags` item counts as matched only when it matches under FR-017 **and** no negator occurs within 3 tokens before any of its matched tokens (PD-2). A matched red flag MUST make its dimension `uncertain`, and MUST be listed at reveal. A negated red flag is neither counted nor listed. The same un-negated rule applies to `strongSignals` (confirmed as built, Wave A code review).
 - **FR-023 (seam):** the practice service MUST take its grader as an injected function, `grader(input: GraderInput) → GraderOutput`, **synchronous in F1c (ADR 0008 ARCH-7)**; shapes in tasks.md. `createPracticeService` throws `TypeError` if `grader` isn't a function. The default is the matcher. A future live grader goes through the existing gateway with the matcher as its fallback, and making the seam async needs its own ADR amendment. No prompt is added in F1c.
 
 **Voice and text (web)**
@@ -399,6 +461,7 @@ The learner sees today's plan (day N of 7) from `schedule.json`. They can run th
 - **FR-052 (mastery, provisional):**
   - The projection keeps two series per concept, `independent` and `assisted`, never merged.
   - Each confident result for an exercise's part counts toward all of that exercise's `concepts`: `met` = 1, `partial` = 0.5, `not_met` = 0, and a miss counts as a detection 0.
+  - **Revision 3 (ADR 0002 Am. 4):** a `graded` event with `overall: null` (a false interruption) records a detection, not a grade, and is never a mastery input. A not-graded statement (`completed.result.notGradedStatementIds`) counts neither as a hit nor as a miss.
   - `score` = mean of the last 5 results; `n` = their count.
   - `level` is `none` (n = 0), `learning` (< 0.6), `developing` (< 0.8) or `strong` (≥ 0.8 and n ≥ 3).
   - `uncertain` results are excluded and listed in `flagged[]`.
@@ -421,10 +484,10 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 | Verb | When | `result` | Used by |
 |---|---|---|---|
 | `started` | attempt created | `{assistAllowed}` | completion rate, `today` |
-| `stopped` | catch stop graded (one transaction with the next two) | `{attributedStatementId, detection, elapsedMs, via, stopLatencyMs}` | time-to-STOP, stop latency (voice-first §3) |
+| `stopped` | catch stop graded (one transaction with the next two) | `{attributedStatementId, detection, elapsedMs, via, stopLatencyMs, stopId?}`; `stopId` only when the request carried one (FR-008) | time-to-STOP, stop latency (voice-first §3) |
 | `explained` | with every stop or answer | `{text, chars}` (text ≤ 2000) | grader agreement relabels |
-| `graded` | with every stop hit or answer | `{dimensions: {<name>: Dim & {confidence}}, overall, outcome?, assisted, confidence, graderSource: "matcher", graderVersion, latencyMs}`; `outcome` for stops: `caught` / `caught_late` / `false_alarm` | mastery, readiness, fallback rate (0 here) |
-| `completed` | complete (once) | `{hits, lateHits, misses, falseInterruptions, notReached, cleanPass, flagged, missedStatementIds, notReachedStatementIds}` | catch rate, clean-pass rate |
+| `graded` | with every stop (a false interruption gets `overall: null`, `outcome: false_alarm`) and every answer | `{dimensions: {<name>: Dim & {confidence}}, overall, outcome?, assisted, confidence, graderSource: "matcher", graderVersion, latencyMs}`; `outcome` for stops: `caught` / `caught_late` / `false_alarm`. A false interruption's result is exactly `{dimensions: {}, overall: null, outcome: "false_alarm", assisted, confidence: "high", graderSource: "matcher", graderVersion, latencyMs: 0}` (ADR 0002 Am. 4, F1c-B21) | mastery, readiness, fallback rate (0 here), false-alarm rate. **Reader rule (Am. 4):** grader metrics (SC-004) and mastery count only `overall !== null` |
+| `completed` | complete (once) | `{hits, lateHits, misses, falseInterruptions, notReached, cleanPass, flagged, missedStatementIds, notReachedStatementIds, skippedStatementIds, notGradedStatementIds}`. The last two are added in revision 3 (FR-009a); readers treat a missing one as `[]` | catch rate, clean-pass rate, skip rate |
 | `assisted` **(new)** | first assist in an attempt | `{kind: "reference"}` | assisted vs independent |
 | `self-rated` **(new)** | each rating | `{rating, matcherStatus, graderVersion}` | κ (SC-004) |
 | `clarified` **(new)** | each clarification question | `{text, chars, revealIndex: int \| null}` | scenario behavior |
@@ -439,12 +502,19 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
   - `partial` → `partial` or `uncertain` ≥ 80%;
   - `should-flag` → `uncertain` ≥ 80%;
   - `uncertain` on the `clear` and `incorrect` classes ≤ 20%.
-  - **SC-003b (module-1 set, same thresholds, gate for F1c-T11):** the same per-class thresholds on `tests/fixtures/practice/m1-labelled-answers.json`, built from the learning-designer's `docs/research/applied-ai/module-1/exercises/_matcher-test-answers.json` (its `expected` values; a row whose expected value lists alternatives, such as "partial or not_met", passes on any of them), graded against `packs/applied-ai` with its `lexicon`.
+  - **Revision 3:** the set also holds F1c-T15's added rows (≥ 1 keyword list padded with one article, expected `partial`; ≥ 1 more short correct sentence, expected `met`), and SC-003 must pass on the enlarged set.
+  - **SC-003b (module-1 set, same thresholds, gate for F1c-T11):** the same per-class thresholds on `tests/fixtures/practice/m1-labelled-answers.json`, built from the learning-designer's `docs/research/applied-ai/module-1/exercises/_matcher-test-answers.json` (its `expected` values; a row whose expected value lists alternatives, such as "partial or not_met", passes on any of them), graded against `packs/applied-ai` with its `lexicon`. **Revision 3:** the set is `rows` plus F1c-T15's `qaRows`.
+- **SC-012 (FR-019 on module-1 wording, gate for F1c-T12's merge; revision 3, PD-4):** on the `qaRows` of `m1-labelled-answers.json` (≥ 2 keyword lists and ≥ 2 short correct sentences, all on module-1 catch stops), graded against the research drafts in `docs/research/applied-ai/module-1/exercises/` with `draftSynonyms` as the lexicon:
+  - keyword-list rows → `overall` `partial` in 100% of rows;
+  - short-correct rows → `overall` `met` in 100% of rows.
+  - **Validity check, recorded once by QA before T12 merges:** under `matcher@1`, every short-correct row comes out `partial`, which proves the rows exercise FR-019(a).
+  - From F1c-T11 on, SC-003b covers these rows against `packs/applied-ai`, and SC-012 remains as a regression check.
 - **SC-004 (AI quality in use, pre-registered, reported, not a ship gate):** over the founder's first 7-day schedule, with ≥ 30 self-rated parts:
   - Cohen's κ between `matcherStatus` (met / partial / not_met) and the self-rating (had_it / partly / missed_it) is ≥ 0.6 on non-uncertain parts;
   - the `uncertain` share of graded parts is ≤ 10%.
+  - Both are computed only over `graded` events with `overall !== null` (ADR 0002 Am. 4), reported per `graderVersion`.
   - **A miss on either** makes the live grader (Later) the next priority once a key exists. Only the PM changes these thresholds, in a thread.
-- **SC-005 (text loop):** the e2e runs a catch exercise (2 planted, 1 late hit, 1 false interruption) and a zero-planted exercise to their reveals, keyboard-only, at 390 px and 1280 px, with 0 console errors.
+- **SC-005 (text loop):** the e2e runs a catch exercise (2 planted, 1 late hit, 1 false interruption) and a zero-planted exercise to their reveals, keyboard-only, at 390 px and 1280 px, with 0 console errors. **No console message is filtered or exempted**; the favicon 404 is fixed on the practice page (PD-8). Errors the test itself causes on purpose (injected network aborts) are asserted separately and are not part of this count.
 - **SC-006 (barge-in):** from a hotword stub event or a Space keydown, `speechSynthesis.cancel()` is called within 300 ms of fake-clock time, in 100% of e2e runs.
 - **SC-007 (spoken = shown):** every `speak()` argument in the e2e equals the normalized `textContent` of its element.
 - **SC-008 (deny-list):** the deny-list test passes with the Applied AI words and `applied-ai` added, and `deny-list-allow.json` is unchanged.
@@ -465,6 +535,11 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 - Offline queue and PWA install for the practice page.
 - Retiring the old game or merging the two engines (ADR 0008 convergence trigger before F2's Session Engine is specced). Consolidating the matcher with `shared/mock-grader.js` after F1a-T13b.
 - An expression index for `eventsForEngine`, only if progress p95 is measured above 100 ms.
+- **From Wave A.1 (revision 3):**
+  - a `summary.notGraded` count and a `sum.line` variant that mentions skipped stops (PD-5);
+  - an `err.net` variant for a failed `complete`, whose text doesn't mention "your answer" or skipping. Today the same `err.net` string is shown, with no Skip button;
+  - voice commands for "try again" and "skip" at `err.net` (see OQ-7);
+  - F1c-B11 (FR-021(a) per dimension vs per answer) and B12/B13 (lexicon gaps): these are SC-003b and F1c-T11 work, not Wave A.1.
 
 ## Assumptions
 - One learner (`learner_1`), one server process per DB file (ADR 0003 Amendment 3).
@@ -477,6 +552,7 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 - **OQ-3** [NEEDS CLARIFICATION: founder] Is "configurable schedule" satisfied by `schedule.json` alone in F1c? A UI setting is listed under Later.
 - **OQ-5** [NEEDS CLARIFICATION: founder] Confirm the architect's ARCH-2 reading in thread 0007: the F2 hard rule doesn't block practice packs that enter no prompt (ADR 0006 Amendment 3). Blocks F1c-T11's merge only.
 - **OQ-6** [NEEDS CLARIFICATION: content author] Accept PD-1's two follow-up rubrics (catch-06, catch-08) and the draft synonym list into `packs/applied-ai`? If not, T11 moves the content without them.
+- **OQ-7** [NEEDS CLARIFICATION: principal-architect, for F1c-T06 scope] Invariant 8 says every flow works hands-free, but `err.net` has only buttons, both in the card game and here. Should T06 add "try again" and "skip" as voice commands in a network-error state? I lean yes, as two rows in the command table. This was not introduced by Wave A.1.
 - Resolved in revision 2: OQ-2 (date unknown; Wave A first), OQ-4 (C2 and C12 accept the drafts' shapes with format-only mapping).
 
 ## Learning review
@@ -489,6 +565,9 @@ Requested from `learning-designer`; LR-1 to LR-8 are not in yet. The PM decides 
 - **LR-6:** Are the mastery and readiness thresholds sensible as provisional values?
 - **LR-7:** Is "assisted = reference viewed" the right definition?
 - **LR-8:** How should the diagnostic be composed?
+- **LR-9 (revision 3):** Is `stuffedMaxFunctionShare = 0.2` (PD-4) right from a learning point of view? Specifically: should a terse but correct spoken answer ever be capped at "Partly covered"? My call for now: 0.2, revisited on the T01b dictated rows.
+- **LR-10 (revision 3):** Is the `missed.notGraded` wording right: "Not scored, you skipped this stop: …"? Should a skipped statement show its correction at all, or stay hidden for a later retry? My call for now: show it (ADR 0002 Am. 4 says the reveal still shows the correction).
+- LR-9 and LR-10 are requested in thread 0007. They are advisory and do not block Wave A.1's merge. If a finding arrives before F1c-T16 is verified, I record my decision on it here.
 
 ## Architecture rulings (design review 2026-10-13; all ruled)
 | # | Ruling | Recorded in |

@@ -1,7 +1,7 @@
 # F1c: Tickets
 
-**Status:** Approved (revision 2: design review applied)
-**Revision history:** revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
+**Status:** Approved (revision 3: Wave A.1 added)
+**Revision history:** revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
 
 Legend: [P] = can run in parallel with other [P] tickets in the same wave (no shared files).
 
@@ -13,7 +13,8 @@ Legend: [P] = can run in parallel with other [P] tickets in the same wave (no sh
 - **Changed assertions** are listed as `old → new`.
 - **No prompt, gateway or model-routing change** in any F1c ticket.
 - **Shared-file sequences (never in parallel):**
-  - F1c-internal: `server/index.js` T04 → T08; `server/routes/practice.js` and `server/services/practice.js` T04 → T07; `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/api.js` and `web/practice/practice.css` T05 → T06 → T09 → T10; `web/practice/commands.js` and `tests/practice-web-commands.test.js` T06 only; `server/packs.js` T02 only; `web/speech.js` T06 only; `tests/acceptance/F1c.test.js` and `tests/e2e/F1c.e2e.mjs` are changed after T01a / T01b only by QA `todo` removals.
+  - F1c-internal: `server/index.js` T04 → T08; `server/routes/practice.js` T04 → T07; `server/services/practice.js` and `tests/practice-catch.test.js` T04 → T13 → T07; `server/services/practice-matcher.js` and `tests/practice-matcher.test.js` T03 → T12; `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/state.js` and `tests/practice-web-state.test.js` T05 → T14 → T06 → T09 → T10 (each later ticket touches only those of these files it lists); `web/practice/api.js` and `web/practice/practice.css` T05 → T06 → T09 → T10; `web/practice/commands.js` and `tests/practice-web-commands.test.js` T06 only; `server/packs.js` T02 only; `web/speech.js` T06 only; `tests/acceptance/F1c.test.js` is changed after T01a only by F1c-T15 → F1c-T16 (Wave A.1, listed `old → new`) and by QA `todo` removals; `tests/e2e/F1c.e2e.mjs` is changed after T01b only by QA `todo` removals.
+  - **Wave A.1 merge order:** F1c-T15 → F1c-T13 → F1c-T12 (T12 merges after T13, because T13 makes `tests/practice-catch.test.js` assert `MATCHER_VERSION` instead of `'matcher@1'`, and after T15's SC-012 rows and QA's `matcher@1` validity record exist). F1c-T14 merges at any point. F1c-T16 verifies last.
   - **Cross-spec order with F1a Wave 2 (C7; F1a is on hold, mirrored in F1a `tasks.md` rev 4.7):**
 
     | File | F1c | F1a Wave 2 | Order |
@@ -24,8 +25,9 @@ Legend: [P] = can run in parallel with other [P] tickets in the same wave (no sh
     | `web/speech.js` | T06 (`onSegment`) | T15 deletes it and rewrites `web/practice/speech.js`; T24 | F1c-T06 → F1a-T15 → F1a-T24 |
     | `npm test` `# todo` count | T01a, T01b add `F1c-` todos | T19b requires 0 `F1a-` todos | no order needed |
 - **Wave order.**
-  - **Wave A** (usable text-mode catch loop): T01a, T02, T03 [P] → T04 → T05. Ready to build now.
-  - **Wave B:** T01b, T06, T07, T08 [P]. T11 [P] after T02, T03 and its content gates.
+  - **Wave A** (usable text-mode catch loop): T01a, T02, T03 [P] → T04 → T05. Built; verdicts CHANGES REQUESTED / DON'T SHIP (review.md, qa-report.md).
+  - **Wave A.1** (fix wave; turns Wave A into SHIP): T12, T13, T14, T15 [P] → T16. Ready to build now. Wave B starts after T16's SHIP, except T01b, T08 and T11's content preparation, which touch no Wave A.1 file.
+  - **Wave B:** T01b, T06, T07, T08 [P]. T06 after T14; T07 after T13. T11 [P] after T02, T03, T12 and its content gates.
   - **Wave C:** T09 → T10.
 
 ## Shared shapes (referenced by several tickets)
@@ -143,7 +145,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 - **Owner:** backend-engineer · **Size:** M · **Depends on:** none (ARCH-5 ruled: option (a), ADR 0008)
 - **Files:** create `server/services/practice-matcher.js`, `tests/practice-matcher.test.js`
 - **Interfaces (produces):**
-  - `MATCHER_VERSION = 'matcher@1'`;
+  - `MATCHER_VERSION = 'matcher@1'` (F1c-T12 bumps it to `'matcher@2'` and adds `stuffedMaxFunctionShare: 0.2`);
   - `MATCHER_RULES` (frozen): `{itemCoverage: 0.6, metRatio: 2/3, epsilon: 1e-9, minWords: 3, longAnswerWords: 20, negationWindow: 3, echoCoverage: 0.8, stuffedMaxRest: 2, maxAlternatives: 8, negators: ['not', 'no', 'never', 'isnt', 'arent', 'doesnt', 'dont', 'didnt', 'cannot', 'cant', 'wont', 'wouldnt', 'shouldnt', 'without']}`;
   - `matcherGrade(input: GraderInput) → GraderOutput` (sync, pure);
   - `matchClarification(question: string, clarifications: {askAbout: string[]}[], lexicon) → number | null`;
@@ -196,7 +198,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
     - `POST /api/practice/attempts/:id/self-ratings {part, rating} → {part, rating, matcherStatus}`. 400 before complete, or for a part with no answer.
   - Events exactly as the spec's "Events and metrics" table (ADR 0002 Amendment 3), with `context.engine = 'practice'` and `object.part` on every `self-rated`.
 - **Acceptance:** FR-004–FR-012, FR-014–FR-016, FR-023 (injected sync grader, `TypeError`), FR-050 (catch verbs), edge cases for stops, complete and engine isolation.
-- **Tests that prove it:** `tests/practice-catch.test.js` (in-process service on a `:memory:` DB plus one spawned-server HTTP smoke test with `PRACTICE_PACKS_DIR=tests/fixtures/practice/pack-basic`):
+- **Tests that prove it:** `tests/practice-catch.test.js` (in-process service on a `:memory:` DB plus one spawned-server HTTP smoke test with `PRACTICE_PACKS_DIR` set to a **folder of packs** that contains `pack-basic/`, e.g. `tests/fixtures/practice`; pointing it at `pack-basic` itself loads 0 tracks, F1c-B22):
   - "hit writes stopped/explained/graded in one append, in seq order, all valid";
   - "false interruption: result and reveal null";
   - "grace: 2000 ms late hit, 2001 ms false interruption, caught previous not re-attributed";
@@ -253,11 +255,206 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 
 ---
 
+## Wave A.1: fix wave (Wave A code review and QA report)
+
+**Goal:** turn the Wave A verdicts into SHIP with the smallest change. The architect re-checks only the diff and the test output (review.md, "Verdict").
+
+**Ships when** (QA, F1c-T16):
+- `matcher@2` passes SC-003 on the enlarged accept-pack set, plus SC-012, US1.5 and US1.11;
+- W-B2 is fixed (FR-009a);
+- the FR-050 test follows the B21 ruling and asserts `MATCHER_VERSION`;
+- the `F1c-T03` and `F1c-T04` todo markers are gone, and `npm test` shows `# fail 0`;
+- the golden replay shows 0 diffs.
+
+**Scope decisions (spec PD-4 to PD-8):**
+- **In Wave A.1:** W-B1, W-B2, W-S1, W-S3, W-S4, W-S5, W-S6, B21, B22, and the favicon.
+- **Moved:** W-S2 moves to F1c-T06.
+
+### F1c-T12 [P] `matcher@2`: FR-019 function-word share (F1c-B20, W-B1)
+- **Owner:** backend-engineer · **Size:** S · **Depends on:** none to build. **Merge** waits on F1c-T13 (it makes `tests/practice-catch.test.js` version-agnostic) and on F1c-T15 (the SC-012 rows, plus QA's `matcher@1` validity record).
+- **Files:** modify `server/services/practice-matcher.js`, `tests/practice-matcher.test.js`
+- **Interfaces:**
+  - Consumes: nothing new.
+  - Produces (the signatures are unchanged; only these values change):
+    - `MATCHER_VERSION = 'matcher@2'`;
+    - `MATCHER_RULES` (still frozen) gains `stuffedMaxFunctionShare: 0.2`, and every other key and value is unchanged;
+    - `matcherGrade(input: GraderInput) → GraderOutput`, where `graderVersion` is `'matcher@2'`.
+  - Internal: `makeAnswer` also returns `functionShare = raw.filter(w is in STOPWORDS).length / raw.length`, where `raw` is every word, before stopword and length filtering (the negation window's tokens), and 0 when `raw` is empty. At `practice-matcher.js:227`: `stuffed = (total - removed.size <= R.stuffedMaxRest) && functionShare < R.stuffedMaxFunctionShare`.
+- **Acceptance:**
+  - FR-019 as rewritten in revision 3: the cap fires only when (a) and (b) both hold, and (b) is strict.
+  - FR-014: the version is bumped.
+  - `STOPWORDS` is unchanged, and no word is added anywhere (inv. 1, FR-003).
+  - Proven at QA verify (F1c-T16): SC-003 on the enlarged set, SC-012, US1.5 and US1.11.
+- **Tests that prove it:** `tests/practice-matcher.test.js`:
+  - "a concise correct sentence with ≤ 2 leftover words is not capped";
+  - "a comma-separated keyword list of rubric words is capped at partial";
+  - "a list padded with one article is still capped";
+  - "the function-word share boundary is strict: share 0.2 is not capped, 1/6 is". Example: items `['kettle', 'lantern', 'orbit']`; "the kettle lantern orbit harbor" (1 of 5) → `met`; "kettle lantern orbit harbor beacon the" (1 of 6) → `partial`.
+  - Old → new: "version and rules are exported and frozen": `'matcher@1'` → `'matcher@2'` (both assertions), plus `MATCHER_RULES.stuffedMaxFunctionShare === 0.2`.
+  - "stuffed answer capped at partial" stays unchanged and still passes (its answers have no function words).
+- **Notes:**
+  - The threshold is the PM's (spec PD-4).
+  - If any assertion outside this Files line changes result under `matcher@2` (other than the `'matcher@1'` strings that F1c-T13 and F1c-T16 replace), stop and report it in thread 0007. Don't edit another ticket's file.
+  - No prompt, gateway or model change, so the eval gate isn't triggered.
+
+### F1c-T13 [P] Catch service: skipped stops are not graded, `stopId` repeats, assist after complete, transitive import guard (W-B2, W-S1, W-S3, W-S5, B21 test)
+- **Owner:** backend-engineer · **Size:** M · **Depends on:** none (ADR 0002 Am. 4 ruled; W-S1 proposed by the architect, product rule in spec PD-6)
+- **Files:** modify `server/services/practice.js`, `tests/practice-catch.test.js`
+  - `server/routes/practice.js` is **not** changed: it already passes the parsed body through.
+- **Interfaces:**
+  - **Consumes:** the existing `attribute()`, `projectPracticeAttempt`, `db.appendEvents` and `MATCHER_VERSION`.
+  - **Produces (all additive):**
+    - `POST /api/practice/attempts/:id/stops {statementId, elapsedMs, answer, via?, stopLatencyMs?, stopId?: string}`. The response shape is unchanged. `stopId` must match `^[A-Za-z0-9_-]{8,64}$`, otherwise 400. Repeat rules are exactly spec FR-008:
+      - same `stopId` and same statement → the stored body, no events;
+      - same `stopId` and another statement → 400;
+      - new `stopId` → a new stop;
+      - no `stopId` → the revision-2 rule (the latest stop on that statement).
+    - `stopped.result.stopId`: present only when the request carried one.
+    - `projectPracticeAttempt(events)` stops gain `stopId: string | null`, and a repeat body is rebuilt from the stop with that `stopId`.
+    - `POST /api/practice/attempts/:id/complete {lastStatementId?, skipped?: [{statementId: string, elapsedMs?: number}]}`. Validation, attribution, reached range and stored lists are exactly spec FR-009a.
+      - The response shape is as in T04, plus `missed[]` = the union of missed and not-graded ids in narration order, where a not-graded item carries `notGraded: true` and other items have no such key.
+      - `summary` is unchanged, and `summary.misses` = `missedStatementIds.length`.
+    - `completed.result` gains `skippedStatementIds: string[]` and `notGradedStatementIds: string[]`, always written.
+    - `assist(attemptId)`: once `a.completed` is set, it returns `{assisted: true, reference}` and appends nothing (W-S3).
+  - Example `completed.result` (catch-watering with `s2` planted, skipped at 300 ms, then the set finishes):
+    ```json
+    {"hits":0,"lateHits":0,"misses":0,"falseInterruptions":0,"notReached":0,"cleanPass":false,"flagged":0,
+     "missedStatementIds":[],"notReachedStatementIds":[],"skippedStatementIds":["s2"],"notGradedStatementIds":["s2"]}
+    ```
+- **Acceptance:** FR-008, FR-009, FR-009a; the spec edge cases "Repeat and re-stop", "Skipped stops at complete" and "Assist after complete"; ADR 0002 Am. 4 (both verification tests); W-S5.
+- **Tests that prove it:** `tests/practice-catch.test.js`:
+  - "a false interruption writes graded with outcome false_alarm and overall null" (Am. 4; asserts the exact result `{dimensions: {}, overall: null, outcome: 'false_alarm', assisted: false, confidence: 'high', graderSource: 'matcher', graderVersion: MATCHER_VERSION, latencyMs: 0}`);
+  - "a skipped stop on a planted statement is notGraded, not missed; caught, missed, notGraded and notReached are disjoint and cover every planted statement" (Am. 4);
+  - "skipped: a skip inside 2000 ms of the next statement marks the previous planted statement notGraded; a skip on a clean or already-caught statement changes no count and keeps cleanPass";
+  - "skipped: a statement skipped and then caught is caught, not notGraded";
+  - "skipped: a skipped statement after lastStatementId is notGraded, not notReached";
+  - "skipped: not an array, 21 entries, a non-object entry or an unknown statementId is 400; a repeat complete ignores skipped";
+  - "stopId: the same stopId returns the stored body with no events; the same stopId on another statement is 400; a malformed stopId is 400";
+  - "stopId: a new stopId after a late hit is a new stop, a false interruption with its own triple (W-S1)";
+  - "stopId is stored on stopped only when sent";
+  - "assist after complete returns the same body and writes no event" (W-S3);
+  - "practice modules never reach server/ai or server/prompts, transitively": the walk follows relative import specifiers from every `server/{services,routes}/practice*.js` until closure, and fails on any reached path under `server/ai/` or `server/prompts/`, or on `ai-client`/`llm.js` (W-S5).
+- **Changed assertions (old → new):**
+  - "hit writes stopped/explained/graded in one append, in seq order, all valid" and "self-rated copies matcherStatus and carries object.part": `'matcher@1'` → `MATCHER_VERSION`, imported from `server/services/practice-matcher.js` (so the file passes under `matcher@1` and `@2`).
+  - "complete idempotent; notReached vs missed; cleanPass": the `completed[0].result` deepEqual gains `skippedStatementIds: [], notGradedStatementIds: []`.
+  - "practice modules and server/ai, server/prompts never import each other": keeps its reverse half (`server/ai`, `server/prompts` never import a practice module). Its forward half is replaced by the transitive test above.
+  - "repeat stop identical body, no events" stays unchanged and must pass (requests without `stopId`).
+- **Notes:**
+  - Grading and attribution stay synchronous, with no `await` between reading events and appending (ADR 0002 Am. 3).
+  - Skipped entries are attributed only against graded stops, never against each other.
+  - Validate `skipped` only on the first `complete`. The existing idempotent early return stays first.
+
+### F1c-T14 [P] Practice page: skip bookkeeping and the not-scored line, `stopId`, self-rating error, favicon (W-B2, W-S1, W-S4, PD-8)
+- **Owner:** frontend-engineer · **Size:** M · **Depends on:** the F1c-T13 contract. Build in parallel: the T04 server ignores unknown body fields, so this ticket can merge before or after T13.
+- **Files:** modify `web/practice/app.js`, `web/practice/state.js`, `web/practice/copy.js`, `web/practice.html`, `tests/practice-web-state.test.js`
+  - `web/practice/api.js` is **not** changed: `postStop` and `postComplete` already send any body.
+- **Interfaces:**
+  - **Consumes:** T13's `stopId` and `skipped` request fields, and `missed[].notGraded`.
+  - **Produces, `state.js` (pure, Node-importable):**
+    - `newStopId() → string`. Uses `crypto.randomUUID()` when it is a function; otherwise 16 bytes from `crypto.getRandomValues` as 32 lowercase hex chars. The result always matches `^[A-Za-z0-9_-]{8,64}$`.
+    - `completeRequest(lastStatementId: string | null, skipped: {statementId: string, elapsedMs: number}[]) → {lastStatementId?: string, skipped?: {statementId, elapsedMs}[]}`. A key is left out when its value is `null` or empty.
+    - `missedLine(item)` → `missed.notGraded` when `item.notGraded === true`, otherwise `missed.item` as today. Whitespace is normalized as today.
+  - **Produces, `copy.js`:** adds `missed.notGraded`, `err.rate` and `btn.retry`, with exactly the spec copy-table text.
+  - **Produces, `app.js`:**
+    - `S.skipped = []` is reset in `start()`.
+    - `onStop` sets `S.stop.stopId = newStopId()`. `submitStop` sends `stopId`. Try again re-sends the same `S.stop`, so the same `stopId`.
+    - `onSkip` pushes `{statementId: S.stop.statementId, elapsedMs: S.stop.elapsedMs}` onto `S.skipped` before replaying the statement.
+    - `complete()` posts `completeRequest(last?.id ?? null, S.skipped)`.
+    - `rate()` on failure:
+      - adds, inside that `li[data-part]`, one `p.rate-error` (`role="status"`) whose text is set with `say()`, so it is shown and spoken (FR-035), plus one `button.rate-retry` labelled `btn.retry` that re-posts the same rating;
+      - leaves `aria-pressed` unchanged.
+      - On success, it removes both and sets `aria-pressed` as today.
+      - At most one `.rate-error` per row.
+  - **Produces, `practice.html`:** exactly one added line in `<head>`, `<link rel="icon" href="data:,">` (PD-8).
+  - **DOM (QA's e2e depends on these):** `li[data-part] p.rate-error`, `li[data-part] button.rate-retry`. Every existing id is unchanged.
+- **Acceptance:**
+  - US1.13–US1.15 (text) and US2.10–US2.11 (voice).
+  - The client halves of FR-008 and FR-009a.
+  - FR-035 for `missed.notGraded` and `err.rate`. The reveal already speaks every `#missed-list` child, so the not-scored line is spoken where missed lines are.
+  - PD-8: no `/favicon.ico` request from `/practice.html`.
+  - No `innerHTML`; all text through `textContent`.
+- **Tests that prove it:** `tests/practice-web-state.test.js`:
+  - "missedLine for a not-graded item says it was not scored and never says Missed";
+  - "completeRequest sends skipped only when non-empty and lastStatementId only when known";
+  - "newStopId is unique per call and matches the server pattern";
+  - "practice.html declares an empty inline icon" (source check for `<link rel="icon" href="data:,">`);
+  - old → new: "copy strings equal the spec table": the frozen expected object gains `missed.notGraded`, `err.rate` and `btn.retry`.
+  - **Manual real-browser check, recorded in the PR, in text and voice mode at 390 and 1280 px:**
+    - abort a stop request, then Skip, and finish the set: the reveal shows the `missed.notGraded` line;
+    - set DevTools offline, then rate: `err.rate` appears, and Try again succeeds once back online;
+    - 0 console errors on a fresh load of `/practice.html`.
+- **Notes:**
+  - `sum.line` is unchanged (PD-5).
+  - W-S2 (STOP during `end.catch`) is **not** in this ticket; it is in F1c-T06.
+  - Don't touch `web/index.html` or `web/app.js` (Untouched list).
+
+### F1c-T15 [P] Enlarged labelled sets and the SC-012 module-1 check (architect's overfitting RISK)
+- **Owner:** qa-engineer · **Size:** S · **Depends on:** none. **Must merge before F1c-T12 merges.**
+- **Files:** modify `tests/fixtures/practice/m1-labelled-answers.json`, `tests/fixtures/practice/labelled-answers.json`, `tests/acceptance/F1c.test.js`, `docs/specs/F1c-practice-engine/qa-report.md`
+- **Interfaces:**
+  - Consumes: `matcherGrade` and `combineOverall` (in-process), `graderInputFor` from `tests/acceptance/practice-helpers.mjs` (unchanged), and the draft catch exercises in `docs/research/applied-ai/module-1/exercises/*.json` (read, never edited).
+  - **Produces, in `m1-labelled-answers.json`:**
+    - A new top-level `qaRows` array. `rows` stays a verbatim copy of the research file, so the existing fixture test is unchanged for it.
+    - Each `qaRows` item is `{exercise, statementId, part: "stop:<id>", class, tags: ["keyword-list"] | ["short-correct"], text, expect: {explanation, correction, overall}}`. `expect` values may be arrays of alternatives, as in `rows`. There is no `expected` field, because that field is the research file's own.
+    - Plus `qaRowsNote` (who, when, why).
+    - **≥ 2 `keyword-list` rows,** on 2 different module-1 catch exercises:
+      - comma-separated rubric words for one planted statement, with at most one function word;
+      - `class: "partial"`, `expect.overall: "partial"`.
+    - **≥ 2 `short-correct` rows,** on 2 different module-1 catch exercises:
+      - one or two sentences of ≤ 25 words, correct by the draft's `whyWrong` and `acceptableCorrections`;
+      - written so that ≤ 2 content words remain after the matched forms are removed (FR-019(a) fires);
+      - `class: "clear"`, `expect.overall: "met"`.
+  - **Produces, in `labelled-answers.json` (accept-pack):**
+    - + ≥ 1 row tagged `stuffed` that is a keyword list padded with exactly one article (`class: "partial"`, `expect: "partial"`);
+    - + ≥ 1 row tagged `short-correct` (`class: "clear"`, `expect: "met"`) on a part other than the 6 rows B20 lists.
+    - Every existing fixture rule still holds.
+- **Acceptance:**
+  - SC-003 (revision 3, enlarged set) and SC-012 can each be run as a named test.
+  - The SC-012 validity check (spec SC-012) is recorded in `qa-report.md` under "Wave A.1", from a run on `matcher@1`, **before** T12 merges. It must show every `short-correct` row as `partial` and every `keyword-list` row as `partial`. If a short-correct row isn't capped under `matcher@1`, it doesn't test FR-019: rewrite it.
+- **Tests that prove it:** `tests/acceptance/F1c.test.js`:
+  - new: "fixture: m1 qaRows hold ≥ 2 keyword-list rows expecting partial and ≥ 2 short-correct rows expecting met, each on a planted statement of a module-1 draft catch exercise";
+  - new: "SC-012 FR-019 on module-1 wording: keyword lists partial, short correct sentences met (research drafts, draftSynonyms)", `{ todo: 'F1c-T12' }`. It prints one diagnostic line per row (exercise, tag, expected, actual).
+  - old → new: "SC-003b module-1 labelled set thresholds" grades `rows` and `qaRows` (still `todo: 'F1c-T11'`);
+  - old → new: "fixture: labelled-answers.json has ≥ 40 rows, …" also asserts ≥ 3 `stuffed` rows and ≥ 1 `short-correct` row.
+- **Notes:** the learning-designer may review the new module-1 rows in thread 0007 (spec LR-9). That review is advisory and doesn't block the merge.
+
+### F1c-T16 Wave A.1 acceptance updates, todo removal and re-verify (B21, W-S6, ship verdict)
+- **Owner:** qa-engineer · **Size:** M · **Depends on:** F1c-T15 (same test file). Write the tests now, with todo markers. Remove each marker once its ticket (T12, T13, T14) has merged and the test passes.
+- **Files:** modify `tests/acceptance/F1c.test.js`, `tests/acceptance/practice-helpers.mjs`, `docs/specs/F1c-practice-engine/qa-report.md`
+  - `practice-helpers.mjs`: only if a request helper needs to pass the new `stopId` or `skipped` fields.
+- **Interfaces:** consumes T12's `MATCHER_VERSION`, T13's routes and fields, and T14's DOM (browser check only).
+- **Changed assertions:** "FR-050 catch events: …", old → new:
+  - the verb list `['started','stopped','explained','graded','stopped','explained','completed','self-rated']` → `['started','stopped','explained','graded','stopped','explained','graded','completed','self-rated']`;
+  - new assertion: the second `graded.result` has `overall: null`, `outcome: 'false_alarm'` and `dimensions: {}`, in the same append as its `stopped`/`explained`;
+  - `'matcher@1'` → `MATCHER_VERSION` (imported) in both places (W-S6);
+  - the `stopped.result` deepEqual is unchanged (no `stopId` is sent there).
+- **New tests** (`todo: 'F1c-T13'` until T13 merges):
+  - "US1.13 a skipped stop is not scored: notGraded at the reveal, not counted in misses, stored in notGradedStatementIds";
+  - "US1.14 a new stopId after a late hit is a new stop (false interruption); Try again with the same stopId returns the stored body with no events";
+  - "edge: skipped validation 400 (not an array, 21 entries, a non-object entry, an unknown statementId); a repeat complete ignores skipped";
+  - "edge: a malformed stopId is 400; the same stopId on another statement is 400";
+  - "edge: assist after complete writes no event".
+- **Todo removals:** `F1c-T03` (SC-003), all 25 `F1c-T04`, `F1c-T12` (SC-012) and the `F1c-T13` markers above. The `F1c-T07`, `T08` and `T11` markers stay.
+- **Acceptance (the SHIP conditions above):**
+  - `npm test` passes with `# fail 0`, and no `F1c-T03`, `F1c-T04`, `F1c-T12` or `F1c-T13` todo remains;
+  - SC-003 passes on the enlarged set, and SC-012 passes;
+  - US1.5, US1.11 and FR-050 pass;
+  - golden replay: 0 diffs;
+  - **real-browser re-check** (the qa-report harness, text and voice, 390 and 1280 px):
+    - US1.13/US2.10, the skip path, shows and speaks `missed.notGraded` (FR-035 probe), and no "Missed:" line for that statement;
+    - US1.15/US2.11, the self-rating failure;
+    - **0 console errors, with no filter**, including the first fresh context on `/practice.html` (PD-8);
+    - T05's 390/1280 px record (O2).
+  - QA appends a `DECISION` to thread 0007 with separate Functional and AI-quality verdicts.
+- **Tests that prove it:** the named tests above, plus the quoted `npm test` and golden replay output in `qa-report.md` "Wave A.1".
+
+---
+
 ## Wave B: voice, other modes and progress (backend), e2e
 
 ### F1c-T01b [P] Acceptance tests, browser level (e2e)
-- **Owner:** qa-engineer · **Size:** M · **Depends on:** F1c-T01a (accept-pack), F1c-T05 (DOM ids)
-- **Files:** create `tests/e2e/F1c.e2e.mjs`
+- **Owner:** qa-engineer · **Size:** M · **Depends on:** F1c-T01a (accept-pack), F1c-T05 (DOM ids), F1c-T15 (same fixture file)
+- **Files:** create `tests/e2e/F1c.e2e.mjs`; modify `tests/fixtures/practice/labelled-answers.json`
 - **Interfaces:**
   - Consumes: the T05, T06, T09 and T10 DOM ids; `tests/golden/browser-stubs.js`, reused and not edited. If it lacks a `SpeechRecognition` stub, define one inline in this file that emits scripted interim and final segments (per-result `isFinal`).
   - Uses the F1a timing contract (`page.clock`, held utterances, DOM-keyed actions).
@@ -272,12 +469,18 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - "US2.9 'next' at the reveal starts the next exercise";
   - "US1.10 network abort keeps the answer, Try again idempotent";
   - "US1.12 Next button opens the next exercise";
+  - "US1.13 / US2.10 skipped stop is shown as not scored, never Missed, and spoken as shown" (`todo: 'F1c-T14'` until T14 merges);
+  - "US1.15 / US2.11 a failed self-rating shows err.rate and Try again succeeds" (`todo: 'F1c-T14'` until T14 merges);
   - "SC-011 hands-free: catch, next, review with 0 clicks after Start" (`todo: 'F1c-T10'`);
   - each with its text-mode twin where the spec lists one.
-- **Notes:** runs outside `npm test` (`node tests/e2e/F1c.e2e.mjs`, `MOCK=1`, `PRACTICE_PACKS_DIR` set to accept-pack).
+- **Notes:**
+  - Runs outside `npm test` (`node tests/e2e/F1c.e2e.mjs`, `MOCK=1`).
+  - **`PRACTICE_PACKS_DIR` is a folder of packs (F1c-B22):** copy `tests/fixtures/practice/accept-pack` to `<tmp>/kite-craft` (as `acceptPacksDir()` in `tests/acceptance/practice-helpers.mjs` does) and set `PRACTICE_PACKS_DIR=<tmp>`. Pointing it at `accept-pack` itself loads 0 tracks, silently.
+  - **SC-005 console check (PD-8):** count every console error from the first fresh browser context on `/practice.html`, with no filter. Aborts the test injects on purpose are asserted in their own test and kept out of SC-005's count.
+  - Add one real dictated answer per SC-003 class to `labelled-answers.json` (tag `dictated`), per the architect's dictation RISK in thread 0007. If one of them breaks FR-019, report it in thread 0007 for the PM (PD-4 revisit). This is the one fixture edit T01b makes, after F1c-T15.
 
 ### F1c-T06 [P] Voice for catch: hotword, barge-in, editable dictation, command parser
-- **Owner:** frontend-engineer · **Size:** M · **Depends on:** F1c-T05 (ARCH-6 ruled, ADR 0008)
+- **Owner:** frontend-engineer · **Size:** M · **Depends on:** F1c-T05, F1c-T14 (shared `web/practice/*` files) (ARCH-6 ruled, ADR 0008)
 - **Files:** create `web/practice/voice.js`, `web/practice/commands.js`, `tests/practice-web-commands.test.js`; modify `web/speech.js`, `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/practice.css`
   - `web/speech.js` (C8): exactly one additive change, an optional `onSegment({text, isFinal})` callback in `listen()`, called once per recognition result. No other line changes; `web/app.js` doesn't pass it.
   - `web/practice.html`: `#mic-btn`, `#mic-msg`. `web/practice/copy.js`: `mic.denied`.
@@ -294,7 +497,9 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
       - `startDictation({onText, onCommand}) → {stop()}`, with fallback to text after 3 consecutive recognizer errors;
       - `startCommands({state: () => string, onCommand}) → {stop()}`: listens for state commands in `reveal`, `done` and `progress`.
   - Wires "next" in `reveal` and `done` to the same handler as `#next-btn` (FR-058).
-- **Acceptance:** US2.1–US2.9; FR-030–FR-038 (voice half), FR-058 (voice "next"). `stopSpeaking()` is called synchronously in the stop handler, and `stopLatencyMs` is measured with `performance.now()`. Golden replay shows 0 diffs after this ticket.
+- **Acceptance:** US2.1–US2.9 and US2.12; FR-030–FR-038 (voice half), FR-058 (voice "next"). `stopSpeaking()` is called synchronously in the stop handler, and `stopLatencyMs` is measured with `performance.now()`. Golden replay shows 0 diffs after this ticket.
+  - **W-S2, moved here from the Wave A code review (spec PD-8 deferrals):** STOP (hotword, button or Space) is accepted while `end.catch` is spoken (`phase === 'ending'`). `#stop-btn` stays visible until `complete` is called. The stop is posted for the last statement with `elapsedMs` measured from that statement's start and a fresh `stopId`, and the pending `complete` is cancelled until narration ends again.
+  - Every new stop keeps the F1c-T14 `stopId` behavior (one `newStopId()` per press; Try again re-sends it).
 - **Tests that prove it:** `tests/practice-web-commands.test.js`:
   - "stop / hold on detected in narrating only";
   - "hotword inside statement text needs the bare phrase";
@@ -307,11 +512,12 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - "review and diagnostic in progress only";
   - "commands ignored outside their state";
   - "web/speech.js diff adds only the onSegment option" (source check: `listen` still works without it).
+  - The real-browser check also covers US2.12: a Space press during `end.catch` on an exercise whose last statement is planted gives a hit on it.
   - `node tests/golden/run.mjs --replay`: 0 diffs.
   - The real-browser check (Chrome) is recorded in voice and text mode.
 
 ### F1c-T07 [P] Learn, interview, scenario, follow-up and transfer API
-- **Owner:** backend-engineer · **Size:** M · **Depends on:** F1c-T04
+- **Owner:** backend-engineer · **Size:** M · **Depends on:** F1c-T04, F1c-T13 (shared `server/services/practice.js`)
 - **Files:** modify `server/services/practice.js`, `server/routes/practice.js`; create `tests/practice-modes.test.js`
 - **Interfaces:**
   - Consumes: T03's `matcherGrade` and `matchClarification`.
@@ -379,7 +585,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - `tests/db.test.js`: "eventsForEngine filters by actor and engine in seq order"; "a missing context.engine is not returned for engine 'practice'".
 
 ### F1c-T11 [P] Move reviewed module-1 content into packs/applied-ai
-- **Owner:** backend-engineer · **Size:** S · **Depends on:** F1c-T02, F1c-T03; OQ-1 sign-off, the 7-day plan and ≤ 6 diagnostic ids (PM + learning-designer, C12) and the content author's answer to OQ-6, each recorded in thread 0007. **Merge** also waits on the founder's ARCH-2 confirmation (OQ-5) in thread 0007.
+- **Owner:** backend-engineer · **Size:** S · **Depends on:** F1c-T02, F1c-T03, F1c-T12 (SC-003b runs on `matcher@2`); OQ-1 sign-off, the 7-day plan and ≤ 6 diagnostic ids (PM + learning-designer, C12) and the content author's answer to OQ-6, each recorded in thread 0007. **Merge** also waits on the founder's ARCH-2 confirmation (OQ-5) in thread 0007.
 - **Files:** create `packs/applied-ai/practice.json`, `packs/applied-ai/schedule.json`, `packs/applied-ai/exercises/*.json`, `packs/applied-ai/reference/*.md`, `tests/practice-content.test.js`
 - **Interfaces:** consumes `validatePracticePack`, `loadPracticePacks` and `matcherGrade`; copies from `docs/research/applied-ai/module-1/`, which is read, never edited.
 - **Format mapping only (C12):**
@@ -466,16 +672,28 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 | F1c-T03 [P] | backend-engineer | M | none | A |
 | F1c-T04 | backend-engineer | M | T02, T03 | A |
 | F1c-T05 | frontend-engineer | M | T04 (contract) | A |
-| F1c-T01b [P] | qa-engineer | M | T01a, T05 | B |
-| F1c-T06 [P] | frontend-engineer | M | T05 | B |
-| F1c-T07 [P] | backend-engineer | M | T04 | B |
+| F1c-T12 [P] | backend-engineer | S | none; merge after T13 and T15 | A.1 |
+| F1c-T13 [P] | backend-engineer | M | none | A.1 |
+| F1c-T14 [P] | frontend-engineer | M | T13 (contract only) | A.1 |
+| F1c-T15 [P] | qa-engineer | S | none; merges before T12 | A.1 |
+| F1c-T16 | qa-engineer | M | T15; todo removal after T12, T13, T14 | A.1 |
+| F1c-T01b [P] | qa-engineer | M | T01a, T05, T15 | B |
+| F1c-T06 [P] | frontend-engineer | M | T05, T14 | B |
+| F1c-T07 [P] | backend-engineer | M | T04, T13 | B |
 | F1c-T08 [P] | backend-engineer | M | T04 | B |
-| F1c-T11 [P] | backend-engineer | S | T02, T03, thread-0007 content gates; merge: founder ARCH-2 | B (content-gated) |
+| F1c-T11 [P] | backend-engineer | S | T02, T03, T12, thread-0007 content gates; merge: founder ARCH-2 | B (content-gated) |
 | F1c-T09 | frontend-engineer | M | T06, T07 | C |
 | F1c-T10 | frontend-engineer | M | T08, T09 | C |
 
 **[P] collision check:**
 - **Wave A:** T01a touches only `tests/acceptance/*`, `tests/fixtures/practice/accept-pack/**`, the two labelled-answer files, the guardrail files and `deny-list.json`. T02 touches `server/services/practice-pack.js`, `server/packs.js`, `tests/practice-pack.test.js`, `tests/pack.test.js` and `tests/fixtures/practice/pack-basic/**`. T03 touches only its two new files. No overlap.
+- **Wave A.1:** No file overlap:
+  - T12 touches only `server/services/practice-matcher.js` and `tests/practice-matcher.test.js`.
+  - T13 touches only `server/services/practice.js` and `tests/practice-catch.test.js`.
+  - T14 touches only `web/practice/{app,state,copy}.js`, `web/practice.html` and `tests/practice-web-state.test.js`.
+  - T15 touches the two labelled-answer files, `tests/acceptance/F1c.test.js` and `qa-report.md`.
+  - T16 shares `tests/acceptance/F1c.test.js` and `qa-report.md` with T15, so it runs after T15 (not [P]).
+  - The only cross-ticket coupling is a merge-order one: T12 changes the grader version that T13's tests read through `MATCHER_VERSION`, so T13 merges first.
 - **Wave B:** T06 touches `web/practice/*`, `web/speech.js` and its new test. T07 touches `server/services/practice.js`, `server/routes/practice.js` and its new test. T08 touches the new `practice-progress` files, `server/index.js`, `server/db.js` and `tests/db.test.js`. T11 touches `packs/applied-ai/**` and its new test. T01b touches its one new file. No overlap.
 
 ## Bugs (QA appends)
@@ -507,6 +725,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 - **Evidence:** TAP diagnostics of the SC-003 test (confusion table in the QA report); with the cap disabled in a scratch copy all 43 original rows match their labels, but the 2 new `stuffed` rows (bare keyword lists) then come out `met`, so removing the cap is not the fix. The same cause fails US1.5 and US1.11 at HTTP level.
 - **Suspected file:** `server/services/practice-matcher.js` `grade()` (`stuffed = total - removed.size <= R.stuffedMaxRest`), and FR-019's wording, which doesn't separate a short sentence from a keyword list (e.g. a list has no function words; a sentence does).
 - **Owner:** technical-product-manager with principal-architect (FR-019 rule), then backend-engineer (matcher, `MATCHER_VERSION` bump). SC-003 stays `todo: 'F1c-T03'` until fixed.
+- **Status (PM, 2026-10-14):** ruled. FR-019 is rewritten (`matcher@2`, `stuffedMaxFunctionShare = 0.2`, spec PD-4). Fixed by F1c-T12, gated by F1c-T15 (SC-012) and verified by F1c-T16. QA closes it at verify.
 
 ### F1c-B21 [minor] Spec contradiction: is `graded` written on a false interruption?
 - **Steps:** spec data table: `graded` "with every stop hit or answer", but its `outcome` lists `false_alarm`. T04 WIP writes `graded` for a false interruption.
@@ -514,9 +733,11 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 - **Evidence:** `node --test --test-name-pattern="FR-050" tests/acceptance/F1c.test.js`.
 - **Suspected file:** `docs/specs/F1c-practice-engine/spec.md` (events table), `server/services/practice.js`.
 - **Owner:** technical-product-manager to rule; QA updates the test to match the ruling.
+- **Status (PM, 2026-10-14): closed in the spec.** Per the architect's ruling (ADR 0002 Am. 4), the events table's `graded` "When" cell now reads "with every stop (a false interruption gets `overall: null`, `outcome: false_alarm`) and every answer". The test update is F1c-T16, and the backend test is in F1c-T13.
 
 ### F1c-B22 [minor] tasks.md says `PRACTICE_PACKS_DIR` = a pack folder; the loader reads a folder of packs
 - **Steps:** T04 notes "`PRACTICE_PACKS_DIR=tests/fixtures/practice/pack-basic`" and T01b notes "`PRACTICE_PACKS_DIR` set to accept-pack"; `loadPracticePacks` (FR-002) reads `<dir>/<name>/practice.json`.
 - **Expected vs actual:** pointing it at accept-pack itself loads 0 tracks, silently (no warning). QA tests copy accept-pack to `<tmp>/kite-craft` (`acceptPacksDir()` in `tests/acceptance/practice-helpers.mjs`); T01b must do the same.
 - **Suspected file:** `docs/specs/F1c-practice-engine/tasks.md` (T04, T01b notes).
 - **Owner:** technical-product-manager.
+- **Status (PM, 2026-10-14): closed.** Spec FR-002 now says "a folder of pack folders", with examples. The T04 test note uses a folder of packs containing `pack-basic/`, and the T01b notes copy accept-pack to `<tmp>/kite-craft` and point `PRACTICE_PACKS_DIR` at `<tmp>`.
