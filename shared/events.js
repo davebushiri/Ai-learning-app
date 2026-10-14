@@ -1,4 +1,4 @@
-// Event schema v1 (ADR 0002 + Amendments 1, 2). Pure and browser-safe: no Node imports.
+// Event schema v1 (ADR 0002 + Amendments 1, 2, 3). Pure and browser-safe: no Node imports.
 // Events are xAPI-shaped: {id, at, actor, verb, object, result, context}.
 
 // data-and-evidence.md §1, the full vocabulary. F1 writes only six of these (ADR 0002), but a
@@ -8,7 +8,9 @@ export const VERBS = Object.freeze([
   'stopped', 'explained', 'graded', 'chose',
   'flagged', 'rated-fairness', 'probe-answered',
   'mode-assigned', 'mode-switched', 'mode-fallback', 'voice-command', 'stt-corrected',
-  'subject-built', 'subject-edited', 'map-change-accepted'
+  'subject-built', 'subject-edited', 'map-change-accepted',
+  // Practice engine (ADR 0002 Amendment 3): new verbs, not reuses of rated-fairness or chose.
+  'self-rated', 'assisted', 'clarified'
 ]);
 
 export const OUTCOMES = Object.freeze(['caught', 'caught_late', 'wrong_reason', 'missed', 'false_alarm', 'clean_pass']);

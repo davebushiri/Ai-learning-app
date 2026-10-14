@@ -10,13 +10,14 @@ const valid = (over = {}) => ({
   ...over
 });
 
-test('VERBS is the full data-and-evidence §1 vocabulary and OUTCOMES its six outcomes', () => {
+test('VERBS is the full data-and-evidence §1 vocabulary plus the practice verbs, and OUTCOMES its six outcomes', () => {
   assert.deepEqual([...VERBS].sort(), [
     'planned', 'started', 'step-shown', 'resumed', 'abandoned', 'completed',
     'stopped', 'explained', 'graded', 'chose',
     'flagged', 'rated-fairness', 'probe-answered',
     'mode-assigned', 'mode-switched', 'mode-fallback', 'voice-command', 'stt-corrected',
-    'subject-built', 'subject-edited', 'map-change-accepted'
+    'subject-built', 'subject-edited', 'map-change-accepted',
+    'self-rated', 'assisted', 'clarified' // ADR 0002 Amendment 3 (F1c-T04)
   ].sort());
   assert.deepEqual([...OUTCOMES].sort(), ['caught', 'caught_late', 'clean_pass', 'false_alarm', 'missed', 'wrong_reason']);
 });
