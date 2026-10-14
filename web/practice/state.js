@@ -65,9 +65,28 @@ export function summaryLine(summary) {
   });
 }
 
+// A not-graded item (a stop skipped after err.net, FR-009a) is never called a miss (PD-5).
 export function missedLine(item) {
-  return fill(COPY['missed.item'], { text: item?.text, whyWrong: item?.whyWrong, correctedText: item?.correctedText })
+  const key = item?.notGraded === true ? 'missed.notGraded' : 'missed.item';
+  return fill(COPY[key], { text: item?.text, whyWrong: item?.whyWrong, correctedText: item?.correctedText })
     .replace(/\s+/g, ' ').trim();
+}
+
+// FR-008: one id per STOP press, re-sent on Try again so the server can spot the repeat.
+// Always matches the server's ^[A-Za-z0-9_-]{8,64}$.
+export function newStopId() {
+  const c = globalThis.crypto;
+  if (typeof c?.randomUUID === 'function') return c.randomUUID();
+  const bytes = c.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// FR-009a: the complete body. Keys are left out when there is nothing to say.
+export function completeRequest(lastStatementId, skipped) {
+  const body = {};
+  if (lastStatementId != null) body.lastStatementId = lastStatementId;
+  if (Array.isArray(skipped) && skipped.length) body.skipped = skipped;
+  return body;
 }
 
 // FR-035: what is spoken must equal the element's normalized textContent.

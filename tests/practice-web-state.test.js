@@ -6,7 +6,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { COPY } from '../web/practice/copy.js';
-import { resumeIndex, feedbackText, dimLines, rubricLines, summaryLine, missedLine } from '../web/practice/state.js';
+import { resumeIndex, feedbackText, dimLines, rubricLines, summaryLine, missedLine, newStopId, completeRequest } from '../web/practice/state.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const WEB = path.join(ROOT, 'web');
@@ -90,6 +90,50 @@ test('missedLine joins text, why and correction', () => {
   );
 });
 
+// F1c-T14 (FR-009a, PD-5): a skipped stop is shown as not scored, never as a miss.
+test('missedLine for a not-graded item says it was not scored and never says Missed', () => {
+  const item = { statementId: 's3', text: 'A  line never\nwears out.', whyWrong: 'Sun weakens it.', correctedText: 'Lines wear out.', notGraded: true };
+  const line = missedLine(item);
+  assert.equal(line, 'Not scored, you skipped this stop: A line never wears out. Sun weakens it. Corrected: Lines wear out.');
+  assert.doesNotMatch(line, /missed/i);
+  // Only `notGraded === true` switches the copy; anything else stays a miss.
+  assert.match(missedLine({ ...item, notGraded: 'true' }), /^Missed: /);
+});
+
+test('completeRequest sends skipped only when non-empty and lastStatementId only when known', () => {
+  const skipped = [{ statementId: 's3', elapsedMs: 420 }];
+  assert.deepEqual(completeRequest('s5', skipped), { lastStatementId: 's5', skipped });
+  assert.deepEqual(completeRequest('s5', []), { lastStatementId: 's5' });
+  assert.deepEqual(completeRequest(null, skipped), { skipped });
+  assert.deepEqual(completeRequest(null, []), {});
+  assert.deepEqual(completeRequest(undefined, undefined), {});
+});
+
+test('newStopId is unique per call and matches the server pattern', () => {
+  const ids = Array.from({ length: 200 }, () => newStopId());
+  for (const id of ids) assert.match(id, /^[A-Za-z0-9_-]{8,64}$/);
+  assert.equal(new Set(ids).size, ids.length);
+  // Fallback path: no randomUUID, so 16 random bytes as 32 lowercase hex chars.
+  const saved = Object.getOwnPropertyDescriptor(globalThis.crypto, 'randomUUID')
+    ?? Object.getOwnPropertyDescriptor(Object.getPrototypeOf(globalThis.crypto), 'randomUUID');
+  Object.defineProperty(globalThis.crypto, 'randomUUID', { value: undefined, configurable: true, writable: true });
+  try {
+    const a = newStopId(), b = newStopId();
+    assert.match(a, /^[0-9a-f]{32}$/);
+    assert.notEqual(a, b);
+  } finally {
+    delete globalThis.crypto.randomUUID;
+    if (!('randomUUID' in globalThis.crypto)) Object.defineProperty(globalThis.crypto, 'randomUUID', saved);
+  }
+  assert.match(newStopId(), /^[0-9a-f-]{36}$/);
+});
+
+test('practice.html declares an empty inline icon', () => {
+  const html = readFileSync(path.join(WEB, 'practice.html'), 'utf8');
+  const head = html.slice(0, html.indexOf('</head>'));
+  assert.ok(head.includes('<link rel="icon" href="data:,">'));
+});
+
 test('copy strings equal the spec table', () => {
   // Frozen inline from spec.md "Spoken copy" (ids used by the text catch loop).
   const expected = {
@@ -120,7 +164,10 @@ test('copy strings equal the spec table', () => {
     'next.hint': 'Say "next" or press Next for the next exercise.',
     'btn.next': 'Next',
     'err.net': "Couldn't reach the server. Your answer is still here. Try again, or skip and this stop won't be scored.",
-    'src.unverified': '(not yet verified)'
+    'src.unverified': '(not yet verified)',
+    'missed.notGraded': 'Not scored, you skipped this stop: {text} {whyWrong} Corrected: {correctedText}',
+    'err.rate': "Couldn't save your rating. Try again.",
+    'btn.retry': 'Try again'
   };
   assert.deepEqual({ ...COPY, 'selfrate.options': { ...COPY['selfrate.options'] } }, expected);
   assert.ok(Object.isFrozen(COPY) && Object.isFrozen(COPY['selfrate.options']));

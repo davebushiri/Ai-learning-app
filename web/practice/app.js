@@ -3,7 +3,9 @@
 // Holds no browser storage: the server's event log is the record.
 import * as api from './api.js';
 import { COPY } from './copy.js';
-import { resumeIndex, feedbackText, correctedLine, dimNames, dimLines, rubricLines, summaryLine, missedLine } from './state.js';
+import {
+  resumeIndex, feedbackText, correctedLine, dimNames, dimLines, rubricLines, summaryLine, missedLine, newStopId, completeRequest
+} from './state.js';
 import { speak, stopSpeaking } from './speech.js';
 
 const $ = id => document.getElementById(id);
@@ -19,7 +21,8 @@ const show = (id, on = true) => { $(id).hidden = !on; };
 // One session at a time. `gen` invalidates any narration or speech chain still awaiting.
 const S = {
   phase: 'picker', track: null, attemptId: null, exercise: null, assistAllowed: false, assisted: false,
-  index: 0, reached: -1, statementStart: 0, stop: null, pending: false, gen: 0
+  index: 0, reached: -1, statementStart: 0, stop: null, pending: false, gen: 0,
+  skipped: [] // stops skipped after err.net, sent at complete so they are never scored as misses (FR-009a)
 };
 
 // Shown and spoken from the same string (FR-035). Resolves after speech, or at once in text mode.
@@ -111,7 +114,7 @@ async function start(exerciseId) {
   }
   Object.assign(S, {
     attemptId: res.attemptId, exercise: res.exercise, assistAllowed: Boolean(res.assistAllowed),
-    assisted: false, index: 0, reached: -1, stop: null, pending: false
+    assisted: false, index: 0, reached: -1, stop: null, pending: false, skipped: []
   });
   show('picker-screen', false);
   show('reveal', false);
@@ -176,7 +179,7 @@ function onStop(via, eventTime) {
   S.gen++;
   const st = S.exercise.narration[S.index];
   S.stop = {
-    statementId: st.id, statementIndex: S.index,
+    statementId: st.id, statementIndex: S.index, stopId: newStopId(),
     elapsedMs: Math.max(0, Math.round(now - S.statementStart)), via,
     stopLatencyMs: Number.isFinite(eventTime) ? Math.max(0, Math.round(now - eventTime)) : null
   };
@@ -203,10 +206,12 @@ async function submitStop() {
   if (S.phase !== 'answering' || S.pending) return;
   S.pending = true;
   $('submit-btn').disabled = true;
-  const { statementId, elapsedMs, via, stopLatencyMs } = S.stop;
+  // Try again re-sends this same S.stop, so the same stopId: the server answers a repeat
+  // with the stored body and counts it once (FR-008).
+  const { statementId, elapsedMs, via, stopLatencyMs, stopId } = S.stop;
   let res;
   try {
-    res = await api.postStop(S.attemptId, { statementId, elapsedMs, answer: $('answer-input').value, via, stopLatencyMs });
+    res = await api.postStop(S.attemptId, { statementId, elapsedMs, answer: $('answer-input').value, via, stopLatencyMs, stopId });
   } catch (err) {
     console.warn('stop failed', err);
     S.pending = false;
@@ -269,6 +274,7 @@ function onContinue() {
 function onSkip() {
   show('net-error', false);
   if (S.phase !== 'answering') return;
+  S.skipped.push({ statementId: S.stop.statementId, elapsedMs: S.stop.elapsedMs });
   S.stop && statementLi(S.stop.statementIndex).classList.remove('interrupted');
   show('answer-panel', false);
   $('stop-btn').focus();
@@ -326,7 +332,7 @@ async function complete() {
   const last = S.exercise.narration[S.reached];
   let res;
   try {
-    res = await api.postComplete(S.attemptId, last ? { lastStatementId: last.id } : {});
+    res = await api.postComplete(S.attemptId, completeRequest(last?.id ?? null, S.skipped));
   } catch (err) {
     console.warn('complete failed', err);
     netError({ skip: false, retry: complete });
@@ -405,14 +411,38 @@ function answerItem(a) {
   return li;
 }
 
+// PD-7: a failed rating is shown and spoken under its row, with Try again; the
+// pressed state only changes once the server has the rating.
 async function rate(part, rating, row) {
+  const li = row.closest('li[data-part]');
   try {
     await api.postSelfRating(S.attemptId, { part, rating });
   } catch (err) {
     console.warn('self-rating failed', err);
+    rateError(li, () => rate(part, rating, row));
     return;
   }
+  const hadFocus = li.querySelector('.rate-retry') === document.activeElement;
+  li.querySelector('.rate-error')?.remove();
+  li.querySelector('.rate-retry')?.remove();
   for (const b of row.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.rating === rating));
+  if (hadFocus) row.querySelector(`button[data-rating="${rating}"]`)?.focus();
+}
+
+function rateError(li, retry) {
+  let msg = li.querySelector('.rate-error');
+  let btn = li.querySelector('.rate-retry');
+  if (!msg) {
+    msg = el('p', null, 'rate-error');
+    msg.setAttribute('role', 'status');
+    btn = el('button', COPY['btn.retry'], 'secondary rate-retry');
+    btn.type = 'button';
+    li.append(msg, btn);
+  }
+  btn.onclick = retry; // one handler: the latest rating is the one retried
+  btn.focus();
+  S.gen++; // ends the reveal read-out, so the next line doesn't cut the error off
+  say(msg, COPY['err.rate']);
 }
 
 /* ---------- wiring ---------- */

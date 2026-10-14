@@ -31,5 +31,8 @@ export const COPY = Object.freeze({
   'next.hint': 'Say "next" or press Next for the next exercise.',
   'btn.next': 'Next',
   'err.net': "Couldn't reach the server. Your answer is still here. Try again, or skip and this stop won't be scored.",
-  'src.unverified': '(not yet verified)'
+  'src.unverified': '(not yet verified)',
+  'missed.notGraded': 'Not scored, you skipped this stop: {text} {whyWrong} Corrected: {correctedText}',
+  'err.rate': "Couldn't save your rating. Try again.",
+  'btn.retry': 'Try again'
 });
