@@ -1,8 +1,8 @@
 # F1c: Practice engine, Applied AI track module 1
 
-**Status:** Approved (revision 4: F1c-B23 fix ticket F1c-T17 and the OQ-7 ruling for F1c-T06 added after the Wave A.1 re-check)
+**Status:** Approved (revision 5: module-1 schedule and diagnostic recorded (PD-11); OQ-1, OQ-3, OQ-5 and OQ-6 resolved; F1c-T11's gates cleared)
 **Phase:** F1 (interrupt priority, founder direction in [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)) | **Links:** [user-flow.md](../../foundation/user-flow.md), [data-and-evidence.md](../../foundation/data-and-evidence.md), [voice-first.md](../../foundation/voice-first.md), ADRs [0001](../../adr/0001-sqlite-storage-and-append-only-event-log.md)–[0006](../../adr/0006-pack-format-v1.md), [0008](../../adr/0008-practice-engine-and-practice-pack-format-v1.md), [0002 Amendments 3 and 4](../../adr/0002-event-schema-v1.md), [0006 Amendment 3](../../adr/0006-pack-format-v1.md); design review and Wave A code review in [`review.md`](review.md); Wave A QA report in [`qa-report.md`](qa-report.md)
-**Revision:** 4 (2026-10-14). Revision 4 applies the architect's Wave A.1 re-check (review.md "Wave A.1 re-check", APPROVED): the F1c-B23 policy and copy (PD-9; FR-059, FR-060; US1.16, US1.17, US2.13; SC-013; ticket F1c-T17, gated before F1c-T11 merges and before F1c-T01b) and the OQ-7 ruling (PD-10; FR-061; US2.14; in F1c-T06). OQ-7 is closed. Revision 3 (2026-10-14) applies the Wave A code review (W-B1, W-B2, W-S1, W-S3–W-S6; W-S2 moves to F1c-T06), ADR 0002 Amendment 4, the QA report's ship conditions, bugs F1c-B20, B21 and B22, and product decisions PD-4 to PD-8 (below). It adds Wave A.1 (F1c-T12 to T16) in tasks.md. Revision 2 (2026-10-13) applies the design review's C1–C15, the learning-designer's matcher findings B2 and B3 and follow-up drafts B4 ([`docs/research/applied-ai/module-1/REVIEW.md`](../../research/applied-ai/module-1/REVIEW.md)), and product decisions PD-1 to PD-3 (below). Revision 1: first draft.
+**Revision:** 5 (2026-10-14). Revision 5 records the module-1 7-day plan and the 6 diagnostic ids (PD-11, LR-8; thread 0007, PM DECISION after the learning-designer's PROPOSAL), resolves OQ-1, OQ-3, OQ-5 and OQ-6 from the thread 0007 founder and lead DECISIONs, and adds the learning-designer's RISK "Later" items. No FR, SC or copy changes. Revision 4 applies the architect's Wave A.1 re-check (review.md "Wave A.1 re-check", APPROVED): the F1c-B23 policy and copy (PD-9; FR-059, FR-060; US1.16, US1.17, US2.13; SC-013; ticket F1c-T17, gated before F1c-T11 merges and before F1c-T01b) and the OQ-7 ruling (PD-10; FR-061; US2.14; in F1c-T06). OQ-7 is closed. Revision 3 (2026-10-14) applies the Wave A code review (W-B1, W-B2, W-S1, W-S3–W-S6; W-S2 moves to F1c-T06), ADR 0002 Amendment 4, the QA report's ship conditions, bugs F1c-B20, B21 and B22, and product decisions PD-4 to PD-8 (below). It adds Wave A.1 (F1c-T12 to T16) in tasks.md. Revision 2 (2026-10-13) applies the design review's C1–C15, the learning-designer's matcher findings B2 and B3 and follow-up drafts B4 ([`docs/research/applied-ai/module-1/REVIEW.md`](../../research/applied-ai/module-1/REVIEW.md)), and product decisions PD-1 to PD-3 (below). Revision 1: first draft.
 
 ## Problem
 The founder has a 60-minute technical interview on AI fluency (RAG, agents, embeddings, production evidence) this week or next. The only working loop is the trades game. It has one mode, needs exactly 3 mistakes per card, has no mastery and still leaks answers on its legacy route. F1c adds a **separate, server-owned practice engine** (ADR 0008) that runs the Applied AI track, module 1 (LLM foundations and RAG), in four modes. It grades offline, because there is no API key. The founder's constraints are small increments, reuse, no rebuild, and nothing that takes over the founder's preparation time.
@@ -107,7 +107,7 @@ Every narration id appears in exactly one of `planted[].statementId` and `clean`
   "plan": [{ "day": 1, "blocks": [{ "kind": "diagnostic" | "learn" | "catch" | "scenario" | "interview" | "review",
                                     "minutes": 30, "exercises": ["<exerciseId>"] }] }] }   // exercises omitted for review/diagnostic
 ```
-Rules: `plan` has exactly `days` entries numbered `1..days`. Each day's minutes sum to `minutesPerDay`. Practice kinds (`catch`, `scenario`, `interview`, `review`) are ≥ 60% of total minutes ("mostly practice"; a provisional product choice). The defaults are 7 days × 120 min. For module 1, the PM and the learning-designer record the 7-day plan and the ≤ 6 diagnostic exercise ids in thread 0007 before F1c-T11 (C12).
+Rules: `plan` has exactly `days` entries numbered `1..days`. Each day's minutes sum to `minutesPerDay`. Practice kinds (`catch`, `scenario`, `interview`, `review`) are ≥ 60% of total minutes ("mostly practice"; a provisional product choice). The defaults are 7 days × 120 min. For module 1, the PM and the learning-designer record the 7-day plan and the ≤ 6 diagnostic exercise ids in thread 0007 before F1c-T11 (C12). **Recorded (revision 5, PD-11):** the exact `schedule.json` is the block in thread 0007's PM DECISION of 2026-10-14.
 
 ## Product decisions (revision 2)
 - **PD-1 (readiness with string follow-ups; architect's product note, REVIEW.md B4).** Every module-1 `followUp` and interview `followUps` entry is a string, so it is self-rated only. **Decision:** readiness also counts graded scenario challenges (FR-053), instead of converting every follow-up into a rubric in F1c-T11. On top of that, F1c-T11 adopts the learning-designer's two drafted rubrics (REVIEW.md B4) for catch-06 and catch-08, keeping their question text, if the content author agrees in thread 0007; otherwise they stay strings. **Why:** this needs no new content before the interview and is one projection rule in F1c-T08. Converting every module-1 follow-up (16 `followUp` plus the interview `followUps`) is authoring work on founder-owned drafts and would delay T11. Concepts with neither kind of evidence honestly show `n/a` (FR-054). **Later:** rubric-bearing follow-ups become the authoring standard from module 2 on.
@@ -145,6 +145,14 @@ Rules: `plan` has exactly `days` entries numbered `1..days`. Each day's minutes 
   - **Echo guard:** `err.net` itself says "Try again" (and `err.rejected` says "back"), so each command arms only after its panel's utterance has finished. A command heard while the message is still being spoken does nothing.
   - **Whole phrase only:** the FR-032 bare-phrase rule. The command fires only when one final segment, normalized as for "send" (FR-034), equals the phrase. "try again" inside a longer sentence does nothing.
   - The copy is unchanged: `err.net` already names both words. The card game's `err.net` (`web/app.js`, Untouched) goes to F1a-T15's voice work.
+
+## Product decisions (revision 5, module-1 schedule)
+- **PD-11 (the 7-day plan and the diagnostic; C12, LR-8).** I accept the learning-designer's PROPOSAL in thread 0007 as written. F1c-T11 copies the `schedule.json` block from thread 0007's PM DECISION (2026-10-14) exactly.
+  - **Diagnostic (6, in this order):** `m1-catch-01-context-window`, `m1-catch-02-rag-vs-finetune`, `m1-catch-03-pipeline-clean` (zero-error control), `m1-catch-04-embeddings`, `m1-catch-05-structured-outputs`, `m1-interview-04-evaluate-rag`.
+  - **Why `interview-04` and not the `interview-03` swap:** evaluation and production evidence are the hiring manager's explicit ask. `interview-03` overlaps `catch-02`, would leave evaluation unplaced, and is mock 1's fresh item.
+  - **Checked against the validator:** 7 days, each summing to 120 min; practice kinds 780/840 = 92.9% (≥ 60%); 6 diagnostic ids (≤ `LIMITS.diagnostic` = 6); no `exercises` on `diagnostic` or `review`; all 16 ids exist in the drafts. The "schedule defaults" test in F1c-T11 is the proof.
+  - **Off-app minutes (about 175) are folded into the `review` and `interview` blocks named in the thread table.** No format change in F1c. The thread table is the founder's plan of record; the JSON is the app's view of it. The plan doesn't pass by labelling alone: excluding those minutes gives 72%, and also excluding the non-app parts of both mocks gives 62.7%, still ≥ 60%.
+  - **Accepted consequence (learning-designer RISK):** FR-055 `done` is all-time, so the replay blocks on days 4, 5 and 7 show as done and "Next" skips them; the founder replays from the picker. Per-day `done` is Later.
 
 ## User stories (prioritized; each independently testable)
 
@@ -569,7 +577,7 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
 - Live LLM grader: new prompt, gateway call, eval gate, recordings, async seam with an in-flight join (ADR 0008). Only the sync seam (FR-023) ships now.
 - Rubric-bearing follow-ups for the remaining module-1 `followUp` and `followUps` strings (PD-1); the authoring standard from module 2 on.
 - `diagnostic.json`'s 10 items as a new exercise type.
-- Parallel exercise sets and interleaved review (REVIEW.md H6, M6).
+- Parallel exercise sets and interleaved review (REVIEW.md H6, M6). Revision 5: these are the main fix for the thin module-1 pool, where most in-app time in the 7-day plan is replay and readiness overstates competence (learning-designer RISK, thread 0007).
 - Moving the PMP drafts into this engine as a second pack.
 - "change that", "repeat", "pause", "slower"/"faster", earcons, the silence prompt (OI-14), auto-continue setting, reference read-aloud.
 - Editing the schedule in the UI (file only in F1c), a subject picker across engines, FSRS spacing, the trained / held-out experiment, mode A/B assignment.
@@ -584,18 +592,26 @@ Shapes are binding per **ADR 0002 Amendment 3** (C10). All events are server-wri
   - 4xx handling on the picker, start, assist and self-rating requests. They show "Couldn't reach the server." or `err.rate` on a 4xx today. None of them stalls (the learner can pick again, keep narrating, or press Next), so they stay as they are;
   - treating 408 or 429 as retryable: this server sends neither.
   - F1c-B11 (FR-021(a) per dimension vs per answer) and B12/B13 (lexicon gaps): these are SC-003b and F1c-T11 work, not Wave A.1.
+- **From revision 5 (the module-1 schedule, PD-11; learning-designer PROPOSAL and RISK in thread 0007):**
+  - per-day `done` for an exercise id repeated on a later day, so the replay blocks on days 4, 5 and 7 aren't shown as done and "Next" offers them;
+  - an optional per-block `label` in `schedule.json` (for example "off-app: defend prep"), so the app's view matches the founder's plan. It is a format change, so it needs an architect ruling (ADR 0008) before it is specced;
+  - the module-2 (agents) swap on days 4–5: module-2 `catch` and `interview` ids, plus a `learn` block of about 20 min each day taken from `review`. Bump the pack version between sessions, never mid-attempt; the practice share stays ≥ 85%;
+  - Leadership Principles behavioral prep: an unverified assumption about Amazon loops. **Founder decision** (scope); not in the plan until the founder answers in thread 0007.
 
 ## Assumptions
 - One learner (`learner_1`), one server process per DB file (ADR 0003 Amendment 3).
-- Content is the drafts in `docs/research/applied-ai/module-1/` (founder-owned), reviewed in `REVIEW.md`, and moved by F1c-T11 with format-only mapping (C12), plus PD-1's two follow-up rubrics and the draft `lexicon.synonyms` from `_matcher-test-answers.json` if the author agrees.
+- Content is the drafts in `docs/research/applied-ai/module-1/` (founder-owned), reviewed in `REVIEW.md`, and moved by F1c-T11 with format-only mapping (C12), plus PD-1's two follow-up rubrics and the draft `lexicon.synonyms` from `_matcher-test-answers.json` (the author agreed: OQ-6, revision 5).
 - The practice page runs in both `npm run mock` and `npm start`, because it makes no AI call.
 - The interview date is unknown ("this week or next", lead EVIDENCE in thread 0007), so Wave A ships first.
 
 ## Open questions
-- **OQ-1** [NEEDS CLARIFICATION: founder] Who signs off module-1 content accuracy before F1c-T11 moves it: the founder, the learning-designer, or both? The proposal is that the learning-designer reviews pedagogy (done: REVIEW.md) and the founder confirms the facts, both recorded in thread 0007.
-- **OQ-3** [NEEDS CLARIFICATION: founder] Is "configurable schedule" satisfied by `schedule.json` alone in F1c? A UI setting is listed under Later.
-- **OQ-5** [NEEDS CLARIFICATION: founder] Confirm the architect's ARCH-2 reading in thread 0007: the F2 hard rule doesn't block practice packs that enter no prompt (ADR 0006 Amendment 3). Blocks F1c-T11's merge only.
-- **OQ-6** [NEEDS CLARIFICATION: content author] Accept PD-1's two follow-up rubrics (catch-06, catch-08) and the draft synonym list into `packs/applied-ai`? If not, T11 moves the content without them.
+- None open. The founder's Leadership Principles question (revision 5) is a scope item under Later, not a blocker for any F1c ticket.
+- Resolved in revision 5 (all in thread 0007):
+  - **OQ-1** (who signs off module-1 content accuracy): **resolved** by the lead's DECISION of 2026-10-14 (a reversible default the founder may override there). The learning-designer's pedagogy review (REVIEW.md) is the teaching-quality sign-off. The founder does **not** fact-check module 1, because they are the learner and must not see the answers. Facts are covered by the `verified: false` labels and a later fact pass against official AWS docs once `docs.aws.amazon.com` is reachable. The founder's OQ-5 answer accepted moving the content with those labels.
+  - **OQ-3** (is `schedule.json` alone "configurable schedule"): **resolved, yes**, by the lead's DECISION of 2026-10-14 (a reversible default). A UI setting stays under Later.
+  - **OQ-5** (ARCH-2 / ADR 0006 Am. 3): **resolved, confirmed** by the founder's DECISION of 2026-10-14 ("Yes, go ahead"; the 17 AWS claims stay UNVERIFIED until checked). F1c-T11's OQ-5 merge gate is cleared.
+  - **OQ-6** (PD-1's two follow-up rubrics and the draft synonym list): **resolved, accepted** by the lead, answering as content author, in the DECISION of 2026-10-14. Synonym forms that fail FR-017 are dropped and listed in T11's PR.
+  - The C12 gate (the 7-day plan and ≤ 6 diagnostic ids) is recorded as PD-11 (PM DECISION of 2026-10-14).
 - Resolved in revision 2: OQ-2 (date unknown; Wave A first), OQ-4 (C2 and C12 accept the drafts' shapes with format-only mapping).
 - Resolved in revision 4: **OQ-7** (voice "try again" and "skip" at `err.net`). The architect ruled yes, for F1c-T06 (review.md "Wave A.1 re-check", thread 0007). Adopted as PD-10 and FR-061, with the B23 way out ("back") added under the same rule.
 
@@ -608,7 +624,7 @@ Requested from `learning-designer`; LR-1 to LR-8 are not in yet. The PM decides 
 - **LR-5:** Is `GRACE_MS` = 2000 right?
 - **LR-6:** Are the mastery and readiness thresholds sensible as provisional values?
 - **LR-7:** Is "assisted = reference viewed" the right definition?
-- **LR-8:** How should the diagnostic be composed?
+- **LR-8:** How should the diagnostic be composed? **Answered (revision 5)** in the learning-designer's PROPOSAL in thread 0007: 6 ids, ramping d1 → d3, with one zero-error control and one unaided open answer, and the mock items held fresh. **My call: accepted as proposed (PD-11), including `interview-04` over the optional swap.**
 - **LR-9 (revision 3):** Is `stuffedMaxFunctionShare = 0.2` (PD-4) right from a learning point of view? Specifically: should a terse but correct spoken answer ever be capped at "Partly covered"? My call for now: 0.2, revisited on the T01b dictated rows.
 - **LR-10 (revision 3):** Is the `missed.notGraded` wording right: "Not scored, you skipped this stop: …"? Should a skipped statement show its correction at all, or stay hidden for a later retry? My call for now: show it (ADR 0002 Am. 4 says the reveal still shows the correction).
 - LR-9 and LR-10 are requested in thread 0007. They are advisory and do not block Wave A.1's merge. If a finding arrives before F1c-T16 is verified, I record my decision on it here.
@@ -618,7 +634,7 @@ Requested from `learning-designer`; LR-1 to LR-8 are not in yet. The PM decides 
 | # | Ruling | Recorded in |
 |---|---|---|
 | ARCH-1 | (a) one guarded line in `server/packs.js`; F1c-T02 → F1a-T18 | ADR 0008 |
-| ARCH-2 | the F2 hard rule doesn't block F1c; founder confirms before F1c-T11 merges (OQ-5) | ADR 0006 Am. 3, ADR 0008 |
+| ARCH-2 | the F2 hard rule doesn't block F1c; founder confirms before F1c-T11 merges (OQ-5; **confirmed** 2026-10-14, thread 0007) | ADR 0006 Am. 3, ADR 0008 |
 | ARCH-3 | practice pack format v1 accepted with C1 and C2 | ADR 0008 |
 | ARCH-4 | 3 verbs, `context.engine`, `pra_`/`att_` isolation, `object.type: "exercise"` | ADR 0002 Am. 3 |
 | ARCH-5 | (a) server-only `server/services/practice-matcher.js` | ADR 0008 |

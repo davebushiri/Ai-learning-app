@@ -1,7 +1,7 @@
 # F1c: Tickets
 
-**Status:** Approved (revision 4: F1c-T17 added for F1c-B23; OQ-7 ruled into F1c-T06)
-**Revision history:** revision 4 (2026-10-14): the architect's Wave A.1 re-check (APPROVED) applied. New F1c-T17 (frontend, the F1c-B23 fix: one skip per statement, `err.rejected` on a 4xx; spec PD-9, FR-059, FR-060, SC-013), gated before F1c-T11 merges and before F1c-T01b runs and merges. F1c-T06 gains the OQ-7 voice commands and the "back" command (spec PD-10, FR-061). Shared-file sequence, Wave B order, T01b, T06, T11, the summary and the B23 status updated. Revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
+**Status:** Approved (revision 5: F1c-T11's gates all cleared; module-1 schedule recorded)
+**Revision history:** revision 5 (2026-10-14): F1c-T11's content and merge gates all cleared in thread 0007 (spec PD-11; OQ-1, OQ-3, OQ-5 and OQ-6 resolved). T11 copies `schedule.json` exactly from the thread 0007 PM DECISION of 2026-10-14. No new tickets and no Files changes. Revision 4 (2026-10-14): the architect's Wave A.1 re-check (APPROVED) applied. New F1c-T17 (frontend, the F1c-B23 fix: one skip per statement, `err.rejected` on a 4xx; spec PD-9, FR-059, FR-060, SC-013), gated before F1c-T11 merges and before F1c-T01b runs and merges. F1c-T06 gains the OQ-7 voice commands and the "back" command (spec PD-10, FR-061). Shared-file sequence, Wave B order, T01b, T06, T11, the summary and the B23 status updated. Revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
 
 Legend: [P] = can run in parallel with other [P] tickets in the same wave (no shared files).
 
@@ -667,6 +667,13 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 
 ### F1c-T11 [P] Move reviewed module-1 content into packs/applied-ai
 - **Owner:** backend-engineer · **Size:** S · **Depends on:** F1c-T02, F1c-T03, F1c-T12 (SC-003b runs on `matcher@2`); OQ-1 sign-off, the 7-day plan and ≤ 6 diagnostic ids (PM + learning-designer, C12) and the content author's answer to OQ-6, each recorded in thread 0007. **Merge** also waits on the founder's ARCH-2 confirmation (OQ-5) in thread 0007, and (revision 4) on F1c-T17 having merged (the F1c-B23 gate: T11 is when the founder starts on real content, and pack edits mid-attempt cause the 404 that B23 turns into a stall).
+- **Gate status (revision 5, 2026-10-14): all gates cleared; T11 may start.** Each is recorded in thread 0007:
+  - OQ-1 sign-off: cleared (lead DECISION; the learning-designer's REVIEW.md plus `verified: false` labels; the founder does not fact-check).
+  - 7-day plan and ≤ 6 diagnostic ids: cleared (PM DECISION, spec PD-11). Copy its `schedule.json` block exactly.
+  - OQ-6: cleared (lead DECISION as content author: the two PD-1 rubrics and the synonym list are accepted, so the "Content additions" below apply).
+  - Merge, OQ-5 / ARCH-2: cleared (founder DECISION, "Yes, go ahead").
+  - Merge, F1c-T17: cleared (architect APPROVED, commit 23aa509; it awaits the human merge like the rest of the branch, so T11 lands after it on the same branch).
+  - Code dependencies F1c-T02, T03 and T12 are done (architect and QA approvals in thread 0007).
 - **Files:** create `packs/applied-ai/practice.json`, `packs/applied-ai/schedule.json`, `packs/applied-ai/exercises/*.json`, `packs/applied-ai/reference/*.md`, `tests/practice-content.test.js`
 - **Interfaces:** consumes `validatePracticePack`, `loadPracticePacks` and `matcherGrade`; copies from `docs/research/applied-ai/module-1/`, which is read, never edited.
 - **Format mapping only (C12):**
@@ -674,16 +681,16 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - `challenges`: `challenge` → `question`, `expected` → `rubric`.
   - architecture `id` = the slug of `name` (lowercase, non-alphanumerics → `-`, trimmed); `name` dropped; `strengths`, `tradeoffs` kept.
   - module id `m1`; reference files renamed to `<referenceId>.md`.
-  - `practice.json` and `schedule.json` built from the thread 0007 records.
+  - `practice.json` built from the thread 0007 records; `schedule.json` copied exactly from the PM DECISION of 2026-10-14 (spec PD-11).
   - `diagnostic.json` and `_matcher-test-answers.json` are not copied.
-- **Content additions (only if the author agrees in thread 0007, OQ-6; PD-1):**
+- **Content additions (the author agreed in thread 0007, OQ-6; PD-1):**
   - catch-06 `followUp` → `{question: <existing text>, rubric: ["both stages can contribute", "right chunk ranked low|buried mid-context", "fix ranking and prompt evidence order"]}`;
   - catch-08 `followUp` → `{question: <existing text>, rubric: ["measure recall@k|hit rate", "measure answer quality|faithfulness", "latency and cost per query"]}`;
   - `practice.json` `lexicon.synonyms` = the learning-designer's draft list (`_matcher-test-answers.json`), with forms that fail FR-017 word-start matching dropped and listed in the PR.
 - **Acceptance:**
   - `packs/applied-ai` validates with 0 problems.
   - Module `m1` has ≥ 1 exercise of each type and ≥ 1 zero-planted catch.
-  - The schedule has 7 days × 120 min, practice ≥ 60%, and a non-empty `diagnostic` of ≤ 6 ids.
+  - The schedule has 7 days × 120 min, practice ≥ 60%, and a non-empty `diagnostic` of ≤ 6 ids. For this pack: deep-equal to the thread 0007 block (practice 780/840, the 6 diagnostic ids in order).
   - Every source whose draft `verified` isn't `fetched-*` has `verified: false` and its original string in `note`.
   - SC-003b passes (QA removes the `F1c-T11` todo when verifying).
   - `listSubjects()` from `server/packs.js` is unchanged (C3).
@@ -763,7 +770,7 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 | F1c-T06 [P] | frontend-engineer | M | T05, T14, T17 ([P] with T07, T08, T11, T01b; never with T17) | B (after T17) |
 | F1c-T07 [P] | backend-engineer | M | T04, T13 | B |
 | F1c-T08 [P] | backend-engineer | M | T04 | B |
-| F1c-T11 [P] | backend-engineer | S | T02, T03, T12, thread-0007 content gates; merge: founder ARCH-2 and T17 | B (content-gated) |
+| F1c-T11 [P] | backend-engineer | S | T02, T03, T12, thread-0007 content gates; merge: founder ARCH-2 and T17 (revision 5: all cleared) | B (ready) |
 | F1c-T09 | frontend-engineer | M | T06, T07 | C |
 | F1c-T10 | frontend-engineer | M | T08, T09 | C |
 

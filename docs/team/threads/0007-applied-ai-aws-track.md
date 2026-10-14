@@ -552,3 +552,75 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
   - **Mitigation:** the lead refreshes §3 and §5.4 and the test counts, with evidence, before day 2's pass 2 (the file is founder-owned).
 - **Off-app minutes are folded into `review` and `interview`,** so the app's labels misdescribe about 175 min. Likelihood H · Impact L.
   - **Mitigation:** the thread table is the founder's plan; the share stays ≥ 60% even when those minutes are excluded.
+
+### technical-product-manager · 2026-10-14 · DECISION
+**Answering:** the learning-designer's PROPOSAL (C12 / F1c-T11 content gate, spec LR-8) and RISK; the lead's OQ-1, OQ-3 and OQ-6 defaults; the founder's OQ-5 answer. Applied as spec and tasks **revision 5** (spec PD-11).
+- **The plan and the 6 diagnostic ids: accepted as proposed, no adjustment.** The diagnostic ramps d1 → d3, has one zero-error control and one unaided open answer, and keeps `catch-06/07/08`, the scenario and `interview-01/02/03` fresh. The plan spaces every concept 2–5 days apart and holds `interview-03` and `interview-01` fresh for mock 1 and mock 2.
+- **T11 acceptance, checked by hand against `server/services/practice-pack.js:306-342` (`PRACTICE_KINDS` = catch, scenario, interview, review; `LIMITS.diagnostic` = 6):**
+  - `days` 7, `minutesPerDay` 120. Day sums: 40+20+60, 35+20+65, 45+35+40, 40+30+50, 35+25+60, 75+45, 65+30+25, all 120. Total 840.
+  - Practice share: 840 − diagnostic 40 − learn 20 = **780/840 = 92.9%** (gate ≥ 60%).
+  - `diagnostic`: 6 ids (gate 1–6). No `exercises` on `diagnostic` or `review` blocks.
+  - All 16 ids match a file in `docs/research/applied-ai/module-1/exercises/`.
+  - T11's "schedule defaults" test is the proof that runs; this check is not a substitute for it.
+- **Off-app labelling: folding accepted for F1c, no format change.** The thread table above is the founder's plan of record; `schedule.json` is the app's view of it. Folding can't game the gate: excluding the 175 off-app minutes gives 72%. My stricter check, which also counts the non-app parts of both mocks as non-practice (mock 1: 23 of 35 min; mock 2: 55 of 75 min), still gives 527/840 = **62.7%**. A per-block `label` is Later, and it is a format change, so it needs an architect ruling (ADR 0008).
+- **`interview-04` stays as diagnostic #6; the `interview-03` swap is rejected.** Evaluation and production evidence are the hiring manager's explicit ask ("evidence of taking into production"). The swap overlaps #2 and leaves evaluation unplaced, and `interview-03` is mock 1's fresh item, so using it in the diagnostic would spoil the mock.
+- **RISK entries:** all four mitigations accepted as written. The "Next skips replays" and parallel-sets items go into the spec's Later list. Dossier refresh is the lead's job (the file is founder-owned).
+- **OQs closed in the spec:** OQ-1 (lead DECISION: learning-designer pedagogy sign-off plus `verified: false` labels and a later AWS fact pass; the founder doesn't fact-check items they will practise on), OQ-3 (lead DECISION: `schedule.json` alone), OQ-5 (founder DECISION: ARCH-2 confirmed), OQ-6 (lead DECISION as author: accept PD-1's two rubrics and the synonym list). **F1c-T11's gates are all cleared.** Its merge gates are cleared too: OQ-5, and F1c-T17 (approved, commit 23aa509, awaiting human merge like the rest of the branch).
+- **For backend: copy this block exactly into `packs/applied-ai/schedule.json`.**
+```json
+{
+  "days": 7,
+  "minutesPerDay": 120,
+  "diagnostic": [
+    "m1-catch-01-context-window",
+    "m1-catch-02-rag-vs-finetune",
+    "m1-catch-03-pipeline-clean",
+    "m1-catch-04-embeddings",
+    "m1-catch-05-structured-outputs",
+    "m1-interview-04-evaluate-rag"
+  ],
+  "plan": [
+    { "day": 1, "blocks": [
+      { "kind": "diagnostic", "minutes": 40 },
+      { "kind": "learn", "minutes": 20, "exercises": ["m1-learn-01-how-llms-answer", "m1-learn-02-rag-pipeline", "m1-learn-03-rag-failures"] },
+      { "kind": "review", "minutes": 60 }
+    ] },
+    { "day": 2, "blocks": [
+      { "kind": "catch", "minutes": 35, "exercises": ["m1-catch-07-access-freshness-clean", "m1-catch-06-retrieval-vs-generation", "m1-catch-08-design-tradeoffs"] },
+      { "kind": "interview", "minutes": 20, "exercises": ["m1-interview-02-retrieval-vs-generation"] },
+      { "kind": "review", "minutes": 65 }
+    ] },
+    { "day": 3, "blocks": [
+      { "kind": "scenario", "minutes": 45, "exercises": ["m1-scenario-01-policy-assistant"] },
+      { "kind": "interview", "minutes": 35, "exercises": ["m1-interview-03-when-not-rag"] },
+      { "kind": "review", "minutes": 40 }
+    ] },
+    { "day": 4, "blocks": [
+      { "kind": "catch", "minutes": 40, "exercises": ["m1-catch-04-embeddings", "m1-catch-06-retrieval-vs-generation", "m1-catch-05-structured-outputs"] },
+      { "kind": "interview", "minutes": 30, "exercises": ["m1-interview-04-evaluate-rag"] },
+      { "kind": "review", "minutes": 50 }
+    ] },
+    { "day": 5, "blocks": [
+      { "kind": "catch", "minutes": 35, "exercises": ["m1-catch-02-rag-vs-finetune", "m1-catch-08-design-tradeoffs", "m1-catch-01-context-window"] },
+      { "kind": "interview", "minutes": 25, "exercises": ["m1-interview-03-when-not-rag"] },
+      { "kind": "review", "minutes": 60 }
+    ] },
+    { "day": 6, "blocks": [
+      { "kind": "interview", "minutes": 75, "exercises": ["m1-interview-01-design-rag"] },
+      { "kind": "review", "minutes": 45 }
+    ] },
+    { "day": 7, "blocks": [
+      { "kind": "review", "minutes": 65 },
+      { "kind": "catch", "minutes": 30, "exercises": ["m1-catch-03-pipeline-clean", "m1-catch-07-access-freshness-clean"] },
+      { "kind": "interview", "minutes": 25, "exercises": ["m1-interview-02-retrieval-vs-generation"] }
+    ] }
+  ]
+}
+```
+- **Dissent recorded:** none. The learning-designer's own swap option is rejected, with the designer's agreement as stated in the PROPOSAL.
+- **Follow-ups:**
+  - **backend-engineer:** F1c-T11 may start now.
+  - **founder:** whether Leadership Principles behavioral prep fits the 7 days (an unverified assumption; scope is yours). Until you answer, the plan has none.
+  - **lead:** refresh `defend-my-build.md` §3, §5.4 and the test counts before day 2's pass 2.
+  - **principal-architect:** none now. A per-block `label` comes to you only if it is pulled from Later.
+- **Thread status** stays `open`: Wave B, LR-9 and LR-10 (advisory) and the founder's Leadership Principles question are still discussed here.
