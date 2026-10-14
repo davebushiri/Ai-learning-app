@@ -18,13 +18,14 @@ const dim = (items, answer, extra = {}) => matcherGrade({
 }).dimensions.explanation;
 
 test('version and rules are exported and frozen', () => {
-  assert.equal(MATCHER_VERSION, 'matcher@1');
+  assert.equal(MATCHER_VERSION, 'matcher@2');
   assert.ok(Object.isFrozen(MATCHER_RULES));
+  assert.equal(MATCHER_RULES.stuffedMaxFunctionShare, 0.2);
   assert.equal(MATCHER_RULES.negationWindow, 3);
   assert.deepEqual(MATCHER_RULES.negators.slice(0, 3), ['not', 'no', 'never']);
   const out = matcherGrade({ answer: 'kettle lantern orbit harbor', dimensions: { explanation: { items: ['kettle'] } }, lexicon: NO_LEX });
   assert.equal(out.graderSource, 'matcher');
-  assert.equal(out.graderVersion, 'matcher@1');
+  assert.equal(out.graderVersion, 'matcher@2');
 });
 
 test('item match needs ceil(0.6n) tokens; n ≤ 2 needs all', () => {
@@ -80,6 +81,28 @@ test('stuffed answer capped at partial', () => {
   assert.equal(dim(['kettle', 'lantern', 'orbit'], 'kettle lantern orbit').status, 'partial');
   assert.equal(dim(['kettle', 'lantern', 'orbit'], 'kettle lantern orbit harbor beacon').status, 'partial');
   assert.equal(dim(['kettle', 'lantern', 'orbit'], 'kettle lantern orbit harbor beacon tide').status, 'met');
+});
+
+// FR-019 (matcher@2, PD-4): the cap needs both (a) ≤ 2 leftover content words and
+// (b) a function-word share < 0.2, so a sentence with grammar is never a keyword list.
+test('a concise correct sentence with ≤ 2 leftover words is not capped', () => {
+  // 7 words, 3 function words (share 0.43); 1 leftover content word ("heats").
+  assert.equal(dim(['kettle', 'lantern', 'orbit'], 'the kettle heats the lantern in orbit').status, 'met');
+});
+
+test('a comma-separated keyword list of rubric words is capped at partial', () => {
+  assert.equal(dim(['kettle', 'lantern', 'orbit'], 'kettle, lantern, orbit, harbor').status, 'partial');
+});
+
+test('a list padded with one article is still capped', () => {
+  // 6 words, 1 function word: share 1/6 < 0.2.
+  assert.equal(dim(['kettle', 'lantern', 'orbit'], 'kettle, lantern, orbit, harbor, the beacon').status, 'partial');
+});
+
+test('the function-word share boundary is strict: share 0.2 is not capped, 1/6 is', () => {
+  const items = ['kettle', 'lantern', 'orbit'];
+  assert.equal(dim(items, 'the kettle lantern orbit harbor').status, 'met');
+  assert.equal(dim(items, 'kettle lantern orbit harbor beacon the').status, 'partial');
 });
 
 test('valid alternative correction met when rubric.correct not', () => {

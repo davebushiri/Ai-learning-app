@@ -5,7 +5,7 @@
 // It holds no subject words: any vocabulary comes from the pack's lexicon.
 // Any change to these rules bumps MATCHER_VERSION (FR-014).
 
-export const MATCHER_VERSION = 'matcher@1';
+export const MATCHER_VERSION = 'matcher@2';
 
 export const MATCHER_RULES = Object.freeze({
   itemCoverage: 0.6,
@@ -16,6 +16,7 @@ export const MATCHER_RULES = Object.freeze({
   negationWindow: 3,
   echoCoverage: 0.8,
   stuffedMaxRest: 2,
+  stuffedMaxFunctionShare: 0.2,
   maxAlternatives: 8,
   negators: Object.freeze(['not', 'no', 'never', 'isnt', 'arent', 'doesnt', 'dont', 'didnt',
     'cannot', 'cant', 'wont', 'wouldnt', 'shouldnt', 'without'])
@@ -85,6 +86,8 @@ function makeAnswer(text, lexicon) {
   const tokens = [];
   const rawAt = [];
   raw.forEach(({ w }, i) => { if (w.length >= 2 && !STOPWORDS.has(w)) { tokens.push(w); rawAt.push(i); } });
+  // FR-019(b): a keyword list has no grammar, so its share of function words is low.
+  const functionShare = raw.length ? raw.filter(({ w }) => STOPWORDS.has(w)).length / raw.length : 0;
   const negatedAt = pos => {
     const r = rawAt[pos];
     for (let p = Math.max(0, r - R.negationWindow); p < r; p++) {
@@ -92,7 +95,7 @@ function makeAnswer(text, lexicon) {
     }
     return false;
   };
-  return { tokens, negatedAt, lexicon };
+  return { tokens, negatedAt, lexicon, functionShare };
 }
 
 // Every occurrence of an item token in the answer, directly or through a lexicon form,
@@ -224,7 +227,8 @@ function grade(input) {
   }
 
   const total = ans.tokens.length;
-  const stuffed = total - removed.size <= R.stuffedMaxRest; // FR-019
+  // FR-019 (matcher@2): only a keyword list is capped: few leftover words and little grammar.
+  const stuffed = total - removed.size <= R.stuffedMaxRest && ans.functionShare < R.stuffedMaxFunctionShare;
   const redFlagsMatched = unnegatedMatches(ans, inp.redFlags);
   const strongSignalsMatched = unnegatedMatches(ans, inp.strongSignals);
 
