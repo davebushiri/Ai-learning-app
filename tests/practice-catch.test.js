@@ -11,7 +11,7 @@ import { openDb } from '../server/db.js';
 import { validateEvent } from '../shared/events.js';
 import { loadPacks, listSubjects } from '../server/packs.js';
 import { loadPracticePacks } from '../server/services/practice-pack.js';
-import { createPracticeService, projectPracticeAttempt, GRACE_MS } from '../server/services/practice.js';
+import { createPracticeService, projectPracticeAttempt, trackSummary, GRACE_MS } from '../server/services/practice.js';
 import { startServer } from './helpers/server.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -299,6 +299,7 @@ describe('catch attempts (service)', () => {
     assert.equal(status(() => svc.complete(att, {})), 404);
     assert.equal(status(() => svc.selfRate(att, { part: 'stop:s1', rating: 'had_it' })), 404);
     assert.equal(status(() => svc.complete('pra_01J0000000000000000000000A', {})), 404, 'unknown pra_ id');
+    for (const fn of ['submitStop', 'complete', 'selfRate']) assert.equal(status(() => svc[fn](att, [1])), 404, `${fn}: id before body`);
   });
 
   test('every practice event carries context.engine practice and passes validateEvent', () => {
@@ -323,6 +324,18 @@ describe('catch attempts (service)', () => {
     assert.equal(p.assisted, true);
     assert.deepEqual(p.stops.map(s => [s.statementId, s.detection]), [['s1', 'false_interruption'], ['s2', 'hit']]);
     assert.ok(p.completed);
+  });
+
+  test('trackSummary lists modules with exercise summaries only; unknown track is null', () => {
+    setup();
+    const t = trackSummary(TRACK);
+    assert.deepEqual(Object.keys(t), ['id', 'title', 'version', 'modules']);
+    const all = t.modules.flatMap(m => m.exercises);
+    assert.ok(all.length >= 4);
+    for (const e of all) assert.deepEqual(Object.keys(e), ['id', 'type', 'objective', 'difficulty', 'concepts', 'prerequisites']);
+    assert.deepEqual(hiddenKeys(t), []);
+    assert.equal(trackSummary('nope'), null);
+    assert.equal(trackSummary(undefined), null);
   });
 
   test('the clock is injected: event times come from now()', () => {

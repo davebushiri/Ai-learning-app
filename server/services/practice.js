@@ -5,7 +5,7 @@
 
 import { HttpError } from '../http.js';
 import { makeEvent, newId } from '../../shared/events.js';
-import { getTrack, getExercise, getReferences, getSchedule, toPublicExercise } from './practice-pack.js';
+import { getTrack, getExercise, getExercises, getReferences, getSchedule, toPublicExercise } from './practice-pack.js';
 import { matcherGrade, combineOverall, MATCHER_VERSION } from './practice-matcher.js';
 
 export const GRACE_MS = 2000; // FR-012, provisional product choice (LR-5)
@@ -72,6 +72,23 @@ function stopBody(stop, ex) {
     assisted: stop.graded?.assisted === true,
     result: hit ? publicResult(stop.graded) : null,
     reveal: hit ? revealOf(plantedOf(ex, stop.attributedStatementId)) : null
+  };
+}
+
+/** GET /api/practice/tracks/:track body: modules with allow-listed exercise summaries, or null. */
+export function trackSummary(trackId) {
+  const track = getTrack(trackId);
+  if (!track) return null;
+  const exercises = getExercises(track.id);
+  return {
+    id: track.id, title: track.title, version: track.version,
+    modules: track.modules.map(m => ({
+      id: m.id, title: m.title,
+      exercises: m.exercises.map(id => exercises.get(id)).filter(Boolean).map(ex => ({
+        id: ex.id, type: ex.type, objective: ex.objective, difficulty: ex.difficulty,
+        concepts: [...ex.concepts], prerequisites: [...ex.prerequisites]
+      }))
+    }))
   };
 }
 
@@ -149,17 +166,17 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
   }
 
   function submitStop(attemptId, body) {
-    if (!isObj(body)) throw bad('body must be an object');
     const { a, track, ex } = load(attemptId);
+    if (!isObj(body)) throw bad('body must be an object');
     if (a.completed) throw new HttpError(409, 'attempt is complete');
     if (ex.type !== 'catch') throw bad('stops are only for catch exercises');
     const ids = ex.narration.map(n => n.id);
     const idx = typeof body.statementId === 'string' ? ids.indexOf(body.statementId) : -1;
     if (idx === -1) throw bad('unknown statementId');
+    if (body.answer != null && typeof body.answer !== 'string') throw bad('answer must be a string');
     const repeat = a.stops.find(s => s.statementId === body.statementId);
     if (repeat) return stopBody(repeat, ex); // FR-008: same body, no events
     if (a.stops.some(s => ids.indexOf(s.statementId) > idx)) throw bad('stop is earlier than the last stop');
-    if (body.answer != null && typeof body.answer !== 'string') throw bad('answer must be a string');
 
     const answer = body.answer ?? '';
     const text = answer.slice(0, MAX_ANSWER_CHARS);
@@ -219,8 +236,8 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
   }
 
   function complete(attemptId, body = {}) {
-    if (!isObj(body)) throw bad('body must be an object');
     const { a, track, ex } = load(attemptId);
+    if (!isObj(body)) throw bad('body must be an object');
     if (ex.type !== 'catch') throw bad('complete is only for catch exercises');
     if (a.completed) return completeBody(a, track, ex); // FR-009: idempotent
     const ids = ex.narration.map(n => n.id);
@@ -247,8 +264,8 @@ export function createPracticeService({ db, grader = matcherGrade, now = Date.no
   }
 
   function selfRate(attemptId, body) {
-    if (!isObj(body)) throw bad('body must be an object');
     const { a, ex } = load(attemptId);
+    if (!isObj(body)) throw bad('body must be an object');
     if (!a.completed) throw bad('self-rating opens after complete');
     if (!RATINGS.includes(body.rating)) throw bad('rating must be had_it, partly or missed_it');
     const stop = a.stops.find(s => isAnswered(s) && partOf(s) === body.part);

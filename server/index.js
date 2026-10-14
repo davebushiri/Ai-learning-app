@@ -34,12 +34,16 @@ try {
   process.exit(1);
 }
 loadPacks();
+// Practice packs load after subject packs, so a practice id already held by a subject pack is refused (ADR 0008).
+const { loadPracticePacks } = await import('./services/practice-pack.js');
+loadPracticePacks();
 
 const { MOCK } = await import('./services/ai-client.js');
 const ROUTES = (await Promise.all([
   import('./routes/health.js'),
   import('./routes/scenarios.js'),
-  import('./routes/grade.js')
+  import('./routes/grade.js'),
+  import('./routes/practice.js')
 ])).map(m => m.handle);
 
 const server = http.createServer(async (req, res) => {
