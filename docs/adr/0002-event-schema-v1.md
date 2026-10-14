@@ -94,3 +94,24 @@ Additive, under the change rule above. Reasons are in [`docs/specs/F1c-practice-
 - **Write rule:** the same as Amendment 1. A stop's or answer's `explained` and `graded` (and `stopped`) are appended after grading in one `appendEvents` call, with no `await` between reading the attempt's events and appending (sync grader, [0008](0008-practice-engine-and-practice-pack-format-v1.md)).
 - **Read (ARCH-8):** `db.eventsForEngine({actor, engine})` is `SELECT … WHERE actor = ? AND json_extract(context_json, '$.engine') = ? ORDER BY seq`. **No index and no migration.** One learner writes about 10⁴ rows a month, and a full scan of that is milliseconds. An expression index (migration `002`) is added only if `GET …/progress` p95 is measured above 100 ms. The caller filters `context.subject` by `^<trackId>@`, across all versions.
 - **Verification:** `tests/events.test.js` VERBS assertion (old → new: + the 3 verbs); "every practice event passes validateEvent and carries context.engine"; `tests/db.test.js` "eventsForEngine filters by actor and engine in seq order"; F1a-T12 "a pra_ id on /api/attempts returns 404"; F1c-T04 "an att_ id on /api/practice/attempts returns 404".
+
+## Amendment 4 (2026-10-14, F1c Wave A code review: F1c-B21 and finding W-B2)
+Additive, under the change rule above. Reasons are in [`docs/specs/F1c-practice-engine/review.md`](../specs/F1c-practice-engine/review.md) "Wave A code review".
+- **Every practice catch stop writes the triple, including a false interruption (B21).** This confirms Amendment 3's write rule ("a stop's … `stopped`, `explained`, `graded`") and its `outcome` list. It also matches the card engine, where `graded.outcome` has always included `false_alarm`. On a false interruption, `graded.result` is exactly `{dimensions: {}, overall: null, outcome: "false_alarm", assisted, confidence: "high", graderSource: "matcher", graderVersion, latencyMs: 0}`.
+  - **Reader rule:** a `graded` event with `overall: null` records a detection, not a grade.
+    - Every grader-quality metric (SC-004 κ and uncertain share, fallback rate, grader latency) and every mastery input counts only `graded` events with `overall !== null`.
+    - Catch and false-alarm rates read `graded.result.outcome` the same way in both engines (a missing `context.engine` means `"card"`).
+  - **Rejected:** no `graded` on a false interruption. The practice log would then be the only log where a stop has no `graded`. The F2 cross-engine projection would have to branch on engine to count false alarms, and the spec's own `outcome: false_alarm` could never be written.
+- **A skipped practice stop is "not graded", never "missed" (W-B2).** [0004](0004-no-grading-in-the-browser.md) Amendment 1 applies to the practice engine.
+  - **Request:** the practice `complete` body gains `skipped?: [{statementId, elapsedMs}]`: at most 20 entries, each `statementId` a narration id, otherwise 400. The client lists each stop the learner skipped after `err.net`.
+  - **Attribution:** the server attributes each skipped entry with the same rule as a live stop (FR-012), against the stops graded so far. If the entry would be a `hit` or `late_hit` on a planted statement that is still uncaught at complete, that statement is **not graded**.
+  - **Stored record:**
+    - `completed.result` gains `skippedStatementIds: string[]` and `notGradedStatementIds: string[]`. Both are always written, possibly empty, and readers treat a missing field as `[]`.
+    - `missedStatementIds` excludes not-graded ids. Caught, missed, not-graded and not-reached are disjoint, and together they cover every planted statement.
+    - Stored ids are the record and are never recomputed (Amendment 2).
+  - **Response:** in the `complete` response, `missed[]` items for not-graded statements carry `notGraded: true` (only when true). The reveal still shows the correction without calling it a miss.
+- **Verification:**
+  - `tests/practice-catch.test.js`:
+    - "a false interruption writes graded with outcome false_alarm and overall null";
+    - "a skipped stop on a planted statement is notGraded, not missed; caught, missed, notGraded and notReached are disjoint and cover every planted statement".
+  - `tests/acceptance/F1c.test.js` FR-050: QA changes the expected verb list to include the second `graded`.

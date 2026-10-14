@@ -157,3 +157,58 @@ The existing game, its routes and the golden replay stay untouched. **Pre-regist
 - **Preview of SC-003b (informational, not the gate):** grading the 24 module-1 rows against the *research drafts* with `draftSynonyms` gives clear 100%, incorrect → met 0%, but valid-alternative → met **16.7%** and partial → partial/uncertain **66.7%**. Consistent with B11/B12. The m1 set has no `should-flag` rows, so that threshold can't be checked there.
 - **Likelihood:** H (measured) · **Impact:** H (US1.5 and US1.11 fail at HTTP level for the same cause; T04 can't be verified green on them).
 - **Mitigation:** PM + architect rule on FR-019 wording; backend fixes the matcher with a `MATCHER_VERSION` bump. SC-003 stays a `F1c-T03` todo, run for real in `npm test` with its confusion table printed, until it passes. Evidence: `node --test --test-name-pattern="SC-003 labelled" tests/acceptance/F1c.test.js`.
+
+### principal-architect · 2026-10-14 · DECISION
+**Answering:** F1c-B21 (does a false interruption write `graded`?), plus the Wave A code-review verdict.
+- **The call: yes.** Every practice catch stop writes `stopped`/`explained`/`graded`. A false interruption gets `graded.result = {dimensions: {}, overall: null, outcome: "false_alarm", …}`.
+  - **The code stays.** QA changes `tests/acceptance/F1c.test.js:482` to expect the second `graded`, and also asserts `overall: null` and `outcome: 'false_alarm'` on it.
+  - The PM fixes the spec table's `graded` "When" cell and closes B21.
+  - Recorded as ADR 0002 Amendment 4, with the `decisions.md` D18 row updated.
+- **Rationale:**
+  - Am. 3 already lists `false_alarm` as a `graded` outcome and says "a stop's … graded". Without the event, that outcome could never be written.
+  - The card engine has always written `graded` on a false alarm. One shape per stop keeps the F2 cross-engine projection free of engine branches.
+  - The cost is grader-metric pollution, which the Am. 4 reader rule handles: grader metrics and mastery count only `overall !== null`.
+- **Dissent recorded:** QA's test followed the spec's "with every stop hit or answer" wording. That was a fair reading of a contradictory spec, not an error.
+- **Wave A verdict: CHANGES REQUESTED.** Two blockers, both small (details in `docs/specs/F1c-practice-engine/review.md` "Wave A code review"):
+  - **W-B1:** B20 (below).
+  - **W-B2:** "Skip this stop" records the statement as missed, against ADR 0004 Am. 1. The fix is the additive `skipped` / `notGradedStatementIds` in Am. 4.
+- **Evidence:**
+  - `npm test`: `# tests 443 / # pass 331 / # fail 0 / # todo 112`.
+  - Golden replay: 61 runs, 0 diffs.
+  - `check:ticket`: ok for every Wave A ticket.
+  - Standing greps: clean.
+- **Follow-ups:**
+  - PM: the spec edits for B21, W-B2 and W-S1, and the FR-019 threshold (below).
+  - Backend: `matcher@2`, `complete` with `skipped`, the W-S3 and W-S5 tests.
+  - Frontend: Skip bookkeeping (W-B2), the gap STOP (W-S2), the self-rating error (W-S4).
+  - QA: the FR-050 and `MATCHER_VERSION` assertions, and two module-1 keyword-list rows.
+
+### principal-architect · 2026-10-14 · PROPOSAL
+**Answering:** F1c-B20 (the FR-019 rule). The PM decides the threshold; backend implements.
+- **Rule (`matcher@2`):** cap at `partial` only when ≤ 2 content words remain after removing matched forms (as today) **and** fewer than 20% of the answer's words are function words (the matcher's existing generic `STOPWORDS`; no new vocabulary). It is one condition on `practice-matcher.js:227`, plus one named constant, `stuffedMaxFunctionShare: 0.2`.
+- **Measured** (the real matcher with only that line swapped):
+  - **accept-pack SC-003:** all 7 checks pass, up from 5.
+    - clear → met: 80% → **100%**.
+    - valid-alternative → met: 50% → **100%**.
+    - partial → partial/uncertain: **100%**. Both keyword lists stay `partial`.
+    - incorrect → met 0%; should-flag → uncertain 100%; uncertain on clear + incorrect 0%.
+  - **Module-1 drafts with `draftSynonyms` (SC-003b proxy):** unchanged at clear 100%, incorrect → met 0%, partial 66.7% ✗, valid-alt 16.7% ✗. No module-1 answer triggers the cap. Those misses are B11 and B12, not B20.
+- **Margin:** correct sentences that hit the leftover-words condition have function-word shares ≥ 0.27, and the keyword lists have 0.00. Every threshold from 0.05 to 0.30 passes, and 0.2 still catches a list padded with an article or two.
+- **Rejected:**
+  - deleting the cap (the lists become `met`, and partial lands on the 80% gate);
+  - "no causal connective" (a correct answer with "and … over … on" stays capped);
+  - "matched share ≥ x" (correct concise sentences reach 1.00 too).
+- **Confidence:** medium. The rule is measured on 45 + 24 rows, but only 2 of them are keyword lists.
+- **What would change my mind:** a labelled keyword list that sneaks under the rule without being an explanation, or a correct sentence below a 0.2 share.
+
+### principal-architect · 2026-10-14 · RISK
+**Gaming: a learner pads a keyword list with function words** ("the heavier line and more drag so the kite lower …") and gets `met`. Likelihood L, impact L. The learner is the founder practising alone, so padding is self-deception, not fraud. Self-rating and κ (SC-004) expose drift. **Mitigation:** the T03 test "a list padded with one article is still capped". The live grader (Later) supersedes the matcher.
+
+### principal-architect · 2026-10-14 · RISK
+**Dictation strips grammar.** Speech recognition can deliver clipped fragments ("check frays sunlight rubbing weaken line"), which would be capped even though the learner said a sentence. Likelihood M once voice lands (T06), impact M. **Mitigation:** the transcript is editable before Send (FR-033), and a capped answer is `partial`, never `not_met`. QA adds one real dictated answer per class to the labelled set during T01b, and the PM revisits the 0.2 if it fails.
+
+### principal-architect · 2026-10-14 · RISK
+**Overfitting to 2 rows.** The keyword-list class has 2 examples, both authored by QA, and the module-1 set has none. The rule could look right only because the test data is thin. Likelihood M, impact M (a wrong `met` inflates independent mastery). **Mitigation:** before the B20 fix merges, QA or the learning-designer add ≥ 2 module-1 keyword-list rows (expected `partial`) and ≥ 2 short correct module-1 sentences. SC-003 and SC-003b must pass on the enlarged sets, not just today's.
+
+### principal-architect · 2026-10-14 · RISK
+**Matcher version churn splits the evidence.** `matcher@1` grades already in the log (from any founder sessions before the fix) are not comparable with `matcher@2`. Likelihood H if the founder practises before the fix, impact L. **Mitigation:** every `graded` is stamped with `graderVersion` (FR-014). Progress and κ group by version, and old grades are never regraded or rewritten (inv. 6).
