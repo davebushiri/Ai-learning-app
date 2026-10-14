@@ -2,7 +2,14 @@
 
 **Purpose:** prepare the founder to talk about this app honestly in an Amazon technical interview. The hiring manager's ask (quoted in [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)) is: "AI fluency / experience with RAG, agents, embeddings, practical hands on experience with evidence of taking into production."
 
-**Basis:** branch `team/agents` at `bb3fb1d` (2026-10-13). Everything below was checked in the code, config, tests and git history. Each claim cites its evidence path. **Uncertain** marks anything that couldn't be verified.
+**Update (2026-10-14, lead), read this first.** Since `bb3fb1d` the team built a second engine, the **practice engine (F1c)**, at `/practice.html` and `/api/practice/*`. The rows marked *(updated 2026-10-14)* below changed. The original card game is unchanged: everything said about it below still holds, including its security gaps.
+- **Server-owned answers, in the practice engine only.** A started exercise is sent through an allow-list (`server/services/practice-pack.js` `toPublicExercise`). Rubrics, reference text and corrections leave the server only after a graded stop, an explicit "show the reference" (marked assisted), or completion (`server/services/practice.js`). QA's leak scan of every network response found none before completion (`docs/specs/F1c-practice-engine/qa-report.md`).
+- **Events written per attempt, in the practice engine only.** Every stop, answer, grade, skip, assist and self-rating is appended with `engine: 'practice'`, and the append-only triggers apply (`tests/practice-catch.test.js`).
+- **A deterministic grader with a measured gate, not an LLM.** `server/services/practice-matcher.js` (`matcher@2`) does rubric matching with negation handling and an "uncertain, flagged for review" outcome instead of guessing. It is gated on a 48-answer labelled set (SC-003) plus 7 module-1 rows (SC-012), with pre-registered thresholds. Honest story: v1 failed its own gate (80% and 50% against 100% and 75%), QA filed the bug, and the architect's rule change passed every threshold. Caveat: the rule was tuned and gated on the same small set, which the team recorded as an overfitting risk (thread 0007).
+- **Still true:** no live Claude call, no RAG or embeddings in the product (module 1 *teaches* RAG; the app does no retrieval), no agents, no AWS, no deployment, no users besides the founder.
+- **Updated numbers:** `npm test` on 2026-10-14: `# tests 475 / # pass 389 / # fail 0 / # todo 86`. Git: 131 commits on `team/agents`, 128 authored by Claude, 2 founder PR merges, 1 by legtar. The 61-run golden replay still shows 0 diffs (digest `cc1c3558d43c7e02`).
+
+**Basis (original):** branch `team/agents` at `bb3fb1d` (2026-10-13). Everything below was checked in the code, config, tests and git history. Each claim cites its evidence path. **Uncertain** marks anything that couldn't be verified.
 
 **Test run quoted (fresh, 2026-10-13, `npm test`):**
 ```
@@ -170,9 +177,9 @@ Size: about 2,100 lines of product code (`server/`, `shared/`, `web/`) and about
 | Learner text fenced in the grade prompt | **Implemented** | `server/prompts/grade.js:13,32,59-61`; `tests/grade-prompt.test.js` |
 | Pack text fenced in the scenario prompt | **Not built** (known violation, held for W7/F1b) | `server/prompts/scenario.js:56` puts `trade.brief` in unfenced; ADR 0006 "Today's unfenced uses" |
 | SQLite store, migrations, append-only triggers | **Implemented** | §2.3, `tests/db.test.js` |
-| Events written per attempt | **Designed, not built** (Wave 2: T12–T14) | No caller of `appendEvents`; thread 0007 |
-| Server-owned cards / attempt API (`/api/attempts`) | **Designed, not built** | ADR 0003; `server/routes/` has only the legacy routes; `toPublicCard` exists in `shared/contract.js:181` but nothing calls it |
-| No grading in the browser | **Designed, not built** | ADR 0004; `web/api.js:2,36` still imports and calls `mockGrade` |
+| Events written per attempt | *(updated 2026-10-14)* **Card game: designed, not built** (Wave 2: T12–T14). **Practice engine: implemented**, every event with `engine: 'practice'` (`tests/practice-catch.test.js`) | No caller of `appendEvents`; thread 0007 |
+| Server-owned cards / attempt API (`/api/attempts`) | *(updated 2026-10-14)* **Card game: designed, not built.** **Practice engine: implemented** at `/api/practice/attempts` (`server/routes/practice.js`, `server/services/practice.js`) | ADR 0003; `server/routes/` has only the legacy routes; `toPublicCard` exists in `shared/contract.js:181` but nothing calls it |
+| No grading in the browser | *(updated 2026-10-14)* **Card game: designed, not built.** **Practice engine: implemented**; the page imports nothing from `server/` or the mock grader (`tests/practice-web-state.test.js`) | ADR 0004; `web/api.js:2,36` still imports and calls `mockGrade` |
 | Packs: format, validator, loader, immutability | **Implemented** (one pack) | §2.4, `tests/pack.test.js`, `tests/pack-format.test.js` |
 | Golden replay (61 runs) | **Implemented, certified** (not re-run here) | `dade9ef`, `tests/fixtures/golden/manifest.json` |
 | Deny-list ratchet, ownership test, `check:ticket` | **Implemented** | §2.7 |
@@ -295,7 +302,7 @@ Size: about 2,100 lines of product code (`server/`, `shared/`, `web/`) and about
   - Request bodies are capped at 1 MB (413), bad JSON gets 400, and static serving guards against path traversal (`server/http.js`).
   - Pack validation and `Map` lookups block prototype-key tricks (`server/packs.js`).
   - The UI escapes HTML (`web/app.js` `escapeHtml`).
-- **Not enforced yet (say so):**
+- **Not enforced yet in the card game (say so).** *(updated 2026-10-14: the new practice engine does enforce these; see the update at the top.)*
   - **Answers reach the browser before grading.** `GET /api/scenario` returns the full card including every `error` (`server/routes/scenarios.js:20`).
   - `POST /api/grade` **trusts a client-sent scenario**, so a client could forge the answer key (ADR 0003, Context).
   - The browser grades and scores locally (`web/api.js:36`, `web/app.js:117,161,211`).
