@@ -1,0 +1,174 @@
+{
+  "days": 7,
+  "minutesPerDay": 120,
+  "diagnostic": [
+    "m1-catch-01-context-window",
+    "m1-catch-02-rag-vs-finetune",
+    "m1-catch-03-pipeline-clean",
+    "m1-catch-04-embeddings",
+    "m1-catch-05-structured-outputs",
+    "m1-interview-04-evaluate-rag"
+  ],
+  "plan": [
+    {
+      "day": 1,
+      "blocks": [
+        {
+          "kind": "diagnostic",
+          "minutes": 40
+        },
+        {
+          "kind": "learn",
+          "minutes": 20,
+          "exercises": [
+            "m1-learn-01-how-llms-answer",
+            "m1-learn-02-rag-pipeline",
+            "m1-learn-03-rag-failures"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "blocks": [
+        {
+          "kind": "catch",
+          "minutes": 35,
+          "exercises": [
+            "m1-catch-07-access-freshness-clean",
+            "m1-catch-06-retrieval-vs-generation",
+            "m1-catch-08-design-tradeoffs"
+          ]
+        },
+        {
+          "kind": "interview",
+          "minutes": 20,
+          "exercises": [
+            "m1-interview-02-retrieval-vs-generation"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 65
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "blocks": [
+        {
+          "kind": "scenario",
+          "minutes": 45,
+          "exercises": [
+            "m1-scenario-01-policy-assistant"
+          ]
+        },
+        {
+          "kind": "interview",
+          "minutes": 35,
+          "exercises": [
+            "m1-interview-03-when-not-rag"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 40
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "blocks": [
+        {
+          "kind": "catch",
+          "minutes": 40,
+          "exercises": [
+            "m1-catch-04-embeddings",
+            "m1-catch-06-retrieval-vs-generation",
+            "m1-catch-05-structured-outputs"
+          ]
+        },
+        {
+          "kind": "interview",
+          "minutes": 30,
+          "exercises": [
+            "m1-interview-04-evaluate-rag"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 50
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "blocks": [
+        {
+          "kind": "catch",
+          "minutes": 35,
+          "exercises": [
+            "m1-catch-02-rag-vs-finetune",
+            "m1-catch-08-design-tradeoffs",
+            "m1-catch-01-context-window"
+          ]
+        },
+        {
+          "kind": "interview",
+          "minutes": 25,
+          "exercises": [
+            "m1-interview-03-when-not-rag"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "blocks": [
+        {
+          "kind": "interview",
+          "minutes": 75,
+          "exercises": [
+            "m1-interview-01-design-rag"
+          ]
+        },
+        {
+          "kind": "review",
+          "minutes": 45
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "blocks": [
+        {
+          "kind": "review",
+          "minutes": 65
+        },
+        {
+          "kind": "catch",
+          "minutes": 30,
+          "exercises": [
+            "m1-catch-03-pipeline-clean",
+            "m1-catch-07-access-freshness-clean"
+          ]
+        },
+        {
+          "kind": "interview",
+          "minutes": 25,
+          "exercises": [
+            "m1-interview-02-retrieval-vs-generation"
+          ]
+        }
+      ]
+    }
+  ]
+}

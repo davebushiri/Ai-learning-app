@@ -1,0 +1,77 @@
+{
+  "id": "m1-interview-02-retrieval-vs-generation",
+  "module": "m1",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m1-catch-06-retrieval-vs-generation"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "retrieval-vs-generation-failure",
+    "freshness",
+    "faithfulness",
+    "rag-evaluation"
+  ],
+  "referenceIds": [
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Es et al. 2023, Ragas: Automated Evaluation of Retrieval Augmented Generation",
+      "url": "https://arxiv.org/abs/2309.15217",
+      "verified": false,
+      "note": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Reduce hallucinations",
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    }
+  ],
+  "followUp": "How would you estimate what share of failures are retrieval versus generation across a week of traffic?",
+  "transfer": {
+    "scenario": "An ECU calibration assistant cites the right calibration document but quotes the wrong value. Diagnose.",
+    "rubric": [
+      "right chunk retrieved: generation failure",
+      "check table parsing too|chunk may split table",
+      "require exact quote",
+      "add test case"
+    ]
+  },
+  "question": "Your RAG assistant gives a wrong answer. How do you tell whether retrieval or generation failed, and what do you do about each?",
+  "rubric": {
+    "mustCover": [
+      "inspect retrieved chunks for the failing query",
+      "gold evidence absent: retrieval, ingestion, chunking, freshness or filters",
+      "gold evidence present but answer wrong: generation",
+      "different fixes per stage",
+      "measure each stage separately with metrics"
+    ],
+    "strongSignals": [
+      "mentions recall@k or hit rate",
+      "mentions faithfulness vs correctness",
+      "notes shared failures (right chunk ranked low or buried mid-context)",
+      "turns incidents into regression tests",
+      "systems analogy of probing at interfaces"
+    ],
+    "redFlags": [
+      "upgrade the model first",
+      "re-index without looking at logs",
+      "cannot describe what to log",
+      "treats faithfulness as correctness"
+    ]
+  },
+  "followUps": [
+    "What if the right chunk was retrieved but ranked ninth?",
+    "How would you detect a stale-source failure automatically?",
+    "Who reviews LLM-as-judge scores, and how often?"
+  ]
+}

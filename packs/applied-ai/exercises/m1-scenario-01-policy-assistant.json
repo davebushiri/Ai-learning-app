@@ -1,0 +1,313 @@
+{
+  "id": "m1-scenario-01-policy-assistant",
+  "module": "m1",
+  "type": "scenario",
+  "objective": "Design a RAG system for an internal policy assistant with access control, freshness, citations and abstention, and defend the trade-offs.",
+  "prerequisites": [
+    "m1-learn-03-rag-failures",
+    "m1-catch-08-design-tradeoffs"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "rag-pipeline",
+    "access-control",
+    "freshness",
+    "abstention",
+    "citations",
+    "rag-evaluation",
+    "prompting-vs-rag-vs-finetuning"
+  ],
+  "referenceIds": [
+    "m1-ref-05",
+    "m1-ref-06",
+    "m1-ref-07",
+    "m1-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Lewis et al. 2020, Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (NeurIPS)",
+      "url": "https://arxiv.org/abs/2005.11401",
+      "verified": false,
+      "note": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Es et al. 2023, Ragas: Automated Evaluation of Retrieval Augmented Generation",
+      "url": "https://arxiv.org/abs/2309.15217",
+      "verified": false,
+      "note": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Citations",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/citations",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "AWS: How Amazon Bedrock Knowledge Bases works",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-it-works.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: Supported vector stores for Knowledge Bases",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: How content chunking works for knowledge bases",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: Bedrock Guardrails contextual grounding check",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: Evaluating knowledge bases / RAG in Amazon Bedrock",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    },
+    {
+      "title": "AWS Well-Architected Generative AI Lens",
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": "Which single metric would you put on the launch dashboard first, and what threshold would block launch?",
+  "transfer": {
+    "scenario": "Re-use your design for an engineering assistant over released design specs, where only the latest released revision may be cited and export-controlled specs are restricted. What changes?",
+    "rubric": [
+      "revision metadata and current-only filter",
+      "export-control group filtering at retrieval",
+      "superseded revisions removed or excluded",
+      "citations to spec and revision",
+      "abstain rather than cite unreleased drafts",
+      "tests for restricted users"
+    ]
+  },
+  "brief": "A 4,000-person logistics company wants an internal assistant that answers employee questions about HR, IT, travel and safety policies. There are about 6,000 policy documents (PDF and wiki pages) across three regions. Some documents are restricted to managers or to HR. Policies are revised often, and last year a wrong leave answer from an outdated PDF caused a grievance. Leadership wants answers with sources, and wants the assistant to say when it doesn't know. The company already runs on AWS.",
+  "clarifications": [
+    {
+      "askAbout": [
+        "how often",
+        "update",
+        "freshness",
+        "change"
+      ],
+      "reveal": "Around 50 documents change each month. HR wants a change visible to the assistant within 24 hours of publishing."
+    },
+    {
+      "askAbout": [
+        "permission",
+        "access",
+        "who can see",
+        "restricted",
+        "roles"
+      ],
+      "reveal": "Access is by groups in the corporate identity provider: all-staff, managers, HR, and region (US, EU, APAC). About 8% of documents are restricted."
+    },
+    {
+      "askAbout": [
+        "source",
+        "where",
+        "stored",
+        "format",
+        "system"
+      ],
+      "reveal": "PDFs live in a document management system that can export to S3 nightly; wiki pages have an API. Some PDFs are scans with tables."
+    },
+    {
+      "askAbout": [
+        "volume",
+        "users",
+        "traffic",
+        "latency"
+      ],
+      "reveal": "Expect up to 1,500 questions a day, with peaks on Monday mornings. Target is an answer within 5 seconds for most questions."
+    },
+    {
+      "askAbout": [
+        "region",
+        "conflict",
+        "country",
+        "jurisdiction"
+      ],
+      "reveal": "Regions can have different rules for the same topic. Employees should get their own region's policy by default."
+    },
+    {
+      "askAbout": [
+        "personal",
+        "my balance",
+        "status",
+        "ticket",
+        "individual data"
+      ],
+      "reveal": "People will ask personal questions like 'how many leave days do I have left'. That data lives in the HR system, not in policy documents."
+    },
+    {
+      "askAbout": [
+        "success",
+        "metric",
+        "measure",
+        "evaluate",
+        "accuracy"
+      ],
+      "reveal": "HR will provide 200 real past questions with correct answers. Leadership's bar: no restricted content shown to the wrong group, and wrong answers rarer than today's helpdesk error rate (not yet measured)."
+    }
+  ],
+  "constraints": [
+    "Restricted documents must never reach the model for users outside the permitted groups.",
+    "Policy changes must be reflected within 24 hours.",
+    "Every answer must cite the document, section and version it relied on.",
+    "When sources don't answer the question, the assistant must say so and route to the right helpdesk.",
+    "Personal data questions are out of scope for policy retrieval.",
+    "Most answers within about 5 seconds.",
+    "Company runs on AWS; managed services are preferred where they meet requirements."
+  ],
+  "acceptableArchitectures": [
+    {
+      "id": "managed-rag-with-bedrock-knowledge-bases",
+      "summary": "Nightly S3 export and wiki connector feed a Bedrock Knowledge Base with a chosen embedding model and vector store; each document carries metadata (groups, region, version, effective date); syncs run on a schedule or on change events; the application calls Retrieve with metadata filters built from the user's authenticated groups and region, then generates with a grounded prompt and structured output (answer, citations, abstained). Optional Guardrails grounding check. AWS feature details are UNVERIFIED and must be checked.",
+      "strengths": [
+        "Least custom ingestion code",
+        "Built-in chunking options, sync and citations",
+        "Faster to production for a small team"
+      ],
+      "tradeoffs": [
+        "Less control over parsing scanned PDFs and tables",
+        "Filter expressiveness and limits depend on the service and vector store",
+        "Must verify that sync timing meets the 24-hour requirement",
+        "Using Retrieve plus own generation adds code but gives control over prompt and abstention; RetrieveAndGenerate is simpler but less controllable"
+      ]
+    },
+    {
+      "id": "custom-pipeline-with-hybrid-search",
+      "summary": "Own ingestion jobs (parsing with OCR and table handling, structure-aware chunking with headings, version metadata) write to a search engine that supports BM25 and vectors (for example OpenSearch); queries run hybrid search with permission and region filters, then a reranker; generation through a model API with a grounded prompt, citations and abstention.",
+      "strengths": [
+        "Full control of parsing, chunking and ranking",
+        "Hybrid search handles policy codes and form numbers",
+        "Easier to instrument each stage for evaluation"
+      ],
+      "tradeoffs": [
+        "More code and operational ownership",
+        "Team must build and test sync, deletion and permission logic",
+        "Longer time to first release"
+      ]
+    },
+    {
+      "id": "hybrid-routing-rag-for-policies-plus-system-of-record-tools",
+      "summary": "Either RAG design above for policy questions, plus a router that sends personal questions ('my leave balance') to an authenticated HR-system API call instead of retrieval. Introduces agent-style tool use, which is Module 2 material.",
+      "strengths": [
+        "Answers personal questions exactly instead of guessing",
+        "Keeps personal data out of the document index"
+      ],
+      "tradeoffs": [
+        "Adds routing errors as a new failure mode",
+        "Larger security review",
+        "More scope than a first release may need"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "question": "Why not fine-tune a model on all 6,000 policies?",
+      "rubric": [
+        "policies change monthly: retraining each time",
+        "can't cite sources",
+        "can't filter by permission",
+        "RAG updates index instead"
+      ]
+    },
+    {
+      "question": "Why not put the policies in the system prompt? Context windows are huge now.",
+      "rubric": [
+        "corpus too large for one call",
+        "cost and latency per call",
+        "quality degrades with long inputs",
+        "restricted docs would be in every prompt"
+      ]
+    },
+    {
+      "question": "A manager in the EU gets a US policy answer. Where do you look?",
+      "rubric": [
+        "check region filter and metadata",
+        "check retrieved chunks in logs",
+        "default region from identity",
+        "test cases per region"
+      ]
+    },
+    {
+      "question": "How do you prove a non-HR user can't see salary bands?",
+      "rubric": [
+        "filter at retrieval before model",
+        "identity from authenticated session",
+        "automated tests with each group",
+        "zero leakage on test set",
+        "logs of retrieved chunk IDs"
+      ]
+    },
+    {
+      "question": "A policy changed yesterday and the assistant still gives the old answer. What failed?",
+      "rubric": [
+        "freshness: sync or change detection",
+        "superseded chunks not removed",
+        "version filter missing",
+        "not a model problem"
+      ]
+    },
+    {
+      "question": "How do you know it's ready to launch?",
+      "rubric": [
+        "test set from 200 real questions plus unanswerable and restricted cases",
+        "retrieval recall@k",
+        "faithfulness and correctness",
+        "abstention accuracy",
+        "thresholds set before testing",
+        "baseline helpdesk error rate measured",
+        "pilot then monitor"
+      ]
+    }
+  ],
+  "rubric": {
+    "mustCover": [
+      "ingestion with metadata (groups, region, version)",
+      "chunking choice with reason",
+      "permission filtering at retrieval from authenticated identity",
+      "freshness mechanism meeting 24 hours, including deletion of superseded versions",
+      "grounded prompt with abstention",
+      "citations with document and version",
+      "separate retrieval and generation evaluation before launch"
+    ],
+    "strongSignals": [
+      "asks clarifying questions before designing",
+      "routes personal-data questions away from RAG",
+      "handles scanned PDFs and tables as a parsing risk",
+      "hybrid search for policy codes",
+      "logs retrieved chunk IDs for debugging",
+      "pre-registered thresholds and a pilot",
+      "names at least two architectures and their trade-offs",
+      "marks AWS specifics as to-be-verified rather than guessing"
+    ],
+    "redFlags": [
+      "fine-tuning to add policy knowledge",
+      "access control only in the prompt",
+      "no plan for updates or deletions",
+      "no abstention",
+      "evaluates only on a demo or end-to-end vibes",
+      "claims RAG eliminates hallucination",
+      "confident invented AWS limits or feature names"
+    ]
+  }
+}

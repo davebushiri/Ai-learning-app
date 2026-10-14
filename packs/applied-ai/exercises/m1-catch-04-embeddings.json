@@ -1,0 +1,159 @@
+{
+  "id": "m1-catch-04-embeddings",
+  "module": "m1",
+  "type": "catch",
+  "objective": "Catch errors about what similarity scores mean, exact-term search and embedding-model changes.",
+  "prerequisites": [
+    "m1-catch-03-pipeline-clean"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "embeddings",
+    "vector-similarity",
+    "bm25",
+    "hybrid-search"
+  ],
+  "referenceIds": [
+    "m1-ref-06"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Embeddings",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Robertson and Zaragoza 2009, The Probabilistic Relevance Framework: BM25 and Beyond",
+      "url": "https://doi.org/10.1561/1500000019",
+      "verified": false,
+      "note": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "AWS: Supported vector stores for Knowledge Bases",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": "When would you expect keyword search to beat embedding search? Give two examples from your own domain.",
+  "transfer": {
+    "scenario": "Technicians search a fault database by DTC codes like P0420 and by symptoms like 'rough idle when cold'. Recommend a retrieval approach.",
+    "rubric": [
+      "codes are exact tokens: keyword|BM25",
+      "symptoms are semantic: embeddings",
+      "hybrid search merges both",
+      "evaluate on real queries"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Each chunk is turned into a vector by an embedding model and stored with its text and metadata."
+    },
+    {
+      "id": "s2",
+      "text": "At question time we embed the question with the same model and look for the nearest vectors."
+    },
+    {
+      "id": "s3",
+      "text": "The top match scored 0.91 cosine similarity, so we can be confident its answer is correct."
+    },
+    {
+      "id": "s4",
+      "text": "Users often search by error codes like E-4417, and embeddings reliably match exact codes like that."
+    },
+    {
+      "id": "s5",
+      "text": "Adding a keyword index such as BM25 alongside the vectors helps with exact terms."
+    },
+    {
+      "id": "s6",
+      "text": "Next quarter we'll switch embedding models, keep the old vectors, and add new ones as documents change."
+    },
+    {
+      "id": "s7",
+      "text": "Our vectors are normalized to length one, so cosine similarity and dot product give the same ranking."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "A high similarity score means the passage is correct.",
+        "whyWrong": "Similarity measures how close two vectors are, a ranking signal. A passage can be close in meaning and still not answer the question, be outdated, or be wrong. Score scales also differ between models.",
+        "acceptableCorrections": [
+          "A high similarity means the chunk is close in meaning, not that it is correct; we still check relevance and currency.",
+          "Similarity is a ranking signal, not a confidence that the answer is true."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "similarity is closeness|ranking signal",
+            "not relevance or truth",
+            "scale varies by model"
+          ],
+          "correct": [
+            "check relevance and currency",
+            "evaluate answers separately"
+          ]
+        }
+      },
+      {
+        "statementId": "s4",
+        "misconception": "Embeddings reliably match exact codes and identifiers.",
+        "whyWrong": "Embedding search is good at meaning but can miss exact strings such as codes, SKUs and part numbers. Lexical search such as BM25 matches them exactly; hybrid search combines both.",
+        "acceptableCorrections": [
+          "Embeddings can miss exact codes, so we add keyword or hybrid search for those queries.",
+          "Error codes are better found with BM25 or hybrid search."
+        ],
+        "exceptions": "Some embedding models handle common identifiers acceptably; the claim 'reliably' needs evidence from your own queries.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "embeddings capture meaning|can miss exact strings",
+            "BM25 matches exact terms"
+          ],
+          "correct": [
+            "add keyword search|hybrid",
+            "test on real code queries"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "You can mix vectors from two embedding models.",
+        "whyWrong": "Each embedding model normally defines its own vector space. Old and new vectors are not comparable, so search across them gives meaningless rankings. Changing models means re-embedding the corpus.",
+        "acceptableCorrections": [
+          "If we switch embedding models we must re-embed all documents with the new model.",
+          "Keep one embedding model per index; migrate by rebuilding the index."
+        ],
+        "exceptions": "Running two separate indexes during a migration is fine if each query is embedded with the matching model. A few model families are documented by their provider as sharing one vector space (for example Voyage AI's Voyage 4 series, January 2026); mixing within such a family can be valid, but only on that documented basis and after retrieval tests. Switching to an unrelated model, as here, still needs re-embedding.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "different models: incompatible vector spaces",
+            "rankings across them meaningless"
+          ],
+          "correct": [
+            "re-embed whole corpus|rebuild index",
+            "one model per index"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s5",
+      "s7"
+    ]
+  }
+}

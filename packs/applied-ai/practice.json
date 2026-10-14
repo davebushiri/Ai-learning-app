@@ -1,0 +1,130 @@
+{
+  "format": "practice-v1",
+  "id": "applied-ai",
+  "version": 1,
+  "title": "Applied AI",
+  "modules": [
+    {
+      "id": "m1",
+      "title": "LLM foundations and RAG",
+      "exercises": [
+        "m1-learn-01-how-llms-answer",
+        "m1-catch-01-context-window",
+        "m1-catch-05-structured-outputs",
+        "m1-learn-02-rag-pipeline",
+        "m1-catch-02-rag-vs-finetune",
+        "m1-catch-03-pipeline-clean",
+        "m1-catch-04-embeddings",
+        "m1-learn-03-rag-failures",
+        "m1-catch-07-access-freshness-clean",
+        "m1-catch-06-retrieval-vs-generation",
+        "m1-catch-08-design-tradeoffs",
+        "m1-scenario-01-policy-assistant",
+        "m1-interview-01-design-rag",
+        "m1-interview-02-retrieval-vs-generation",
+        "m1-interview-03-when-not-rag",
+        "m1-interview-04-evaluate-rag"
+      ]
+    }
+  ],
+  "lexicon": {
+    "synonyms": {
+      "retrieve": [
+        "search",
+        "look up",
+        "lookup",
+        "fetch",
+        "find",
+        "pull"
+      ],
+      "query": [
+        "question",
+        "ask",
+        "asks",
+        "request"
+      ],
+      "memory": [
+        "ram",
+        "buffer",
+        "scratchpad"
+      ],
+      "call": [
+        "request",
+        "prompt",
+        "turn"
+      ],
+      "weights": [
+        "parameters"
+      ],
+      "unchanged": [
+        "same",
+        "frozen",
+        "untouched"
+      ],
+      "closeness": [
+        "near",
+        "nearby",
+        "close",
+        "distance"
+      ],
+      "truth": [
+        "right",
+        "correct",
+        "true",
+        "accurate"
+      ],
+      "stale": [
+        "old",
+        "outdated",
+        "superseded",
+        "out of date"
+      ],
+      "faithful": [
+        "grounded",
+        "supported",
+        "loyal"
+      ],
+      "noise": [
+        "junk",
+        "irrelevant",
+        "clutter"
+      ],
+      "cost": [
+        "expensive",
+        "pricier",
+        "price",
+        "tokens"
+      ],
+      "latency": [
+        "slow",
+        "slower",
+        "delay",
+        "response time"
+      ],
+      "deterministic": [
+        "repeatable",
+        "reproducible",
+        "identical"
+      ],
+      "repeated": [
+        "several",
+        "multiple",
+        "many times"
+      ],
+      "bm25": [
+        "bm 25",
+        "keyword",
+        "lexical",
+        "exact match"
+      ],
+      "rerank": [
+        "reranker",
+        "re-rank",
+        "cross-encoder"
+      ]
+    }
+  },
+  "provenance": {
+    "builtBy": "backend-engineer, F1c-T11: format-only copy of docs/research/applied-ai/module-1 (learning-designer REVIEW.md; thread 0007 OQ-1, OQ-6, PD-11)"
+  }
+}

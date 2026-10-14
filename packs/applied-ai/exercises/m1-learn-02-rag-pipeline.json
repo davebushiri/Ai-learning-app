@@ -1,0 +1,138 @@
+{
+  "id": "m1-learn-02-rag-pipeline",
+  "module": "m1",
+  "type": "learn",
+  "objective": "Describe the RAG pipeline end to end and explain why RAG is chosen over fine-tuning for changing, private knowledge.",
+  "prerequisites": [
+    "m1-learn-01-how-llms-answer"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "prompting-vs-rag-vs-finetuning",
+    "embeddings",
+    "chunking",
+    "retrieval",
+    "grounded-generation",
+    "citations"
+  ],
+  "referenceIds": [
+    "m1-ref-05",
+    "m1-ref-06",
+    "m1-ref-07"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Glossary",
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Lewis et al. 2020, Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (NeurIPS)",
+      "url": "https://arxiv.org/abs/2005.11401",
+      "verified": false,
+      "note": "abstract-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Embeddings",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Citations",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/citations",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "AWS: How Amazon Bedrock Knowledge Bases works",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-it-works.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": "Sketch the pipeline from memory as boxes and arrows, then label where you would log data for debugging.",
+  "transfer": {
+    "scenario": "A plant wants an assistant that answers questions from 3,000 work instructions that are revised weekly. Explain why you would pick RAG and name the stages you would build.",
+    "rubric": [
+      "knowledge large and changing|weekly revisions",
+      "RAG updates index not weights|no retraining",
+      "ingest parse chunk embed index",
+      "retrieve with filters|top-k",
+      "grounded generation with citations",
+      "abstain if not found"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "RAG means retrieval-augmented generation. At question time we find relevant passages and put them in the prompt."
+    },
+    {
+      "id": "s2",
+      "text": "The model's weights don't change. To update knowledge, we update the index, not the model."
+    },
+    {
+      "id": "s3",
+      "text": "Offline, we ingest documents, extract clean text, and split it into chunks with source and date metadata."
+    },
+    {
+      "id": "s4",
+      "text": "An embedding model turns each chunk into a vector, and we store the vector, the text and the metadata."
+    },
+    {
+      "id": "s5",
+      "text": "Online, we embed the question with the same model, filter by permissions, and fetch the closest chunks."
+    },
+    {
+      "id": "s6",
+      "text": "The prompt tells the model to answer only from those chunks, and to say so if they don't contain the answer."
+    },
+    {
+      "id": "s7",
+      "text": "The answer cites which chunks it used, so a person can check the source."
+    },
+    {
+      "id": "s8",
+      "text": "Fine-tuning changes the weights instead. It suits style or format, not facts that change every week."
+    }
+  ],
+  "teachBack": [
+    {
+      "question": "Walk through what happens offline and what happens when a user asks a question.",
+      "rubric": [
+        "ingest|parse",
+        "chunk",
+        "embed and store with metadata",
+        "embed query same model",
+        "filter and retrieve top-k",
+        "generate from retrieved text",
+        "cite sources"
+      ]
+    },
+    {
+      "question": "Why is RAG usually a better fit than fine-tuning for company policies?",
+      "rubric": [
+        "policies change|freshness",
+        "update index not weights",
+        "citations possible",
+        "permission filtering possible",
+        "fine-tuning suits style or behavior"
+      ]
+    },
+    {
+      "question": "Why is the question normally embedded with the same model as the documents?",
+      "rubric": [
+        "different models make incompatible vector spaces|not comparable",
+        "changing model means re-embedding corpus"
+      ]
+    }
+  ]
+}

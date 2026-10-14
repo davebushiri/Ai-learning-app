@@ -1,0 +1,117 @@
+{
+  "id": "m1-learn-01-how-llms-answer",
+  "module": "m1",
+  "type": "learn",
+  "objective": "Explain tokens, the context window, token-by-token inference, temperature and structured outputs in plain words.",
+  "prerequisites": [],
+  "difficulty": 1,
+  "concepts": [
+    "tokens",
+    "context-window",
+    "inference",
+    "temperature",
+    "structured-outputs"
+  ],
+  "referenceIds": [
+    "m1-ref-01",
+    "m1-ref-02",
+    "m1-ref-03"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Glossary",
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Context windows",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-windows",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Structured outputs",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
+      "verified": true,
+      "note": "fetched-2026-10-13"
+    },
+    {
+      "title": "Liu et al. 2023, Lost in the Middle: How Language Models Use Long Contexts",
+      "url": "https://arxiv.org/abs/2307.03172",
+      "verified": false,
+      "note": "cited-from-memory-not-fetched"
+    }
+  ],
+  "followUp": "Which of these five ideas would you expect an interviewer to probe first for a RAG role, and why?",
+  "transfer": {
+    "scenario": "A colleague in validation says: 'We set temperature to zero and return JSON, so the assistant's output is deterministic and correct.' Explain, in two or three sentences, what each setting actually gives you.",
+    "rubric": [
+      "temperature zero not fully deterministic|outputs can still vary",
+      "low temperature is not correctness|consistent wrong answer possible",
+      "schema guarantees shape not truth|valid JSON can hold wrong values",
+      "still need content validation|business-rule checks|grounding check"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "A language model reads text as tokens. A token can be a word, part of a word, or a single character."
+    },
+    {
+      "id": "s2",
+      "text": "Token counts depend on the model's tokenizer, so I use the provider's token counter instead of guessing from words."
+    },
+    {
+      "id": "s3",
+      "text": "The context window is the model's working memory for one call. It is not the data the model was trained on."
+    },
+    {
+      "id": "s4",
+      "text": "Everything counts toward it: the instructions, the conversation, any documents, and the answer being written."
+    },
+    {
+      "id": "s5",
+      "text": "More context is not automatically better. Quality can drop as the input grows, so I send what is relevant."
+    },
+    {
+      "id": "s6",
+      "text": "During inference the weights are fixed. The model picks one token at a time from a probability distribution."
+    },
+    {
+      "id": "s7",
+      "text": "Temperature reshapes that distribution. Lower is more consistent, but even zero is not guaranteed to repeat exactly."
+    },
+    {
+      "id": "s8",
+      "text": "Structured outputs force the reply to match a JSON schema. That guarantees the shape, not that the values are true."
+    }
+  ],
+  "teachBack": [
+    {
+      "question": "In your own words, what is the difference between the context window and the model's training data?",
+      "rubric": [
+        "per-call working memory|what the model can see now",
+        "training changes weights|training data is learned in advance",
+        "context does not change weights|forgotten after the call"
+      ]
+    },
+    {
+      "question": "Why doesn't setting temperature to zero make a model correct?",
+      "rubric": [
+        "temperature controls variation|choice among likely tokens",
+        "most likely answer can be wrong",
+        "missing knowledge needs grounding|RAG|sources"
+      ]
+    },
+    {
+      "question": "What does a JSON schema guarantee, and what must you still check?",
+      "rubric": [
+        "valid parseable shape|fields and types",
+        "values can still be wrong",
+        "check stop reason|refusal|truncation",
+        "validate content|business rules"
+      ]
+    }
+  ]
+}
