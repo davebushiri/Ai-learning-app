@@ -803,3 +803,13 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
 **What would change my mind:**
 - A second rater relabelling more than 3 of the missed valid-alternative or partial rows. Even then, A2 = B2 holds.
 - Evidence that the held-out set was seen by the content author.
+
+### founder (recorded by the lead) · 2026-10-15 · DECISION
+Asked in the live session, after SC-003c failed for every variant: "The keyword grader has hit its ceiling. How should we spend the remaining prep time?" The founder chose **"Write Module 2"**:
+- Adopt only the safe lexicon changes (variant B2: the rev2 proposal without `suspectFixes`).
+- Stop tuning the keyword grader.
+- Make the self-rating the learner's main signal.
+- The team writes Module 2 (agents, and embeddings in depth) next.
+- No API key now; the live grader stays deferred.
+
+**This is the founder's waiver of the SC-003b and SC-003c threshold failures for module 1.** The failures stay recorded in `qa-report.md` and are not hidden. The UI keeps saying "uncertain, flagged" honestly.
