@@ -502,3 +502,83 @@ The B12 lexicon will be written against the same 15 failing-class rows that SC-0
   - **Graded once,** at content freeze, by QA, with the same thresholds. The result and the pack version go in `qa-report.md`. The test in `npm test` checks only the file's shape (no grading), so the result can't be iterated against.
   - **After grading, the set is spent.** It joins SC-003b as training data, and any later content iteration needs a fresh held-out set.
   - **Until then,** SC-003b passing is necessary but not sufficient, and matcher grades stay advisory (Design review risk 2).
+
+## Ruling on the negator-bearing alternative flaw (module-2 REVIEW.md F1): `matcher@3` (2026-10-15)
+
+**Reviewer:** principal-architect · **Base:** `47e1f96` on `team/agents`, `packs/applied-ai` at version 2 (B2 lexicon). No code, pack or test was changed and nothing is committed. Every number comes from the real `practice-matcher.js` and from variant copies of it in a scratch directory, run through `graderInputFor` and `evaluateThresholds` from `tests/acceptance/practice-helpers.mjs`. Rows are named by index. **This section quotes no answer, rubric or narration text.**
+
+### 1. The flaw is confirmed (executed, not hand-traced)
+- **Mechanism:** `matchAlternative` (`practice-matcher.js:118-129`) needs `ceil(0.6n)` of n tokens, so a 3+ token alternative matches without its negator. It sets `hasNegator` from the alternative, whether or not the negator was found, and `matchItem` (`:133-141`) then skips the negation check.
+- **Synthetic repro (subject-neutral words):** item `heat wont stop loops | dial not stop loops`. An answer asserting the opposite, with no negator at all, grades the dimension **`met`** under `matcher@2`.
+- **Live instance in module 1:** the pack's own `misconception` text for **catch-06 s6**, submitted as an answer, earns **correction `met`** under `matcher@2`. It gets `not_met` under `matcher@3`.
+
+### 2. Exposure audit of `packs/applied-ai`
+Method: every `|` alternative (and every `acceptableCorrections` string, which FR-020 matches whole) that contains a negator was probed with its own text minus the negators. "Exposed" means the item matches that probe.
+- 64 negator-bearing alternatives; **47 exposed** under `matcher@2`; **0** under `matcher@3`. 17 are 2-token forms, which need both tokens and are safe today.
+- **Planted stops exposed: 8 of 13 (19 alternatives).**
+
+| Exercise | Stop | Exposed items (index, alternative) |
+|---|---|---|
+| m1-catch-01-context-window | s2 | `acceptableCorrections[0]`, `[1]` |
+| m1-catch-01-context-window | s4 | `acceptableCorrections[0]` |
+| m1-catch-02-rag-vs-finetune | s3 | `correct[1]` alt 0, alt 1; `acceptableCorrections[0]`, `[1]` |
+| m1-catch-02-rag-vs-finetune | s6 | `explain[1]` alt 0 |
+| m1-catch-04-embeddings | s3 | `explain[1]` alt 0; `acceptableCorrections[0]`, `[1]` |
+| m1-catch-05-structured-outputs | s5 | `explain[0]` alt 0; `correct[0]` alt 0 |
+| m1-catch-06-retrieval-vs-generation | s5 | `explain[2]` alt 0; `acceptableCorrections[1]` |
+| m1-catch-06-retrieval-vs-generation | s6 | `explain[0]` alt 0; `explain[1]` alt 0; `acceptableCorrections[0]`, `[1]` |
+
+Not exposed: catch-04 s4 and s6, catch-05 s3, catch-08 s4 and s5.
+- **Outside the stops (28 alternatives):** `transfer` in catch-05, catch-07, catch-08, learn-01 (3), learn-02 (2) and interview-03/04; teach-backs in learn-01 and learn-02; interview-03 `mustCover` (2) and `strongSignals`; scenario-01 `challenges[0]` and `[4]` (2 each).
+- **Red flags run the other way (9 alternatives):** interview-01 (2), interview-02 (2), interview-03 (1), interview-04 (3) and scenario-01 (1). A *good*, positively worded answer fires the red flag, and FR-021 then makes every dimension `uncertain`. `matcher@3` closes these too.
+
+### 3. Rule variants measured
+
+| Gate | `matcher@2` (today) | R1: the alternative's own negator token must be found | R2c: some negator in a clause where the alternative matched | **R2: the answer contains any negator** |
+|---|---|---|---|---|
+| SC-003 (48 rows), 7 checks | 7/7 green | 7/7 green, 0 rows change | 7/7 green, 0 rows change | **7/7 green, 0 rows change** |
+| SC-012 | 7/7 | 7/7 | 7/7 | **7/7** |
+| SC-003b clear → met (gate 100%) | 100% | **90% ✗** (`rows[4]`) | **90% ✗** (`rows[4]`) | **100%** |
+| SC-003b incorrect → met (0%) | 0% | 0% | 0% | **0%** |
+| SC-003b valid-alt → not_met (0%) | 0% | 0% | 0% | **0%** |
+| SC-003b valid-alt → expected (≥ 75%) | 50% ✗ (waived) | 50% | 50% | **50%** |
+| SC-003b partial → partial/uncertain (≥ 80%) | 88.9% | 88.9% | 88.9% | **88.9%** |
+| SC-003b uncertain on clear + incorrect (≤ 20%) | 6.3% | 6.3% | 6.3% | **6.3%** |
+| SC-003b dimensions changed | — | 3 (`rows[4]`, `[6]`, `[10]`) | 3 (same) | **2 (`rows[6]`, `[10]`, met → partial; overall still in `expect`)** |
+| Exposed alternatives (§2 probe) | 47 | 0 | 0 | **0** |
+| Pack-text sweep, 143 answers × 2 dimensions | — | 4 changed | 4 changed | **4 changed** (incl. the catch-06 s6 fix) |
+| *Held-out SC-003c, spent; information only, not a gate* | *66.7 / 0 / 0 / 22.2 / 50 / 7.7* | *same; 1 dimension changes* | *same; 0 change* | *same; 0 change* |
+
+A fourth variant (polarity: a matched token must sit in a negation window) was worse (SC-003b clear 80%) and is dropped.
+
+**Why R1, the reviewer's literal rule, is rejected.** It fails the one SC-003b gate that passes today: `rows[4]` (clear, catch-02 s3) loses correction `met`. That row is correct. It matches a contrastive alternative of the form "X not Y" by saying Y positively in other words, and it uses a different negator from the alternative. R1 also refuses equivalent negators ("never" where the item says "not"). R2c fails the same row.
+
+**Why R2 is enough.** Across all 109 labelled rows, 1 of 22 *incorrect* answers contains any negator, but most correct answers do (all 6 held-out clear rows, for instance). A negator anywhere in the answer is therefore a strong polarity signal at almost no recall cost.
+
+### 4. Decision: `matcher@3` = R2 plus the four negators
+1. **Rule (one line in `matchAlternative`, after `toks`):** an alternative whose content tokens include a negator returns `null` unless the answer's content tokens include at least one negator. PD-2's skip stays as it is for alternatives that do match.
+2. **Negators:** add `havent`, `hasnt`, `wasnt` and `werent` to `MATCHER_RULES.negators` **in the same bump**. Measured alone and combined with R2, they change **0** rows in SC-003, SC-012, SC-003b and the held-out set, and 0 of the 286 sweep dimensions. One bump costs less than two, because every bump splits `graderVersion` across stored events. Under R2 they also count as "the answer contains a negator", so leaving them out would make R2 inconsistent.
+3. `MATCHER_VERSION = 'matcher@3'`. `tests/practice-matcher.test.js:21` and `:28` move to `matcher@3`. Scratch full run with the change: the version assert is the only new failure.
+4. **No ADR.** This is a rule change under ADR 0008's existing "any rule change bumps N" mechanism, the same way `matcher@2` was handled. Stored events keep `matcher@2` and are never rewritten (invariant 6). Projections can be rebuilt offline by re-grading the stored text.
+
+### 5. Who does what
+- **PM:**
+  - File a bug ticket for `matcher@3` in `tasks.md`.
+  - Amend PD-2, FR-017 and FR-021(b) in `spec.md`: "an alternative that contains a negator matches only an answer that contains a negator".
+  - Add the four words to the negator list wherever it is written out.
+  - Scheduling is your call within the founder's "stop tuning the grader" direction. **My view: this is a correctness fix, not tuning.** No gate number moves, and it removes a live wrong-credit case (catch-06 s6).
+- **Backend (owner of `server/**`):**
+  - Make the two changes and the version bump.
+  - Add unit tests with subject-neutral words: (a) a positive restatement no longer matches a 3-token negator alternative; (b) the negated form still matches; (c) a different negator still matches; (d) `hasnt` within 3 words negates a matched token; (e) a red flag that contains a negator does not fire on a positive answer.
+  - The SC-003, SC-012 and SC-003b runs must reproduce §3's R2 column.
+- **QA:** add one SC-003b-style **incorrect** row whose wording carries an incidental negator, so R2's known gap (Risk 1) is measured, not assumed. Re-run the acceptance gates on the PR.
+- **Content (module 1, next edit; module 2 already done):**
+  - Rewrite contrastive "X not Y" alternatives positively where that reads naturally.
+  - Separately: catch-04 s6 and catch-05 s5 still credit an echo of the flawed line through `acceptableCorrections[0]`. That issue is unchanged by `matcher@3` and is already on the PM's list.
+
+### 6. Risks (devil's advocate; also in thread 0007)
+1. **R2 is bypassed by an incidental negator.** An incorrect answer that says "no" or "not" anywhere still matches a negator alternative. L (1 of 22 labelled incorrect answers) · H. Mitigation: QA's row above. R2c is the tighter follow-up once contrastive alternatives are rewritten, because then `rows[4]` no longer depends on them.
+2. **Recall loss on positive paraphrases.** Correct answers that state "Y" positively lose a contrastive alternative. Measured: 2 SC-003b dimensions and 3 of 286 sweep dimensions, with no gate moving. M · M. Mitigation: authors phrase alternatives positively, as module 2 now does.
+3. **The new negators widen negation windows.** A correct answer containing "hasn't" next to a matched token becomes `uncertain`. Measured 0 changes, but on small sets. L · M. Mitigation: unit test (d), and the ≤ 20% gate on uncertain over clear + incorrect.
+4. **The evidence is training data.** SC-003b is already a training set, and the held-out set is spent. The §2 probes are synthetic. Nothing here shows generalization; it shows only that the bug class is closed and no gate regresses.
+5. **Order blindness is unchanged.** FR-017 is a bag of tokens, so "Y not X" still matches "X not Y" under every variant. Out of scope here, and a reason to keep matcher grades advisory.

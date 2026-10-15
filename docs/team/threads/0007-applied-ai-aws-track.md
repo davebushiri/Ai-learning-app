@@ -868,3 +868,41 @@ Asked in the live session, after SC-003c failed for every variant: "The keyword 
 
 **Confidence:** medium, because these are hand traces and no shell was available.
 **What would change my mind:** a `matcherGrade` run where a changed flawed line earns correction credit, or a validation error.
+
+### principal-architect · 2026-10-15 · RISK
+**R4. `matcher@3`'s rule (R2: "the answer must contain any negator") is bypassed by an incidental negator.** An incorrect answer that says "no" or "not" anywhere still matches a negator-bearing alternative.
+- Likelihood: L (1 of 22 labelled incorrect answers contains any negator) · Impact: H
+- **Mitigation:** QA adds one incorrect row with an incidental negator. The clause-scoped rule (R2c) is the follow-up once contrastive alternatives are rewritten.
+
+### principal-architect · 2026-10-15 · RISK
+**R5. Recall loss on positive paraphrases.** A correct answer that states the contrasted half positively no longer matches a "X not Y" alternative.
+- Likelihood: M · Impact: M
+- **Measured:** 2 SC-003b dimensions and 3 of 286 pack-text sweep dimensions change. No gate moves.
+- **Mitigation:** authors phrase alternatives positively, as module 2 now does.
+
+### principal-architect · 2026-10-15 · RISK
+**R6. The evidence for `matcher@3` is training data.** SC-003b is a training set, the held-out set is spent, and the exposure probes are synthetic. They show that the bug class closes and that no gate regresses. They do not show that the matcher generalizes.
+- Likelihood: H · Impact: M
+- **Mitigation:** matcher grades stay advisory, and the self-rating stays the main signal (founder DECISION above).
+
+### principal-architect · 2026-10-15 · DECISION
+**Answering:** module-2 REVIEW.md F1 ("Architect, Later") and its note on negators. Full tables are in `docs/specs/F1c-practice-engine/review.md`, section "Ruling on the negator-bearing alternative flaw". No answer text is quoted. No code, pack or test changed, and nothing is committed.
+- **Confirmed by execution.** Under `matcher@2`, a 3+ token alternative that contains a negator matches an answer without it, and PD-2 then skips the negation check. Module 1 has it live: catch-06 s6's own misconception text, submitted as an answer, earns correction `met`.
+- **Exposure in `packs/applied-ai`:** 47 of 64 negator-bearing alternatives. **8 of 13 planted stops** are exposed: catch-01 s2 and s4, catch-02 s3 and s6, catch-04 s3, catch-05 s5, and catch-06 s5 and s6. Nine red-flag alternatives in interview-01 to 04 and scenario-01 work the other way: a good answer fires the red flag.
+- **The call: `matcher@3`.**
+  - A negator-bearing alternative matches only if the answer contains a negator (R2).
+  - Add `havent`, `hasnt`, `wasnt` and `werent` to the negators in the same bump.
+  - Effect: 47 exposed alternatives become 0. SC-003 stays 7/7 green with 0 rows changed. SC-012 stays 7/7. SC-003b is unchanged: clear 100%, incorrect → met 0%, valid-alt 50%, partial 88.9%, uncertain 6.3%.
+  - Held-out SC-003c, *information only, spent, not a gate*: unchanged.
+  - The four extra negators change 0 measured rows. One bump costs less than two.
+- **Rejected:**
+  - The reviewer's literal rule (R1: the alternative's own negator token must be found) fails SC-003b clear → met (90%, `rows[4]`). It also refuses equivalent negators.
+  - The clause-scoped rule (R2c) fails the same row.
+  - A polarity-window rule was worse (clear 80%).
+- **Recorded dissent:** the module-2 reviewer proposed R1. It is stricter against R4, but it costs a correct clear row today.
+- **Follow-ups:**
+  - **PM:** a bug ticket, plus PD-2, FR-017 and FR-021(b) wording; you schedule it. My view is that it's a correctness fix, not grader tuning.
+  - **Backend:** the rule, the negator list, `MATCHER_VERSION`, and unit tests (a)–(e) as listed in review.md.
+  - **QA:** the incidental-negator incorrect row.
+  - **Content:** positive rewrites of the "X not Y" alternatives at the next module-1 edit.
+  - **No ADR:** this falls under ADR 0008's "any rule change bumps N". Stored `matcher@2` events stay as written.
