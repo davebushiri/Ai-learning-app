@@ -1,10 +1,18 @@
-# F1c QA report: Wave A (T02, T03, T04, T05)
+# F1c QA report: Wave A (T02, T03, T04, T05), Wave A.1 and Wave B.1
 
 **Author:** qa-engineer · **Date:** 2026-10-14 · **Branch:** `team/agents` at `be1047e` (all Wave A work committed; nothing in this report was committed by QA)
 **Scope:** F1c-T02 (pack format, validator, loader), T03 (matcher), T04 (catch attempt API, events, wiring), T05 (practice page, text-mode catch loop). T01a is QA's own ticket and is exercised here, not graded.
 **Related:** [`tasks.md`](tasks.md) bugs F1c-B20, B21, B22 · [`review.md`](review.md) "Wave A code review" (W-B1, W-B2, W-S1–W-S6) · [thread 0007](../../team/threads/0007-applied-ai-aws-track.md)
 
-## Current verdict (F1c-T16, Wave A + A.1, 2026-10-14): **SHIP**
+## Current verdict (F1c-T22, Wave B.1, 2026-10-15): **SHIP**
+
+| Verdict | Result |
+|---|---|
+| **Functional** | **PASS**. See "Wave B.1" at the end of this file. |
+| **AI quality** | **PASS** (SC-014, SC-015; SC-003b reported, waived by PD-12). |
+| **Final** | **SHIP**. No new bugs. |
+
+## Previous verdict (F1c-T16, Wave A + A.1, 2026-10-14): **SHIP**
 
 | Verdict | Result |
 |---|---|
@@ -542,3 +550,124 @@ ok 4 - SC-014 R4: an incorrect answer with an incidental negator is never graded
 - "SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)", `{ todo: 'F1c-T18' }`. It prints `MATCHER_VERSION exercise statementId explanation correction overall` per row and asserts that no row's overall is `met`. T22 removes the todo.
 
 **Regression (fresh, working tree with T21 only):** `npm test`, exit 0. `# tests 490 · # pass 403 · # fail 0 · # todo 87`. The baseline at `7ce0aa2` (stashed) was `# tests 488 · # pass 402 · # fail 0 · # todo 86`, so the change is +1 pass (the fixture test) and +1 todo (the R4 test).
+
+# Wave B.1
+
+## F1c-T22: Wave B.1 verify, todo removal and ship verdict (2026-10-15)
+
+**Author:** qa-engineer · **Base:** `team/agents` at `5c2e77f` (T21 `158483f`, T18 `17257a1` = `matcher@3`, T19+T20 `5c2e77f` = `packs/applied-ai` version 3 with m1 and m2 and the rev-6 schedule), clean tree before my edits. Nothing committed. **This section quotes no answer, rubric, narration or correction text** (the founder is the learner). Rows are named by index and stops by id.
+
+### Verdicts
+
+| Verdict | Result | Why |
+|---|---|---|
+| **Functional** | **PASS** | `npm test` exit 0, `# fail 0`; no `F1c-T18` todo remains. SC-016 (new test) passes: 33/33 real-pack starts return 200 with 0 FR-004 keys. Golden replay 0 diffs. Browser smoke 127/127 checks, twice, on the real server with the default packs, text and voice, 390 and 1280 px, 0 console errors (no filter) in every flow except the deliberate pack-bump 404, whose 1 line is the browser's own resource log. US7.1–US7.5 and US7.8 pass. |
+| **AI quality** (deterministic matcher `matcher@3`; pre-registered SC-014 and SC-015) | **PASS** | SC-014: SC-003 7/7 with 0 rows changing vs `matcher@2`, SC-012 7/7, exposure 0 of 153 negator-bearing alternatives (was 47 of 64 under `matcher@2`, module 1 only), R4 row overall `partial` (not `met`). SC-015: echo probe 30/30 planted stops overall `uncertain` (13 m1 + 17 m2), no dimension `met` on correction. SC-003b reported, waived (PD-12), and reproduces the pre-registered column exactly. No prompt, gateway or model change in Wave B.1, so no evals-engineer live report and no `tests/fixtures/recorded/` recording applies; the replay tier that applies is the golden replay (0 diffs). |
+| **Final** | **SHIP** | Both verdicts pass. No new bugs. The architect's watch item holds (below). |
+
+### Acceptance (tasks.md F1c-T22)
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| `npm test` fresh, `# fail 0`, no `F1c-T18` todo | PASS | exit 0 · `# tests 500 · # pass 414 · # fail 0 · # cancelled 0 · # skipped 0 · # todo 86`. Todos left: F1a-T12 13, F1a-T13b 27, F1a-T14 22, F1a-T18 1, F1c-T07 12, F1c-T08 10, F1c-T11 1 (SC-003b, kept by PD-12). Every remaining todo still fails (`not ok … # TODO`), so none was ready to remove. T21 baseline was `490 / 403 / 0 / 87`. |
+| Golden replay 0 diffs | PASS | `node tests/golden/run.mjs --replay` exit 0 · `replay 1/1: 61 runs, 0 diffs, 0 allow-listed diffs, digest cc1c3558d43c7e02` (run twice, same digest as Wave A.1) |
+| SC-016 (QA half): 33 starts, 0 FR-004 keys | PASS | new test, `# started 33 exercises, 33 clean`; track lists m1 then m2, m2 = the 17 PD-15 ids in order (order copied from the spec, not read from the pack) |
+| SC-016 (backend half) | PASS | `tests/practice-content.test.js`: version 3 validates, types, zero-planted, schedule defaults, verified mapping, partitions, bodies, reference bytes, "loader stores applied-ai@3 once", `listSubjects()` unchanged: all `ok` |
+| SC-014 (`matcher@3`) | PASS | see AI quality tables |
+| SC-015 (echo probe) | PASS | see AI quality tables |
+| US7.1 picker lists m2 | PASS | browser, all 4 runs |
+| US7.2 / US7.3 m2 catch-01 hit, feedback and `say.corrected` spoken as shown | PASS | browser |
+| US7.4 / US7.5 m1 catch-05 `s5` echo → `fb.hit.uncertain`, rev-6 "Corrected: …" spoken as shown | PASS | browser |
+| US7.6 negator guard | PASS | `tests/practice-matcher.test.js` "a positive restatement no longer matches a 3-token negator alternative", "the negated form still matches", "a different negator still matches" |
+| US7.7 day-4 "next" | n/a this wave | needs F1c-T10 (FR-058); the schedule block itself is proved by "schedule defaults" |
+| US7.8 pack bump mid-attempt → `err.rejected` | PASS | browser, real restart (below) |
+
+### Tests changed (`tests/acceptance/F1c.test.js`)
+
+- **todo removed:** "SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)" (`F1c-T18`). It passes: `matcher@3 m1-catch-06-retrieval-vs-generation s6 partial met partial`.
+- **new:** "SC-016 applied-ai v3: the track lists m1 then m2 with the PD-15 order; starting each of the 33 exercises returns 200 and the start body passes practiceLeakScan". Real server (`startPractice` with `PRACTICE_PACKS_DIR=<ROOT>/packs`, temp DB). A start body carrying any FR-004 key, a reorder of m2, a missing exercise or a non-200 start fails it.
+
+### AI quality tables (`matcher@3`)
+
+Fresh runs: `node --test --test-name-pattern="SC-003 labelled|SC-012|SC-003b|SC-014 R4|SC-016|polarityRows" tests/acceptance/F1c.test.js` → `# tests 6 · # pass 5 · # fail 0 · # todo 1`; `node --test tests/practice-matcher.test.js tests/practice-content.test.js` → `# tests 52 · # pass 52 · # fail 0`.
+
+| SC-014 clause | Pre-registered | Measured | Result |
+|---|---|---|---|
+| SC-003 (48 rows) | 7/7, 0 rows change overall vs `matcher@2` | 7/7 (clear → met 100%, incorrect → met 0%, valid-alt → not_met 0%, valid-alt → expected 100%, partial 100%, should-flag 100%, uncertain on clear + incorrect 0%); 0 overall changes, 0 dimension changes | PASS |
+| SC-012 | 7/7 | 7/7 (3 keyword lists `partial`, 4 short-correct `met`) | PASS |
+| SC-003b (informational, waived) | clear → met 100%, incorrect → met 0%, valid-alt → not_met 0%, valid-alt → expected 50%, partial 88.9%, uncertain on clear + incorrect 6.3%; only `rows[6]` and `rows[10]` change a dimension | exactly those numbers; only `rows[6]` (correction met → partial) and `rows[10]` (explanation met → partial) change a dimension; T19's wording changes no other row | reproduced |
+| exposure | 0 negator-bearing alternatives match their own text with negators removed | `probes=153 control=153 exposed=0` | PASS |
+| R4 (polarityRows) | no row overall `met` | row 0: explanation partial, correction met, overall partial | PASS |
+
+- SC-003b's printed table (todo, F1c-T11): clear 10/10 met; incorrect 0 met, 5 not_met, 1 uncertain; partial 8 partial, 1 not_met; valid-alternative 1 met, 4 partial, 1 uncertain. It still fails its valid-alternative → expected gate (50% < 75%), which the founder waived (PD-12).
+- **Spec wording note (not a bug):** SC-014 says both rows go "met → partial, overall still in `expect`". The dimension change is right, but `rows[6]`'s overall was already `partial` under `matcher@2`, which is outside its `expect` (`met`) before and after. Its overall doesn't change. For the PM, if revision 7 touches SC-014.
+- **SC-015 echo probe**, per stop, `explanation correction overall`: all 13 m1 stops `uncertain uncertain uncertain` (including catch-01 `s2`, catch-04 `s6` and catch-05 `s5`); 16 of 17 m2 stops `uncertain uncertain uncertain`; m2 catch-01 `s5` `not_met uncertain uncertain`. 30/30 overall `uncertain`, 0 `met` anywhere.
+
+### Architect's watch item: no incorrect labelled row graded overall `met` under `matcher@3`
+
+A scratch script (`<scratchpad>/f1c-t22/compare.mjs`, not committed) graded every labelled row under `matcher@2` (`git show 158483f:server/services/practice-matcher.js`) and `matcher@3`, against the current packs. It prints indices and statuses only.
+
+| Set | Rows | Incorrect | Incorrect overall `met` (`@2` / `@3`) | Incorrect with correction `met` (`@3`) | Overall changes `@2` → `@3` |
+|---|---|---|---|---|---|
+| SC-003 accept-pack | 48 | 9 | 0 / 0 | none | 0 |
+| m1 `rows` | 24 | 6 | 0 / 0 | none | 1 (`rows[10]` met → partial, inside `expect`) |
+| m1 `qaRows` | 7 | 0 | – | – | 0 |
+| m1 `polarityRows` | 1 | 1 | 0 / 0 | `[0]` (R4's accepted gap) | 0 |
+| m1 holdout (spent; one-off check, not a gate, not in `npm test`) | 30 | 7 | 0 / 0 | none | 0 |
+
+**Holds: 0 of 23 incorrect rows grade overall `met`.** The only dimension-level wrong credit is the known R4 row (correction `met` through a negator-bearing alternative, held off overall `met` by a `partial` explanation). The architect's RISK 1 (mastery reading per-dimension statuses) remains a T08 code-review item.
+
+### Real-browser smoke (Chromium 1194, Playwright, real server, default packs)
+
+**Setup:**
+- `npm run mock` with **no `PRACTICE_PACKS_DIR`** (the default `packs/`), a temp `DB_PATH` and a fixed free port.
+- Speech: `tests/golden/browser-stubs.js` plus the FR-035 probe (every utterance must equal the `textContent` of a visible element).
+- The expected rev-6 strings are read at run time from the tasks.md F1c-T19 table, not from the pack.
+- Script: `<scratchpad>/f1c-t22/e2e-t22.mjs` (scratch). The server and browser were killed at the end, and no node server process was left.
+
+**Result:** run 1 and run 2 both `checks 127 pass 127 fail 0`, exit 0, with 0 error or warning lines in the server log.
+
+| Run | Width | Flow | Result |
+|---|---|---|---|
+| `text-1280`, `text-390`, `voice-1280`, `voice-390` | 1280, 390 | picker → m2 catch-01: hit on `s2` → reveal → self-rate `had_it` → Next → m1 catch-05: `s5` flawed line typed back → reveal → self-rate `partly` → Next → m1 catch-04 with no stop → reveal | all pass |
+| `bump-text-1280`, `bump-voice-1280` | 1280 | start m1 catch-05 on `applied-ai@2` (a temp copy with `version: 2`, fresh DB) → server killed and restarted on the same port and DB with the default packs (`@3`) → stop | all pass |
+
+**What was checked:**
+- **US7.1:** the picker shows two module headings, m1's title then "Agents and embeddings in depth". The 9 m2 catch buttons are in PD-15 order. The picker plays catch only until F1c-T09, so learn, scenario and interview aren't buttons yet. `GET /api/practice/tracks/applied-ai` returns version 3, modules `m1,m2` and the 17 PD-15 ids.
+- **US7.2:** `s2` is a `hit`, overall `met`. `#feedback-text` equals `fb.hit.met` with the pack's `whyWrong`, and `#feedback-corrected` equals `say.corrected` with `acceptableCorrections[0]`.
+- **US7.3 (voice):** the feedback, each dimension row and the Corrected line are spoken exactly as shown, in display order. Narration resumes on the next statement after Continue.
+- **US7.4:** the echo on catch-05 `s5` is a `hit` with explanation, correction and overall all `uncertain`, and `fb.hit.uncertain` is shown.
+- **US7.5:**
+  - "Corrected: …" equals the rev-6 string (ticket row 4), in the feedback panel and on the `s5` statement line.
+  - The pack's `acceptableCorrections[0]` equals the ticket string.
+  - In voice mode, it is spoken exactly as shown after `fb.hit.uncertain` and the dimension rows.
+- **The reveal shows the reworded corrections:** with catch-04 `s6` missed, its missed line equals `missedLine` built with the rev-6 string (ticket row 2). The `complete` body's `correctedText` is that string, and in voice mode the line is spoken exactly as shown. Catch-01 `s2`'s rewording is `acceptableCorrections[1]`, which is never displayed (the reveal shows `[0]`), so it is covered by the echo probe only.
+- **Self-rating:** each answered stop has a row in `#answered-list`. A rating click returns 200, and `aria-pressed` becomes true.
+- **US7.8:**
+  - The stop after the restart returns **404**, and `#rejected-msg` equals `err.rejected`, with no Try again or Skip offered.
+  - In voice mode, `err.rejected` is spoken exactly as shown.
+  - **Back to exercises** opens the picker, which re-fetches the track at version 3, with m2 listed.
+- **Leak scan:** SC-001 key-level, clean over every pre-complete response (8–11 per exercise).
+- **FR-035:** 45 utterances per main voice run and 6 per bump voice run, every one shown verbatim. Text mode: 0 utterances.
+- **Console:** 0 errors, no filter, in all 4 main runs. In each bump run, the 1 console line is Chromium's own `Failed to load resource: … 404 (Not Found)` for the deliberate 404. App code logs only `console.warn`.
+- **Layout:** no horizontal overflow at 390 or 1280 on the picker, the feedback screens or the reveals.
+- **Voice-mode scope:** the practice page has no dictation or voice commands until F1c-T06, so "voice mode" here means read-aloud on, Stop by button and the answer typed. US7.3's "says stop / dictates / says send" half waits for T06, as US2 does.
+
+**Screenshots** (`/tmp/claude-0/-home-user/0355a50c-9f07-57a8-b4c8-1ac26d9678c5/scratchpad/f1c-t22/`, 36 files):
+- `{text,voice}-{1280,390}-`:
+  - `01-picker`;
+  - `02-m2-narration`, `03-m2-feedback-hit`, `04-m2-reveal`, `05-m2-self-rated`;
+  - `06-m1c05-echo-uncertain`, `07-m1c05-reveal`;
+  - `08-m1c04-reveal-missed-s6`.
+- `bump-{text,voice}-1280-09-rejected` and `-10-back-to-picker-v3`.
+
+### Invariant checks
+
+- **Inv. 2:** 33/33 real-pack starts are leak-free (SC-016), and the browser key-level scans are clean.
+- **Inv. 7:** a real pack-version bump mid-attempt degrades to a 404 and then `err.rejected`, with no stall or crash. The server log has 0 errors.
+- **Inv. 9:** the FR-035 probe passes in every voice run.
+- **ARCH-2:** "server/ai and server/prompts never import a practice module" passes in `npm test`.
+
+### Bugs
+
+None new. F1c-B23's fix (F1c-T17, `c568f62` approved) is in the tree; its `err.rejected` path is the one US7.8 exercises above.

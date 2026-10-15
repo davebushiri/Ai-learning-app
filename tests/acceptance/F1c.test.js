@@ -460,7 +460,8 @@ test('fixture: m1 polarityRows hold ≥ 1 incorrect incidental-negator row on m1
   assert.ok(m1.polarityRows.some(r => r.exercise === 'm1-catch-06-retrieval-vs-generation' && r.statementId === 's6'), '≥ 1 row on m1-catch-06 s6');
 });
 
-test('SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)', { todo: 'F1c-T18' }, async t => {
+// The F1c-T18 todo was removed at F1c-T22 (2026-10-15): matcher@3 (17257a1) is merged and this passes.
+test('SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)', async t => {
   const { matcherGrade, combineOverall, MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
   const { loadPracticePacks, getExercise, getTrack } = await import('../../server/services/practice-pack.js');
   const { openDb } = await import('../../server/db.js');
@@ -482,6 +483,45 @@ test('SC-014 R4: an incorrect answer with an incidental negator is never graded 
     graded.push({ at: `${r.exercise} ${r.statementId}`, overall });
   }
   assert.deepEqual(graded.filter(g => g.overall === 'met').map(g => g.at), [], `an incorrect polarityRows row graded overall met under ${MATCHER_VERSION}`);
+});
+
+// =============================================================================================
+// F1c-T22: SC-016 / US7.1 / FR-063, the real pack (packs/applied-ai v3) through the HTTP routes.
+// The m2 order is copied from the spec (PD-15; tasks.md F1c-T20), not read from the pack, so a reorder
+// in the pack fails here. No answer text is read or printed: only ids, types and leak-scan paths.
+// =============================================================================================
+
+const M2_ORDER = ['m2-learn-01-agent-loop', 'm2-catch-01-tool-calling', 'm2-catch-02-agent-loop-clean', 'm2-learn-02-agent-guardrails',
+  'm2-catch-03-workflow-or-agent', 'm2-catch-04-memory-state', 'm2-catch-05-guardrails', 'm2-learn-03-embedding-migration',
+  'm2-catch-06-embeddings-ops-clean', 'm2-catch-07-production-failures', 'm2-catch-08-agent-eval-multiagent', 'm2-catch-09-retrieval-eval',
+  'm2-scenario-01-delivery-support-agent', 'm2-interview-01-evaluate-agent', 'm2-interview-02-workflow-or-agent',
+  'm2-interview-03-embedding-model-change', 'm2-interview-04-defend-agents'];
+
+test('SC-016 applied-ai v3: the track lists m1 then m2 with the PD-15 order; starting each of the 33 exercises returns 200 and the start body passes practiceLeakScan', async t => {
+  const { A } = await fresh(t, { db: true, packsDir: path.join(ROOT, 'packs') });
+  const list = ok(await A.tracks(), 'tracks');
+  assert.ok(list.some(x => x.id === 'applied-ai' && x.version === 3), `tracks list applied-ai@3: ${JSON.stringify(list)}`);
+  noLeak(list, LEAK_ALLOW.other, 'tracks');
+  const detail = ok(await A.track('applied-ai'), 'track applied-ai');
+  noLeak(detail, LEAK_ALLOW.other, 'track applied-ai');
+  assert.equal(detail.version, 3);
+  assert.deepEqual(detail.modules.map(m => m.id), ['m1', 'm2'], 'modules m1 then m2');
+  const [m1, m2] = detail.modules;
+  assert.equal(m2.title, 'Agents and embeddings in depth');
+  assert.deepEqual(m2.exercises.map(e => e.id), M2_ORDER, 'm2 lists the 17 exercises in the PD-15 order');
+  assert.equal(m1.exercises.length, 16, 'm1 still lists 16 exercises');
+  const ids = [...m1.exercises, ...m2.exercises].map(e => e.id);
+  assert.equal(ids.length, 33);
+  const failures = [];
+  for (const id of ids) {
+    const r = await A.post('/api/practice/attempts', { track: 'applied-ai', exercise: id });
+    if (r.status !== 200 || !r.json) { failures.push(`${id}: ${r.status}`); continue; }
+    if (r.json.exercise?.id !== id) failures.push(`${id}: body names ${r.json.exercise?.id}`);
+    const leaks = practiceLeakScan(r.json, { allow: LEAK_ALLOW.other });
+    if (leaks.length) failures.push(`${id}: leaks ${leaks.join(', ')}`);
+  }
+  t.diagnostic(`started ${ids.length} exercises, ${ids.length - failures.length} clean`);
+  assert.deepEqual(failures, []);
 });
 
 // =============================================================================================

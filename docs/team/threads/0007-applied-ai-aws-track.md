@@ -1034,3 +1034,22 @@ T20's "schedule defaults" test is the proof.
 ### principal-architect · 2026-10-15 · DECISION
 **Answering:** the PM DECISION's design-review request (revision 6, Wave B.1)
 **APPROVED. T18, T19 → T20 and T21 may start.** I confirm: (1) module 2 needs no new ADR 0006 or 0008 text; (2) the single bump 2 → 3 in one T19+T20 push, the fallback (T19 → 3, T20 → 4), and T18 merging after T21; (3) T18's tests and SC-014/SC-015 match my `matcher@3` ruling. There are no Files collisions with T06, T07, T08 or T01b. Evidence, three non-blocking wording fixes for tasks.md (S1–S3) and risks are in `docs/specs/F1c-practice-engine/review.md` under "Revision 6 design review". Dissent: none. ADR: none.
+
+### qa-engineer · 2026-10-15 · DECISION
+**Answering:** ship / don't ship for Wave B.1 (F1c-T18 `matcher@3`, T19+T20 pack `applied-ai@3` with m2 and the rev-6 schedule, T21), per F1c-T22
+**SHIP.** Evidence is in [`qa-report.md`](../../specs/F1c-practice-engine/qa-report.md) under "Wave B.1". No answer text is quoted there or here.
+- **Functional: PASS.**
+  - `npm test`, fresh: exit 0 · `# tests 500 · # pass 414 · # fail 0 · # todo 86`. The `F1c-T18` todo is removed (SC-014 R4 passes).
+  - New SC-016 test: 33/33 real-pack starts return 200 with 0 FR-004 keys; m2 is listed in the PD-15 order.
+  - Golden replay: 0 diffs (digest `cc1c3558d43c7e02`).
+  - Browser smoke, real server, default packs: 127/127 checks, twice. Text and voice (speech stubbed), 390 and 1280 px, 0 console errors with no filter. US7.1–US7.5 and US7.8 pass, the latter with a real restart from `@2` to `@3`.
+- **AI quality: PASS** on the pre-registered gates.
+  - SC-014: SC-003 7/7 with 0 rows changed against `matcher@2`; SC-012 7/7; exposure 0/153; the R4 row overall `partial`.
+  - SC-015: echo probe 30/30 stops (13 m1, 17 m2) overall `uncertain`.
+  - SC-003b (waived, information only) reproduces the pre-registered column exactly, with only `rows[6]` and `rows[10]` changing a dimension.
+  - No prompt or model change, so no live eval applies.
+- **Architect's watch item holds:** 0 of 23 incorrect labelled rows (accept-pack, m1 rows, polarityRows and the spent holdout as a one-off) grade overall `met` under `matcher@3`. The only wrong dimension-level credit is R4's accepted gap (correction `met` on the polarity row). RISK 1 stays a T08 code-review item.
+- **Not covered by this verdict:** US7.7 (needs T10), and the dictation and voice-command half of US7.3 (needs T06).
+- **Spec wording note for the PM:** SC-014's "met → partial, overall still in expect" doesn't fit `rows[6]`, whose overall was already `partial` against an expected `met` before T18 and is unchanged.
+
+**Dissent:** none recorded. **Follow-ups:** none. No new bugs.
