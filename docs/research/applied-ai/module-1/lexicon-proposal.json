@@ -1,0 +1,267 @@
+{
+  "about": "learning-designer proposal for F1c-B10, B12, B13 (thread 0007, 2026-10-15). Content-only edits to packs/applied-ai: practice.json lexicon.synonyms and rubric items in exercises/*.json. Each fix is tagged 'pre' (written before reading tests/fixtures/practice/m1-labelled-answers.json, derived from the pack's reference notes or the exercise's own whyWrong / acceptableCorrections) or 'post' (added after the check; SUSPECT, see suspectFixes). The founder must not open this file: it quotes rubric text.",
+  "status": "proposal; NOT run. This session had no shell, so the numbers in 'measured' are hand-traced against server/services/practice-matcher.js (matcher@2). Backend or QA must run SC-003b on a scratch copy before T11 merges.",
+
+  "designRules": [
+    "The lexicon is pack-global: a key fires for every rubric item, red flag and strong signal containing a token with the same stem. Keys whose token occurs in an interview or scenario redFlag (add, prompt, index, update, change/changing, evaluation, test, permissions, knowledge, model, logs, context, long) are deliberately NOT added. Those gaps are fixed with item-level '|' alternatives instead. The one exception is 'faithfulness' (B13); see risks.",
+    "Forms that reduce to a common word under word-start + stemming are excluded: 'sees' (hits 'seem'), 'only', 'user', 'live', 'bad', 'different', 'related', 'states' (hits 'status'), 'well formed' (reduces to 'form'), 'own space' (reduces to 'space' and lets 'same vector space' satisfy 'incompatible'), 'codes' as a form of 'terms' (lets the flawed catch-04 s4 text satisfy the BM25 item).",
+    "'no' is NOT a form of 'not': learners open answers with 'No, ...', which would satisfy every 'not' item.",
+    "Where the correct answer is naturally a negation, an n<=2 alternative containing a negator is used, so PD-2 skips the negation check and an un-negated wrong answer can't match it."
+  ],
+
+  "lexiconSynonyms_mergeIntoPracticeJson": {
+    "_note": "Add these keys to packs/applied-ai/practice.json lexicon.synonyms. Keys marked (extend) already exist: append the forms. All other existing keys stay as they are.",
+    "not":          { "tag": "pre",  "forms": ["isnt", "doesnt", "dont", "arent", "wasnt", "wont", "cannot", "cant", "never", "without"], "source": "English contractions for the rubric's own 'not' items (ref-01, ref-02, ref-04)" },
+    "faithfulness": { "tag": "pre",  "forms": ["faithful", "groundedness"], "source": "ref-04 'Faithfulness / groundedness'; B13 prefix gap" },
+    "queries":      { "tag": "pre",  "forms": ["query", "question", "search"], "source": "B13: stem 'queri' misses 'query'; ref-06/07" },
+    "degrades":     { "tag": "pre",  "forms": ["drops", "worse", "declines", "suffers", "decreases"], "source": "ref-01 'accuracy and recall degrade'" },
+    "quality":      { "tag": "pre",  "forms": ["accuracy", "recall", "performance"], "source": "ref-01" },
+    "length":       { "tag": "pre",  "forms": ["long"], "source": "ref-01 'long input'" },
+    "input":        { "tag": "pre",  "forms": ["text", "tokens", "content", "documents"], "source": "ref-01 'documents or tool results you pass in'" },
+    "cited":        { "tag": "pre",  "forms": ["source", "sources", "trace", "traced", "attributed", "provenance"], "source": "ref-05 'cannot point to where a fact came from'" },
+    "retraining":   { "tag": "pre",  "forms": ["re train", "training run", "new training"], "source": "ref-05 'another training run, evaluation and release'" },
+    "style":        { "tag": "pre",  "forms": ["tone", "format", "formatting", "voice"], "source": "ref-05 table; catch-02 s7" },
+    "behavior":     { "tag": "pre",  "forms": ["behaviour", "behave", "skills"], "source": "ref-05 'skill or style'" },
+    "unchanged (extend)": { "tag": "pre", "forms": ["dont change", "doesnt change", "not change", "never change", "stay same", "not modified", "unmodified", "not updated"], "source": "ref-05 'RAG does not change weights'" },
+    "closeness (extend)": { "tag": "pre", "forms": ["similar meaning", "semantically similar"], "source": "ref-06" },
+    "relevance":    { "tag": "pre",  "forms": ["relevant", "answers question", "answer question", "on topic"], "source": "ref-06 'semantically close ... and still not answer it'; 'share topic but disagree'" },
+    "scale":        { "tag": "pre",  "forms": ["range", "calibrated", "calibration", "absolute"], "source": "ref-06 'its scale differs between models'" },
+    "varies":       { "tag": "pre",  "forms": ["differs", "vary", "depends"], "source": "ref-06" },
+    "currency":     { "tag": "pre",  "forms": ["current", "up to date", "outdated", "stale", "fresh", "latest"], "source": "ref-06 'check relevance, currency and authority'" },
+    "check":        { "tag": "pre",  "forms": ["verify", "validate", "confirm", "review"], "source": "ref-03/04" },
+    "meaning":      { "tag": "pre",  "forms": ["semantic", "semantics", "concepts"], "source": "ref-06 'good at meaning'" },
+    "miss":         { "tag": "pre",  "forms": ["misses", "fail", "fails", "struggle", "struggles", "poor", "weak", "unreliable"], "source": "ref-06 'Where embeddings struggle: exact tokens'" },
+    "real":         { "tag": "pre",  "forms": ["actual", "production"], "source": "ref-06 'measure on yours'; ref-08 'realistic questions'" },
+    "incompatible": { "tag": "pre",  "forms": ["not compatible", "not comparable", "isnt compatible", "arent compatible", "arent comparable", "incomparable"], "source": "ref-06 'not comparable'" },
+    "meaningless":  { "tag": "pre",  "forms": ["garbage", "nonsense", "invalid", "useless", "junk", "random"], "source": "catch-04 s6 whyWrong" },
+    "rankings":     { "tag": "pre",  "forms": ["rank", "scores", "results", "comparisons"], "source": "ref-06" },
+    "corpus":       { "tag": "pre",  "forms": ["documents", "docs", "dataset", "collection", "everything"], "source": "ref-06 're-embedding the corpus'; 'every part must be re-catalogued'" },
+    "shape":        { "tag": "pre",  "forms": ["structure", "format", "syntax", "valid json", "parseable"], "source": "ref-03 'shape, not truth'; 'parseable and well-typed'" },
+    "guarantees":   { "tag": "pre",  "forms": ["ensures", "enforces"], "source": "ref-03 'enforced'" },
+    "values":       { "tag": "pre",  "forms": ["content", "contents", "data", "numbers"], "source": "ref-03 'Validation of content'" },
+    "wrong":        { "tag": "pre",  "forms": ["incorrect", "false", "invalid", "made up"], "source": "ref-03/04" },
+    "fabricated":   { "tag": "pre",  "forms": ["made up", "hallucinated", "invented", "fake", "nonexistent"], "source": "ref-03 'a fabricated policy number'; ref-04" },
+    "validate":     { "tag": "pre",  "forms": ["check", "verify", "confirm", "cross check"], "source": "ref-03 'check that each cited chunk exists'" },
+    "citations":    { "tag": "pre",  "forms": ["cited", "references", "cites", "policy numbers"], "source": "ref-03" },
+    "consistent":   { "tag": "pre",  "forms": ["stable", "predictable", "less random", "less variable", "less variation"], "source": "ref-02 'more conservative, more consistent'" },
+    "runs":         { "tag": "pre",  "forms": ["calls", "samples", "trials", "attempts"], "source": "ref-02 'over many runs'" },
+    "documented":   { "tag": "pre",  "forms": ["docs", "documentation"], "source": "ref-02" },
+    "provider":     { "tag": "pre",  "forms": ["anthropic", "vendor", "api"], "source": "ref-02" },
+    "received":     { "tag": "pre",  "forms": ["given", "gets", "provided", "fed"], "source": "ref-08 'evidence it never received'" },
+    "internal":     { "tag": "pre",  "forms": ["private", "company", "proprietary"], "source": "ref-04 'nothing about your private documents'" },
+    "problem":      { "tag": "pre",  "forms": ["issue", "failure", "fault"], "source": "ref-08 'failing stage', 'fault isolation'" },
+    "sync":         { "tag": "pre",  "forms": ["resync", "re sync", "re index", "reindex", "re ingest", "reingest", "refresh"], "source": "ref-07 'sync (ingestion job)'; ref-08 're-sync'" },
+    "remove":       { "tag": "pre",  "forms": ["delete", "drop", "purge", "retire"], "source": "ref-08 'deleting superseded chunks'" },
+    "superseded":   { "tag": "pre",  "forms": ["old", "outdated", "stale", "previous"], "source": "ref-08 'the index holds an old version'" },
+    "current":      { "tag": "pre",  "forms": ["latest", "newest", "up to date", "active"], "source": "ref-08 'current only'" },
+    "filter":       { "tag": "pre",  "forms": ["restrict", "exclude"], "source": "ref-07 'metadata filters'" },
+    "chunks":       { "tag": "pre",  "forms": ["documents", "docs", "passages"], "source": "ref-07" },
+    "passages":     { "tag": "pre",  "forms": ["chunks", "documents", "docs", "snippets", "excerpts"], "source": "ref-05/07" },
+    "metrics":      { "tag": "pre",  "forms": ["measure", "measurement", "eval", "evals", "recall", "benchmark", "tests"], "source": "ref-08 'recall@k', 'measure'" },
+    "tune":         { "tag": "pre",  "forms": ["pick", "choose", "select", "experiment", "optimize", "adjust", "calibrate"], "source": "ref-07 'tune k with evaluation'" },
+    "noise (extend)":   { "tag": "pre", "forms": ["distractors", "distracting", "off topic", "dilute", "dilutes"], "source": "ref-07 'add noise'" },
+    "latency (extend)": { "tag": "pre", "forms": ["takes longer", "lag", "wait"], "source": "ref-02 'long outputs take longer'" },
+    "outputs":      { "tag": "post", "forms": ["answers", "responses"], "source": "catch-05 s5 acceptableCorrections[0] 'identical questions can still get different answers'; learn-01 'outputs can still vary'" },
+    "one":          { "tag": "post", "forms": ["single"], "source": "plain English ('a single request'); ref-01 'one response'" }
+  },
+
+  "rubricEdits": {
+    "_note": "Replace the named rubric arrays with these. Each item is at most 8 '|' alternatives. The first alternative of each item is the original text, unchanged, except catch-01 s2 'correct' (B10 rewrite).",
+    "m1-catch-01-context-window": {
+      "s2": {
+        "explain": [
+          "working memory for one call|what it can see now|working memory|short memory|what it sees per request",
+          "training data is separate|learned into weights|not training|learned in training|baked into weights|trained into weights"
+        ],
+        "correct": [
+          "holds the current request|input for this call|what you send in the request|what is sent in the request",
+          "more input fits per call|not know|not smarter"
+        ],
+        "_B10": "Old items 'window holds the current request' and 'bigger window means more input fits|not more knowledge' shared 4 tokens (bigger, window, means, more) with the flawed s2 text, and 'more knowledge' had no negator. So an echo of the misconception earned correction credit, and that also switched off the FR-021(c) echo rule. The new items drop 'window', 'bigger' and 'means', and require a negator for the 'knowledge' contrast. Tag: pre, except the 'what you send in the request' spelling (post: 'sent' doesn't reach 'send' under word-start matching).",
+        "optional_acceptableCorrections_1": "One request can hold more text in a bigger window, but the model's knowledge stays the same.",
+        "_optional_why": "The current acceptableCorrections[1] shares 7 of its 8 required tokens with the flawed s2 text, so an incorrect answer that adds one word ('lets', 'one') reaches correction met through FR-020. The suggested wording shares 4. It is displayed and spoken at reveal, so the PM accepts the wording."
+      },
+      "s4": {
+        "explain": [
+          "quality degrades with length|context rot",
+          "middle content under-used|position matters|lost in the middle|start and end|beginning and end"
+        ],
+        "correct": [
+          "send relevant text|retrieve|only relevant parts|curate",
+          "test long-context accuracy|evaluate accuracy|measure accuracy"
+        ]
+      }
+    },
+    "m1-catch-02-rag-vs-finetune": {
+      "s3": {
+        "explain": [
+          "retrieves at query time|runtime|inference time|on the fly",
+          "weights unchanged|no training|not retrained|not trained|not learned|nothing learned",
+          "knowledge in index|stored in index|knowledge base|vector store|vector database"
+        ],
+        "correct": [
+          "adds passages to prompt|puts chunks in context|inserts into prompt|augments prompt|adds context",
+          "update index not model|re-index|update documents not weights"
+        ],
+        "_tags": "'not learned', 'nothing learned' and 're-index' are post; the rest are pre."
+      },
+      "s6": {
+        "explain": [
+          "retraining needed for each change|retrain every month|retrain each time",
+          "fine-tuned facts can't be cited|filtered by permission|access control|no source|can't trace"
+        ],
+        "correct": [
+          "update the index for freshness|current index|re-sync index|re-ingest documents",
+          "fine-tuning for style or behavior"
+        ]
+      }
+    },
+    "m1-catch-04-embeddings": {
+      "s3": {
+        "explain": [
+          "similarity is closeness|ranking signal|rank results|relative score|similar meaning",
+          "not relevance or truth",
+          "scale varies by model|not calibrated|arbitrary scale"
+        ],
+        "correct": [
+          "check relevance and currency",
+          "evaluate answers separately|test answers separately|check the answer itself|measure answer correctness"
+        ]
+      },
+      "s4": {
+        "explain": [
+          "embeddings capture meaning|can miss exact strings|miss exact|not exact|fuzzy",
+          "BM25 matches exact terms|bm25 exact"
+        ],
+        "correct": [
+          "add keyword search|hybrid|bm25",
+          "test on real code queries"
+        ]
+      },
+      "s6": {
+        "explain": [
+          "different models: incompatible vector spaces|not comparable|different spaces|different coordinate systems",
+          "rankings across them meaningless"
+        ],
+        "correct": [
+          "re-embed whole corpus|rebuild index|reembed|re-embed everything|re-index|recompute vectors",
+          "one model per index|do not mix|same model for queries and documents"
+        ],
+        "_risk": "'one model per index' is kept because practitioners say exactly that, but the flawed s6 text contains 'ones' (= one + s) and 'models', so an echo earns that item. Same family as B10, lower impact (1 of 2 correction items)."
+      }
+    },
+    "m1-catch-05-structured-outputs": {
+      "s3": {
+        "explain": [
+          "schema guarantees shape|fields and types",
+          "values can be wrong|fabricated"
+        ],
+        "correct": [
+          "validate citations against index|check they exist",
+          "content checks separate from format|validate content|business rules"
+        ]
+      },
+      "s5": {
+        "explain": [
+          "not fully deterministic at zero|outputs can still vary|outputs differ|nondeterministic|non-deterministic",
+          "documented by provider|inference serving|floating point|batching"
+        ],
+        "correct": [
+          "more consistent not identical|less random|reduces variation",
+          "test over repeated runs|run many times|evaluate across runs"
+        ]
+      }
+    },
+    "m1-catch-06-retrieval-vs-generation": {
+      "s5": {
+        "explain": [
+          "faithfulness is support by context|groundedness|supported by retrieved|matches retrieved chunks|grounded in sources",
+          "stale context: faithful but wrong|faithful to stale chunks|outdated source",
+          "faithfulness is not correctness|not correct"
+        ],
+        "correct": [
+          "add correctness against expected answers|expected answers|reference answers|ground truth|gold answers",
+          "add freshness test cases|freshness tests"
+        ]
+      },
+      "s6": {
+        "explain": [
+          "model can't use evidence it never received|receives same stale evidence|retrieval problem",
+          "internal changes not in training data|not trained"
+        ],
+        "correct": [
+          "fix sync|remove superseded chunks|re-sync index|update index",
+          "filter to current versions|version filter"
+        ]
+      }
+    },
+    "m1-catch-08-design-tradeoffs": {
+      "s4": {
+        "explain": [
+          "trade-off|depends on documents|tradeoff|depends|balance",
+          "large: more context but diluted match and window cost|dilute|noise|less precise|token cost",
+          "small: precise but loses context"
+        ],
+        "correct": [
+          "tune by evaluation|tune by testing|test sizes|experiment|measure retrieval",
+          "headings|hierarchical|parent-child chunks|headers|titles|structure|overlap|contextual"
+        ]
+      },
+      "s5": {
+        "explain": [
+          "higher recall vs more noise|more noise|recall vs precision",
+          "cost and latency",
+          "middle of long context under-used|lost in the middle|middle ignored"
+        ],
+        "correct": [
+          "tune k with metrics|evaluate",
+          "retrieve then rerank|rerank"
+        ]
+      }
+    }
+  },
+
+  "suspectFixes": {
+    "_note": "Added only after reading the labelled rows (tag 'post'). Each one is needed for a specific row. QA's independent held-out set should decide whether they generalize.",
+    "rows": [
+      { "fix": "catch-02 s3 explain[1] alt 'nothing learned'", "neededFor": "valid-alternative row 6", "grounding": "weak: near-verbatim from the row (ref-01 'Nothing in the context window changes the model's weights' is the closest source)", "verdict": "MOST SUSPECT. The SC-003b valid-alt gate depends on it." },
+      { "fix": "catch-02 s3 explain[1] alt 'not learned'", "neededFor": "none alone (generalizes 'doesn't learn')", "grounding": "catch-02 s3 acceptableCorrections[1] 'it doesn't learn them into its weights'", "verdict": "moderate" },
+      { "fix": "catch-02 s3 correct[1] alt 're-index'", "neededFor": "row 6", "grounding": "ref-08 'Re-indexing will not fix ...'; interview-02 rubric. The pre-check form 're-index not retrain' needed 3 of 4 tokens.", "verdict": "moderate" },
+      { "fix": "lexicon 'one': ['single']", "neededFor": "row 2", "grounding": "plain English; ref-01 'one response'", "verdict": "moderate" },
+      { "fix": "catch-01 s2 correct[0] alt 'what you send in the request'", "neededFor": "row 2", "grounding": "the pre-check alt 'what is sent in the request' had the same idea, but 'sent' never matches 'send'", "verdict": "low suspicion" },
+      { "fix": "lexicon 'outputs': ['answers', 'responses']", "neededFor": "partial row 13", "grounding": "catch-05 s5 acceptableCorrections[0] uses 'answers' for outputs", "verdict": "low suspicion" }
+    ]
+  },
+
+  "recommendedRemoval": {
+    "faithful.loyal": "The existing 'faithful' key's form 'loyal' isn't practitioner phrasing in any reference note. It came from my earlier draft, which was written next to these labelled rows, and only row 18 uses it. I recommend dropping it. That changes no SC-003b verdict (row 18 stays partial either way)."
+  },
+
+  "measured": {
+    "method": "Hand trace of matcher@2 (server/services/practice-matcher.js) over all 31 rows (24 rows + 7 qaRows), as the SC-003b test grades them (tests/acceptance/F1c.test.js:317-339). Not executed: no shell in this session.",
+    "SC003b_allFixes": {
+      "clear_to_met": "10/10 = 100% (gate 100%)",
+      "incorrect_to_met": "0/6 = 0% (gate 0%)",
+      "validAlternative_to_notMet": "0/6 = 0% (gate 0%)",
+      "validAlternative_to_expected": "5/6 = 83.3% (gate >= 75%); rows 2, 6, 10, 14, 22 pass; row 18 stays partial",
+      "partial_to_partialOrUncertain": "9/9 = 100% (gate >= 80%); rows 13 and 17 now pass",
+      "clearPlusIncorrect_uncertain": "1/16 = 6.3% (gate <= 20%); row 3 (catch-01 s2 incorrect) is now uncertain through the echo rule, because B10 no longer lets it match correction"
+    },
+    "SC003b_preCheckFixesOnly": {
+      "validAlternative_to_expected": "3/6 = 50% (FAIL); rows 10, 14, 22",
+      "partial_to_partialOrUncertain": "8/9 = 88.9% (pass); row 17 passes on pre fixes, row 13 needs 'outputs'",
+      "other_checks": "unchanged from allFixes"
+    },
+    "SC003b_allFixesExceptMostSuspect": {
+      "validAlternative_to_expected": "4/6 = 66.7% (FAIL) without 'nothing learned'"
+    },
+    "heldOut": "Not written by me (lead's change of plan, 2026-10-15: QA writes it blind to this diff). No held-out result exists yet."
+  },
+
+  "risks": [
+    "Pack-global keys broaden interview and scenario mustCover matching too (not, check, current, filter, chunks, metrics, wrong, values, validate, citations, real, outputs, degrades, quality, length). That is more 'met' on interview items, so the interview labelled rows should be re-run.",
+    "'faithfulness' is the one new key whose token is also in a red flag (interview-02 'treats faithfulness as correctness', 2 of 3 tokens). An answer saying 'a faithful answer can still fail correctness checks' now matches that red flag and turns uncertain. 'grounded' and 'supported' are left out of this key to limit that.",
+    "Polarity stays a matcher limit. 'Doesn't change the weights' negates 'weights' (window 3) and makes catch-02 s3 explain uncertain. Content can only add negator-bearing n<=2 alternatives ('not retrained', 'not trained').",
+    "The existing bm25 form 'exact match' lets an answer saying embeddings give an 'exact match' satisfy 'add keyword search|hybrid|bm25'."
+  ]
+}

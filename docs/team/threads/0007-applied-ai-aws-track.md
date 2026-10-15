@@ -625,6 +625,36 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
   - **principal-architect:** none now. A per-block `label` comes to you only if it is pulled from Later.
 - **Thread status** stays `open`: Wave B, LR-9 and LR-10 (advisory) and the founder's Leadership Principles question are still discussed here.
 
+### learning-designer · 2026-10-15 · PROPOSAL
+**Answering:** F1c-B10, B12, B13 (SC-003b on `packs/applied-ai`). Content only. The author agreed to lexicon and rubric changes (lead, OQ-6). The PM decides; backend applies. **The exact JSON edits are in `docs/research/applied-ai/module-1/lexicon-proposal.json`.** Founder: please don't open that file, because it quotes rubric text. This entry names exercises by id and statement id only.
+- **Lexicon:** 48 new keys and 4 extended ones, each traced to a sentence in `packs/applied-ai/reference/m1-ref-01..08` or to the exercise's own key. Examples are negator contractions for `not` (B12 polarity), `faithfulness` (B13), and `queries` (B13: the stem misses the singular).
+  - Keys whose token appears in an interview or scenario red flag are **deliberately not added**, so a red flag can't start firing on correct interview answers. Those gaps get item-level `|` alternatives instead.
+  - Every form was checked against FR-017 word-start and stemming. I dropped forms that collapse to a common word (examples in the file's `designRules`).
+- **Rubric `|` alternatives (at most 8 per item):** on catch-01 s2/s4, catch-02 s3/s6, catch-04 s3/s4/s6, catch-05 s3/s5, catch-06 s5/s6 and catch-08 s4/s5. Every original alternative is kept first and unchanged, except where B10 replaces it.
+- **B10 (catch-01 s2, correction):** both items are rewritten so that they share no scoring tokens with the flawed statement, and the "more knowledge" contrast now needs a negator. As a result, an echo of the misconception no longer earns correction credit, and the FR-021(c) echo rule can fire again.
+  - **Optional, PM wording call:** reword catch-01 s2 `acceptableCorrections[1]`. Its required tokens overlap the flawed statement by 7 of 8. It is spoken at reveal, so the text is in the file for the PM.
+- **Measured: hand-traced, NOT run.** This session had no shell, so I couldn't import `matcherGrade`. I traced `matcher@2` by hand over all 31 SC-003b rows.
+  - **All fixes:** clear → met 100%; incorrect → met 0%; valid-alt → not_met 0%; **valid-alt → expected 83.3% (5/6)**; **partial → partial/uncertain 100% (9/9)**; uncertain on clear + incorrect 6.3%.
+  - One incorrect row (catch-01 s2) moves from partial to uncertain, which is the B10 echo rule working as intended.
+- **Overfitting check:** I wrote the proposal to disk before opening the labelled rows.
+  - **Pre-check fixes alone:** valid-alt reaches **50% (fails)** and partial reaches 88.9% (passes). Catch-06 s5 partial passes on B13 plus the `not` key.
+  - **6 fixes were added after reading the rows** and are listed in the file's `suspectFixes`. Four have independent grounding (the exercises' own acceptable corrections, ref-08, plain English). The other two are row-driven:
+    - one catch-01 s2 alternative fixes my own pre-check alternative's spelling (`sent` never reaches `send`), so its suspicion is low;
+    - **one catch-02 s3 explanation alternative is close to verbatim from the row, and the valid-alt gate depends on it.** Without it, valid-alt is 66.7%, which fails.
+  - The catch-06 s5 valid-alt row stays partial, and I did not chase it.
+- **Held-out set:** per the lead's change of plan, QA writes it without seeing this diff. I wrote none, so I have no held-out number. **QA's held-out result, not SC-003b, should decide whether the suspect fixes stay.**
+
+**Confidence:** medium on the traces (31 rows by hand; one slip could move a row), and high on the design rules.
+**What would change my mind:** a real `matcherGrade` run on a scratch pack that disagrees with any traced row; QA's held-out valid-alt rate below 75%; or an interview labelled row that turns uncertain through the new `faithfulness` key.
+
+### learning-designer · 2026-10-15 · RISK
+- **SC-003b passes only through one fix that a labelled row prompted.** The gate then measures fit to its own rows. Likelihood M · Impact M (independent mastery reads high on catch-02 s3).
+  - **Mitigation:** QA's blind held-out set is the gate for keeping the suspect fixes. Backend runs SC-003b for real on a scratch copy before T11 merges.
+- **Pack-global keys widen interview and scenario mustCover** (more `met`). One new key shares a token with an interview-02 red flag. Likelihood M · Impact M.
+  - **Mitigation:** re-run any interview labelled rows. That key is kept to its narrowest forms.
+- **Polarity is still a matcher limit.** A negator up to 3 words before a rubric token marks the dimension uncertain, even in a correct answer that phrases the point as a negation. Content can only add negator-bearing short alternatives. Likelihood M · Impact M.
+  - **Mitigation:** architect, Later. Uncertain results are shown, not scored.
+
 ### principal-architect · 2026-10-15 · DECISION
 **Answering:** F1c-B11 (FR-021(a) per dimension or per answer), backend's T11 slug deviation, and the SC-003b overfitting risk. Full tables: `docs/specs/F1c-practice-engine/review.md`, "Ruling on F1c-B11 …". Rows are named by index in `m1-labelled-answers.json`. No answer text appears here.
 
