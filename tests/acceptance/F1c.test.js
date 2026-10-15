@@ -10,11 +10,11 @@
 
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
-  ACCEPT_PACK_DIR, CLASSES, acceptPacksDir, FR004_KEYS, LEAK_ALLOW, PRA_ID_RE, ROOT, TRACK,
+  ACCEPT_PACK_DIR, CLASSES, STATUSES, acceptPacksDir, FR004_KEYS, LEAK_ALLOW, PRA_ID_RE, ROOT, TRACK,
   allEvents, api, eventsFor, evaluateThresholds, formatConfusion, graderInputFor, ok, practiceLeakScan,
   readLabelled, readM1Labelled, readPackDir, request, startPractice, tempDbPath
 } from './practice-helpers.mjs';
@@ -336,6 +336,51 @@ test('SC-003b module-1 labelled set thresholds', { todo: 'F1c-T11' }, async t =>
   const { table, lines, failures } = evaluateThresholds(rows);
   for (const l of [...formatConfusion(table), ...lines, ...dimMisses.map(m => `dimension differs: ${m}`)]) t.diagnostic(l);
   assert.deepEqual(failures, []);
+});
+
+// =============================================================================================
+// SC-003c (review.md "Ruling on F1c-B11 …" §3, thread 0007 RISK R1): the held-out module-1 set.
+// Shape only. It is graded ONCE, by QA, at content freeze, and the result goes in qa-report.md.
+// Do not add a grading test here: a grade in npm test would turn it into a second training set.
+// The test never prints answer text (the founder is the learner).
+// =============================================================================================
+
+const HOLDOUT = path.join(ROOT, 'tests/fixtures/practice/m1-holdout-answers.json');
+const HOLDOUT_MIN = { 'valid-alternative': 6, partial: 6, incorrect: 4, clear: 4 };
+
+test('SC-003c holdout file shape: ≥ 6 valid-alternative, ≥ 6 partial, ≥ 4 incorrect, ≥ 4 clear rows on ≥ 4 catch exercises, every row on a planted statement, gradedAt null', () => {
+  assert.ok(existsSync(HOLDOUT), 'tests/fixtures/practice/m1-holdout-answers.json exists');
+  const set = JSON.parse(readFileSync(HOLDOUT, 'utf8'));
+  assert.ok(Object.hasOwn(set, 'gradedAt'), 'carries a gradedAt field');
+  assert.equal(set.gradedAt, null, 'gradedAt is null until the one grading at content freeze');
+  assert.ok(Array.isArray(set.rows), 'rows is an array');
+
+  const exDir = path.join(ROOT, 'packs/applied-ai/exercises');
+  const catches = new Map();
+  for (const f of readdirSync(exDir).filter(f => /^m1-catch-0[1-8]-.+\.json$/.test(f))) {
+    const ex = JSON.parse(readFileSync(path.join(exDir, f), 'utf8'));
+    catches.set(ex.id, ex);
+  }
+  const isStatus = v => STATUSES.includes(v);
+  const isExpect = v => isStatus(v) || (Array.isArray(v) && v.length > 0 && v.every(isStatus));
+  const counts = {};
+  const texts = new Set();
+  set.rows.forEach((r, i) => {
+    const at = `rows[${i}]`;
+    assert.ok(catches.has(r.exercise), `${at}: exercise is one of catch-01..08 in packs/applied-ai`);
+    assert.ok(catches.get(r.exercise).answerKey.planted.some(p => p.statementId === r.statementId), `${at}: ${r.statementId} is planted in ${r.exercise}`);
+    assert.equal(r.part, `stop:${r.statementId}`, `${at}: part names the stop`);
+    assert.ok(Object.hasOwn(HOLDOUT_MIN, r.class), `${at}: class ${r.class}`);
+    assert.ok(typeof r.text === 'string' && r.text.trim().length > 0 && r.text.length <= 2000, `${at}: text is a non-empty answer ≤ 2000 chars`);
+    assert.ok(!texts.has(r.text), `${at}: text is not a duplicate`);
+    texts.add(r.text);
+    assert.deepEqual(Object.keys(r.expect ?? {}).sort(), ['correction', 'explanation', 'overall'], `${at}: expect has explanation, correction and overall`);
+    for (const d of ['explanation', 'correction', 'overall']) assert.ok(isExpect(r.expect[d]), `${at}: expect.${d} is a status or a list of statuses`);
+    assert.ok(typeof r.note === 'string' && /qa-engineer/.test(r.note) && /\d{4}-\d{2}-\d{2}/.test(r.note), `${at}: note says who wrote it and when`);
+    counts[r.class] = (counts[r.class] ?? 0) + 1;
+  });
+  for (const [c, min] of Object.entries(HOLDOUT_MIN)) assert.ok((counts[c] ?? 0) >= min, `${c}: ${counts[c] ?? 0} rows, need ≥ ${min}`);
+  assert.ok(new Set(set.rows.map(r => r.exercise)).size >= 4, 'rows span ≥ 4 catch exercises');
 });
 
 // =============================================================================================

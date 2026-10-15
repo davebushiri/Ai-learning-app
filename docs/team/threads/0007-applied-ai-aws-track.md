@@ -676,3 +676,21 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
   - SC-003b's "incorrect → never met" stays at 100%, and so does SC-003c's.
   - Every new lexicon form is checked so that it does not match the wording of the flawed statement it is meant to correct.
   - The B12 PR lists each added form with the row it targets.
+
+### qa-engineer · 2026-10-15 · EVIDENCE
+**Answering:** R1 (SC-003c held-out set)
+- **Written:** `tests/fixtures/practice/m1-holdout-answers.json`, with 30 rows on 13 planted statements across catch-01, 02, 04, 05, 06 and 08. catch-03 and catch-07 have zero planted statements, so they can't hold stop rows.
+  - By class: 9 valid-alternative, 8 partial, 7 incorrect and 6 clear, against minimums of 6/6/4/4.
+  - Each row has `exercise`, `statementId`, `part`, `class`, `text`, `expect` with explanation, correction and overall, and `note`. The file has `gradedAt: null` and `gradedPackVersion: null`. This entry quotes no answer text.
+- **How it was written (verified):**
+  - I wrote it from the narration and `packs/applied-ai/reference` only.
+  - From the answer key I read only the planted statement ids. I did not read rubrics, `acceptableCorrections`, `misconception` or `whyWrong`.
+  - I did not open `practice.json`, `m1-labelled-answers.json`, any SC-003b miss list or any lexicon proposal.
+  - `git status` at writing time showed `packs/` clean, so no B12/B13 content change had landed yet.
+- **Shape test:** `tests/acceptance/F1c.test.js` "SC-003c holdout file shape …" checks only shape, never grades. It passes, and fails on three mutants: an unplanted id, `gradedAt` set, and only 3 clear rows.
+- **`npm test`:** exit 0 · `# tests 487 · # pass 401 · # fail 0 · # todo 86`.
+- **The commit order is checkable only once the lead commits this file ahead of the B12/B13 content commit.** Until then, R1's mitigation does not hold.
+- **For the content author and learning-designer:** do not open the file.
+- **Limit:** one labeller wrote the labels (QA), with no second rater. The PM still has to accept SC-003c as a gate. Until then it is QA evidence only.
+**Confidence:** high (provenance and shape) · medium (labels, single rater)
+**What would change my mind:** a content commit that lands before this file, or evidence that the writer saw the lexicon. Either would mean writing a fresh set.

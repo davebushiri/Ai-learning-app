@@ -1,0 +1,288 @@
+{
+  "id": "SC-003c",
+  "purpose": "Held-out module-1 labelled set (review.md 'Ruling on F1c-B11 ...' section 3; thread 0007 RISK R1). Same per-class thresholds as SC-003 / SC-003b.",
+  "author": "qa-engineer",
+  "writtenAt": "2026-10-15",
+  "provenance": "Every answer was written by qa-engineer from the exercise narration in packs/applied-ai/exercises/m1-catch-0N-*.json and the reference notes in packs/applied-ai/reference only. The writer read the planted statement ids but not the rubrics, acceptableCorrections, misconception or whyWrong fields, the pack lexicon (packs/applied-ai/practice.json), tests/fixtures/practice/m1-labelled-answers.json, any SC-003b miss list, or any lexicon proposal under docs/research/applied-ai/module-1/.",
+  "rules": [
+    "Committed before the B12/B13 content commit; the order is checkable in git log.",
+    "The content author and learning-designer do not open this file.",
+    "npm test checks shape only (tests/acceptance/F1c.test.js 'SC-003c holdout file shape ...'). It is graded once, by QA, at content freeze; the result and the pack version go in docs/specs/F1c-practice-engine/qa-report.md and gradedAt/gradedPackVersion are set then.",
+    "After grading the set is spent: it joins SC-003b as training data, and a later content iteration needs a fresh held-out set."
+  ],
+  "labels": "expect.explanation and expect.correction are the statuses a careful human grader would give; expect.overall follows combineOverall (both met -> met; both not_met -> not_met; otherwise partial). clear and valid-alternative rows are fully correct answers (clear echoes the reference's wording; valid-alternative is correct in the learner's own words, analogies or speech-like phrasing). partial rows get one dimension right or both half right. incorrect rows miss or endorse the error.",
+  "gradedAt": null,
+  "gradedPackVersion": null,
+  "rows": [
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "clear",
+      "text": "That's wrong. The context window isn't the training data, it's the working memory the model can see for this one request: the prompt, the history, the documents and the answer. A bigger window means you can fit more text into a single call, not that the model knows more.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-01 narration and m1-ref-01 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s2",
+      "part": "stop:s2",
+      "class": "incorrect",
+      "text": "The problem there is cost. A bigger window makes every call slower and more expensive, so we should stick with the smallest window that works.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-01 narration and m1-ref-01 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Misses the error (window vs training) entirely."
+    },
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "valid-alternative",
+      "text": "Fitting it in and actually using it well are two different things. Once the prompt gets really long the quality drops off, and stuff buried in the middle gets picked up less reliably than what's at the start or the end. I'd pull just the handful of relevant sections for each question instead of dumping the whole handbook in.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-01 narration and m1-ref-01 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-01-context-window",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "partial",
+      "text": "Just because it fits doesn't mean it all gets used the same.",
+      "expect": { "explanation": "partial", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-01 narration and m1-ref-01 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Names the error, gives no reason and no fix."
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "clear",
+      "text": "RAG doesn't retrain the model. It retrieves the relevant passages at question time and puts them into the prompt, so the model's weights never change. When a policy changes you update the index, not the model.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-02 narration and m1-ref-05 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "incorrect",
+      "text": "RAG is the right choice, but since it learns from the documents we'll need to rerun it every month when the policies change so the model picks up the new versions.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-02 narration and m1-ref-05 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Endorses the misconception."
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "valid-alternative",
+      "text": "um no, fine tuning would be about the worst way to stay current. every month you'd be doing another training run, then evaluating it and releasing it again. and you couldn't point to which document a fact came from or pull an old policy back out of the weights. just re-sync the changed documents into the search index and you're current the next day",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-02 narration and m1-ref-05 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Unpunctuated, speech-like transcript."
+    },
+    {
+      "exercise": "m1-catch-02-rag-vs-finetune",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "partial",
+      "text": "Fine-tuning means retraining every single time something changes, which isn't practical monthly.",
+      "expect": { "explanation": "met", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-02 narration and m1-ref-05 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Gives the why, no alternative."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "clear",
+      "text": "A high similarity score only means the vectors are close, not that the answer is correct. The chunk could be out of date or not actually answer the question. The score is a ranking signal, so you still check relevance and whether the source is current.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "valid-alternative",
+      "text": "0.91 just tells you that chunk is about the same topic as the question. An old superseded version of the same policy would score just as high. I'd use the number to sort candidates and then verify what the passage actually says against the source before trusting it.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "incorrect",
+      "text": "0.91 isn't actually that high for cosine. You want something like 0.98 or above before you can be confident the answer is right.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Adversarial: still treats the score as confidence, uses the statement's own words."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "valid-alternative",
+      "text": "Embeddings are actually weak on exact strings like E-4417. They capture meaning, so you'd get back chunks about errors in general rather than that one code. Literal keyword search is what finds the exact code, so run it alongside the vector search and merge the two.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Describes hybrid search without naming BM25."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "partial",
+      "text": "Use BM25 for codes like that.",
+      "expect": { "explanation": "not_met", "correction": "met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Fix only, no reason."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "valid-alternative",
+      "text": "Switching embedding models is like changing the coordinate system: the old points mean nothing in the new space, so old and new vectors can't be compared in one index. Re-embed the whole corpus with the new model before you switch queries over, unless the provider documents a shared space and you've tested it.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Analogy phrasing."
+    },
+    {
+      "exercise": "m1-catch-04-embeddings",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "incorrect",
+      "text": "That works as long as the new model outputs the same number of dimensions as the old one, so check that first.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-04 narration and m1-ref-06 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Plausible but wrong condition."
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "partial",
+      "text": "Valid JSON doesn't mean the content is right.",
+      "expect": { "explanation": "met", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-05 narration and m1-ref-03 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Short reason, no fix."
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s3",
+      "part": "stop:s3",
+      "class": "valid-alternative",
+      "text": "The schema only locks down the shape of the output, not whether it's true. The model can invent a policy number that fits the format perfectly. So we still need code that looks up every cited number and confirms it exists and came from a chunk we actually retrieved.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-05 narration and m1-ref-03 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "clear",
+      "text": "Temperature zero isn't fully deterministic. Even at zero, identical inputs can give different outputs across calls. So we shouldn't promise identical answers; design and test as if outputs vary.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-05 narration and m1-ref-02 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "valid-alternative",
+      "text": "Turning it down to zero makes replies more consistent, but the provider says outright it's still not guaranteed to repeat, because of how the hosted inference is run. I'd expect some variation anyway and check consistency statistically over lots of runs.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-05 narration and m1-ref-02 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "incorrect",
+      "text": "Zero is right, but you also need to set top-p to zero as well, then every identical question gets exactly the same answer.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-05 narration and m1-ref-02 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Keeps the determinism misconception."
+    },
+    {
+      "exercise": "m1-catch-05-structured-outputs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "partial",
+      "text": "Hmm, I don't think temperature zero actually guarantees that.",
+      "expect": { "explanation": "partial", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-05 narration and m1-ref-02 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Hedged, no reason, no fix."
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "valid-alternative",
+      "text": "Faithfulness only checks that the answer stuck to the chunks it was handed. Here those chunks were the old handbook, so it faithfully repeated the stale twelve weeks. We need a separate correctness check against the expected answer, and to score retrieval on its own.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-06 narration and m1-ref-04, m1-ref-08 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "clear",
+      "text": "A bigger model won't fix this, because it's a retrieval problem. The model can only use the chunks it gets, and those came from the old handbook. The fix is the index: remove the superseded chunks and filter retrieval to the current version.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-06 narration and m1-ref-08 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "incorrect",
+      "text": "Yeah, a larger model is better at noticing when information looks outdated, so upgrading should help it pick sixteen weeks.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-06 narration and m1-ref-08 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Endorses the planted fix."
+    },
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "partial",
+      "text": "Upgrading the model doesn't help when the problem is what got retrieved.",
+      "expect": { "explanation": "met", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-06 narration and m1-ref-08 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Reason only, no fix."
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "valid-alternative",
+      "text": "Bigger chunks aren't automatically better. You keep more surrounding context, but the match gets watered down and every chunk eats more of the prompt. It's a trade-off you tune with tests, and you can keep chunks small and stick the document title and section heading on each one for context.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-08 narration and m1-ref-07 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "partial",
+      "text": "Large chunks kind of dilute the match, I think.",
+      "expect": { "explanation": "partial", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-08 narration and m1-ref-07 only; blind to lexicon, rubrics, SC-003b rows and miss lists. One half of the trade-off, no fix."
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s4",
+      "part": "stop:s4",
+      "class": "incorrect",
+      "text": "Large chunks are fine for answer quality. The only real downside is that ingestion takes a bit longer.",
+      "expect": { "explanation": "not_met", "correction": "not_met", "overall": "not_met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-08 narration and m1-ref-07 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Endorses the planted claim."
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "clear",
+      "text": "More chunks isn't always better. Retrieving twenty adds noise, cost and latency, and the model can under-use what lands in the middle of a long prompt. Tune k with evaluation instead of always taking twenty.",
+      "expect": { "explanation": "met", "correction": "met", "overall": "met" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-08 narration and m1-ref-07, m1-ref-01 only; blind to lexicon, rubrics, SC-003b rows and miss lists."
+    },
+    {
+      "exercise": "m1-catch-08-design-tradeoffs",
+      "statementId": "s5",
+      "part": "stop:s5",
+      "class": "partial",
+      "text": "Twenty every time is going to be slow and expensive.",
+      "expect": { "explanation": "partial", "correction": "not_met", "overall": "partial" },
+      "note": "qa-engineer, 2026-10-15. Written from catch-08 narration and m1-ref-07 only; blind to lexicon, rubrics, SC-003b rows and miss lists. Cost side only, no fix."
+    }
+  ]
+}
