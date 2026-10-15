@@ -2,7 +2,7 @@
 // The vocabulary here is a neutral fictional subject (lanterns, kettles, harbors).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import {
   MATCHER_VERSION, MATCHER_RULES, matcherGrade, matchClarification, combineOverall
 } from '../server/services/practice-matcher.js';
@@ -18,14 +18,17 @@ const dim = (items, answer, extra = {}) => matcherGrade({
 }).dimensions.explanation;
 
 test('version and rules are exported and frozen', () => {
-  assert.equal(MATCHER_VERSION, 'matcher@2');
+  assert.equal(MATCHER_VERSION, 'matcher@3');
   assert.ok(Object.isFrozen(MATCHER_RULES));
   assert.equal(MATCHER_RULES.stuffedMaxFunctionShare, 0.2);
   assert.equal(MATCHER_RULES.negationWindow, 3);
   assert.deepEqual(MATCHER_RULES.negators.slice(0, 3), ['not', 'no', 'never']);
   const out = matcherGrade({ answer: 'kettle lantern orbit harbor', dimensions: { explanation: { items: ['kettle'] } }, lexicon: NO_LEX });
   assert.equal(out.graderSource, 'matcher');
-  assert.equal(out.graderVersion, 'matcher@2');
+  assert.equal(out.graderVersion, 'matcher@3');
+  assert.ok(Object.isFrozen(MATCHER_RULES.negators));
+  assert.equal(MATCHER_RULES.negators.length, 18);
+  assert.deepEqual(MATCHER_RULES.negators.slice(-4), ['havent', 'hasnt', 'wasnt', 'werent']);
 });
 
 test('item match needs ceil(0.6n) tokens; n ≤ 2 needs all', () => {
@@ -286,4 +289,92 @@ test('module-1 hand traces: incorrect answers never met; table printed', t => {
     }
   }
   t.diagnostic('\n' + rows.join('\n'));
+});
+
+// F1c-T18 (matcher@3, architect ruling R2): an alternative whose content tokens include a
+// negator matches only when the answer contains some negator.
+test('a positive restatement no longer matches a 3-token negator alternative', () => {
+  const d = dim(['beacon not lit tonight'], 'the beacon was lit tonight');
+  assert.deepEqual(d.matched, []);
+  assert.equal(d.status, 'not_met');
+});
+
+test('the negated form still matches', () => {
+  const d = dim(['beacon not lit tonight'], 'the beacon is not lit tonight');
+  assert.equal(d.status, 'met');
+  assert.equal(d.confidence, 'high');
+});
+
+test('a different negator still matches', () => {
+  assert.equal(dim(['beacon not lit tonight'], 'the beacon was never lit tonight').status, 'met');
+});
+
+test('hasnt within 3 words negates a matched token', () => {
+  assert.equal(dim(['kettle boils'], "the kettle hasn't boiled yet this morning").status, 'uncertain');
+  assert.equal(dim(['kettle boils'], 'the kettle has boiled yet this morning').status, 'met');
+});
+
+test('a red flag that contains a negator does not fire on a positive answer', () => {
+  const out = matcherGrade({
+    answer: 'the beacon was lit tonight and the kettle boils', lexicon: NO_LEX,
+    dimensions: { explanation: { items: ['kettle boils'] } }, redFlags: ['beacon not lit tonight']
+  });
+  assert.deepEqual(out.redFlagsMatched, []);
+  assert.equal(out.dimensions.explanation.status, 'met');
+});
+
+test('an acceptableCorrections entry with a negator needs a negator in the answer (FR-020 path)', () => {
+  const corr = answer => matcherGrade({
+    answer, lexicon: NO_LEX,
+    dimensions: { correction: { items: ['harbor orbit'], alternatives: ['the beacon is not lit tonight'] } }
+  }).dimensions.correction;
+  assert.notEqual(corr('the beacon is lit tonight').status, 'met');
+  assert.equal(corr("the beacon isn't lit tonight").status, 'met');
+});
+
+// (f) The guard holds per alternative (review.md rev-6 S2): each '|' alternative is graded
+// alone, so a sibling positive alternative can never make the probe fail falsely.
+const RUBRIC_KEYS = new Set(['explain', 'correct', 'rubric', 'mustCover', 'strongSignals', 'redFlags', 'mustInclude', 'askAbout']);
+const NEG = new Set(MATCHER_RULES.negators);
+const plainWords = t => t.toLowerCase().replace(/[’'`]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
+const hasNegatorToken = t => plainWords(t).some(w => NEG.has(w));
+const withoutNegators = t => plainWords(t).filter(w => !NEG.has(w)).join(' ');
+
+// Walks an exercise and collects every rubric alternative ('|' split) and every
+// acceptableCorrections entry, wherever it sits (catch, teachBack, followUp(s), challenges,
+// transfer, interview/scenario rubric, architectures, clarifications).
+function collectAlternatives(node, out) {
+  if (Array.isArray(node)) { node.forEach(n => collectAlternatives(n, out)); return; }
+  if (!node || typeof node !== 'object') return;
+  for (const [k, v] of Object.entries(node)) {
+    const list = Array.isArray(v) && v.every(x => typeof x === 'string') ? v : null;
+    if (list && k === 'acceptableCorrections') list.forEach(text => out.push({ text, asCorrection: true }));
+    else if (list && RUBRIC_KEYS.has(k)) list.forEach(item => item.split('|').forEach(text => out.push({ text, asCorrection: false })));
+    else collectAlternatives(v, out);
+  }
+}
+
+test('exposure probe: no negator-bearing alternative in packs/applied-ai matches its own text with the negators removed', t => {
+  const pack = new URL('../packs/applied-ai/', import.meta.url);
+  const lexicon = JSON.parse(readFileSync(new URL('practice.json', pack), 'utf8')).lexicon;
+  const alts = [];
+  for (const f of readdirSync(new URL('exercises/', pack)).filter(f => f.endsWith('.json')).sort()) {
+    collectAlternatives(JSON.parse(readFileSync(new URL(`exercises/${f}`, pack), 'utf8')), alts);
+  }
+  const FILLER = ' kettle lantern orbit';
+  const one = (text, asCorrection, answer) => matcherGrade({
+    answer, lexicon,
+    dimensions: { d: asCorrection ? { items: [], alternatives: [text] } : { items: [text] } }
+  }).dimensions.d.matched;
+  let probes = 0, control = 0, exposed = 0;
+  for (const { text, asCorrection } of alts.filter(a => hasNegatorToken(a.text))) {
+    probes++;
+    const answer = withoutNegators(text) + FILLER;
+    if (one(text, asCorrection, answer).length) exposed++;
+    if (one(withoutNegators(text), asCorrection, answer).length) control++;
+  }
+  t.diagnostic(`probes=${probes} control=${control} exposed=${exposed}`);
+  assert.ok(probes > 0, 'the pack has negator-bearing alternatives');
+  assert.ok(control > 0, 'control: the stripped alternative matches its own probe (non-vacuous)');
+  assert.equal(exposed, 0);
 });

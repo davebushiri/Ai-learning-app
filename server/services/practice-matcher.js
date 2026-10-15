@@ -5,7 +5,7 @@
 // It holds no subject words: any vocabulary comes from the pack's lexicon.
 // Any change to these rules bumps MATCHER_VERSION (FR-014).
 
-export const MATCHER_VERSION = 'matcher@2';
+export const MATCHER_VERSION = 'matcher@3';
 
 export const MATCHER_RULES = Object.freeze({
   itemCoverage: 0.6,
@@ -19,7 +19,7 @@ export const MATCHER_RULES = Object.freeze({
   stuffedMaxFunctionShare: 0.2,
   maxAlternatives: 8,
   negators: Object.freeze(['not', 'no', 'never', 'isnt', 'arent', 'doesnt', 'dont', 'didnt',
-    'cannot', 'cant', 'wont', 'wouldnt', 'shouldnt', 'without'])
+    'cannot', 'cant', 'wont', 'wouldnt', 'shouldnt', 'without', 'havent', 'hasnt', 'wasnt', 'werent'])
 });
 
 const R = MATCHER_RULES;
@@ -95,7 +95,8 @@ function makeAnswer(text, lexicon) {
     }
     return false;
   };
-  return { tokens, negatedAt, lexicon, functionShare };
+  const hasNegator = tokens.some(t => NEGATORS.has(t));
+  return { tokens, negatedAt, lexicon, functionShare, hasNegator };
 }
 
 // Every occurrence of an item token in the answer, directly or through a lexicon form,
@@ -117,9 +118,12 @@ function occurrences(ans, itemToken) {
 
 // FR-017: an alternative with n content tokens matches when ceil(0.6n − ε) of them appear
 // (n ≤ 2 needs all). A token counts as negated only if every occurrence is negated.
+// matcher@3 (R2): an alternative carrying a negator needs some negator in the answer, so a
+// positive restatement can't match a negated alternative on its other tokens alone.
 function matchAlternative(ans, alt) {
   const toks = contentTokens(alt);
   if (!toks.length) return null;
+  if (toks.some(t => NEGATORS.has(t)) && !ans.hasNegator) return null;
   const need = toks.length <= 2 ? toks.length : Math.ceil(toks.length * R.itemCoverage - R.epsilon);
   const found = toks.map(t => occurrences(ans, t)).filter(o => o.length);
   if (found.length < need) return null;
