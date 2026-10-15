@@ -494,3 +494,51 @@ Validity, re-run by me on `matcher@1` from `303dbe8`: every keyword-list row is 
 5. **Single rater:** QA wrote all the labels and there was no second rater. Disputed labels can be re-adjudicated, but the set is spent as a gate either way.
 
 **AI-quality verdict on module-1 content (SC-003c):** **FAIL** for today, A2 and B2. Only a founder `DECISION` can waive it.
+
+## matcher@3 (F1c-T18)
+
+### F1c-T21: the R4 incidental-negator row and its `matcher@2` validity record (2026-10-15)
+
+**Author:** qa-engineer · **Base:** `team/agents` at `7ce0aa2`, `packs/applied-ai` version 2, `MATCHER_VERSION = 'matcher@2'` (F1c-T18 not built). Nothing committed. **This section quotes no answer, rubric or narration text** (the founder is the learner). Alternatives are named by index.
+
+**Row added:** `tests/fixtures/practice/m1-labelled-answers.json` gets a new top-level `polarityRows` (1 row) and `polarityRowsNote`. `rows` and `qaRows` are untouched.
+
+| # | Exercise · stop | Class · tag | Words | Negator tokens (of the 18) | Expect (e / c / overall) |
+|---|---|---|---|---|---|
+| 0 | m1-catch-06-retrieval-vs-generation · s6 | incorrect · incidental-negator | 35 | 1 (an opening hedge, more than 3 words before any rubric-relevant word) | not_met / not_met / not_met |
+
+It was written from catch-06's narration and the s6 `misconception` only. It is not on catch-01 s2, catch-04 s6 or catch-05 s5 (F1c-T19's stops).
+
+**Validity under `matcher@2` (the ticket's gate; it must exist before T18 merges): PASS.** The row exercises the exposed shape: it reaches **correction `met` through `acceptableCorrections[1]`, a negator-bearing alternative** (one of the 4 exposed s6 alternatives in review.md §2). The run uses the real `matcherGrade`, the `packs/applied-ai` lexicon via `loadPracticePacks`/`getTrack`, and `graderInputFor`, with indices only:
+
+```
+matcher@2 polarityRows[0] m1-catch-06-retrieval-vs-generation s6: explanation partial, correction met, overall partial
+   explanation items[0] alt 2 matches alone; negator-bearing: false; in matched: true
+   correction acceptableCorrections[1] matched; negator-bearing: true
+```
+
+The same result from the named test (todo), `node --test --test-name-pattern="polarityRows|SC-014 R4" tests/acceptance/F1c.test.js`:
+
+```
+ok 3 - fixture: m1 polarityRows hold ≥ 1 incorrect incidental-negator row on m1-catch-06 s6, each with exactly one negator token, on a planted statement F1c-T19 doesn't edit
+ok 4 - SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION) # TODO F1c-T18
+# matcher@2 m1-catch-06-retrieval-vs-generation s6 partial met partial
+```
+
+**Information only, not a verdict: a scratch `matcher@3`.** This is a scratch copy of `practice-matcher.js` with exactly the 4 changes in F1c-T18's Interfaces (version string, the 4 negators, `hasNegator`, the one-line guard). It sits outside the repo and is not product code.
+
+| Run | explanation | correction | overall |
+|---|---|---|---|
+| scratch `matcher@3`, the row | partial | **met** (still `acceptableCorrections[1]`) | partial |
+| control: the same row with its hedge removed, `matcher@2` | partial | met | partial |
+| control: the same row with its hedge removed, scratch `matcher@3` | partial | not_met | partial |
+
+- **Gap confirmed at the dimension level.** The hedge alone keeps R4 open: under R2, one unrelated negator restores the wrong correction credit that `matcher@3` otherwise removes.
+- **Overall is not `met`** because the explanation is only partial, so SC-014's R4 line is expected to pass once T18 lands. This is a prediction from a scratch copy. The verdict is T22's run on the merged `matcher@3`.
+- **Watch item for T22 and the PM (not a bug today):** an incorrect answer gets a `met` correction on catch-06 s6 under both versions. If an answer pairs that with a met explanation, the overall becomes `met`, which is the major bug the ticket names. The fix route (R2c, or rewriting s6's alternatives positively) is the PM's and the architect's call.
+
+**Tests added (`tests/acceptance/F1c.test.js`):**
+- "fixture: m1 polarityRows hold ≥ 1 incorrect incidental-negator row on m1-catch-06 s6, each with exactly one negator token, on a planted statement F1c-T19 doesn't edit". It checks the fields, class, tag, part, planted stop in `packs/applied-ai`, the F1c-T19 exclusion, an expect that is never overall `met`, 1–40 words, exactly 1 token from the 18 negators, the note and the R4 note. Red first: it failed on the missing `polarityRowsNote` before the fixture row existed.
+- "SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)", `{ todo: 'F1c-T18' }`. It prints `MATCHER_VERSION exercise statementId explanation correction overall` per row and asserts that no row's overall is `met`. T22 removes the todo.
+
+**Regression (fresh, working tree with T21 only):** `npm test`, exit 0. `# tests 490 · # pass 403 · # fail 0 · # todo 87`. The baseline at `7ce0aa2` (stashed) was `# tests 488 · # pass 402 · # fail 0 · # todo 86`, so the change is +1 pass (the fixture test) and +1 todo (the R4 test).

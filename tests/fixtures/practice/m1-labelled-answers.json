@@ -643,5 +643,24 @@
         "overall": "met"
       }
     }
+  ],
+  "polarityRowsNote": "qa-engineer, 2026-10-15, F1c-T21 (spec SC-014 R4, PD-13; architect RISK R4 in review.md \"Ruling on the negator-bearing alternative flaw\" §6 and thread 0007): incorrect answers that assert the stop's misconception and carry exactly one negator that does not negate it (an opener or hedge). matcher@3 lets a negator-bearing alternative match any answer holding some negator, so these rows measure that known gap instead of assuming it. Written from the narration and the stop's misconception only, never from the rubric or acceptableCorrections. Graded against packs/applied-ai with its lexicon; never on a stop F1c-T19 edits. rows and qaRows are untouched.",
+  "polarityRows": [
+    {
+      "exercise": "m1-catch-06-retrieval-vs-generation",
+      "statementId": "s6",
+      "part": "stop:s6",
+      "class": "incorrect",
+      "tags": [
+        "incidental-negator"
+      ],
+      "text": "Not totally sure, but I would fix this retrieval failure by moving to a bigger model. A larger model knows more, so it would pick up the policy change and give the new figure.",
+      "expect": {
+        "explanation": "not_met",
+        "correction": "not_met",
+        "overall": "not_met"
+      },
+      "note": "qa-engineer, 2026-10-15, F1c-T21: asserts the s6 misconception in a learner's words; the one negator is an opening hedge in its own phrase, more than 3 words before any rubric-relevant word."
+    }
   ]
 }

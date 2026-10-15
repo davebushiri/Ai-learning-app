@@ -411,6 +411,80 @@ test('SC-012 FR-019 on module-1 wording: keyword lists partial, short correct se
 });
 
 // =============================================================================================
+// F1c-T21: SC-014 R4, the incidental-negator incorrect row (architect RISK R4, review.md
+// "Ruling on the negator-bearing alternative flaw" §6). matcher@3's rule (R2) lets a negator-bearing
+// alternative match any answer that holds some negator, so an incorrect answer with an unrelated
+// "no"/"not" is its known gap. The validity record (matcher@2) is in qa-report.md "matcher@3 (F1c-T18)".
+// Neither test prints answer text (the founder is the learner).
+// =============================================================================================
+
+// The 18 negators of matcher@3 (tasks.md F1c-T18): the 14 of matcher@2 plus the four added in the same bump.
+const NEGATORS_18 = new Set(['not', 'no', 'never', 'isnt', 'arent', 'doesnt', 'dont', 'didnt', 'cannot', 'cant',
+  'wont', 'wouldnt', 'shouldnt', 'without', 'havent', 'hasnt', 'wasnt', 'werent']);
+// Tokenized as FR-017 does: lowercase, apostrophes dropped, split on anything else.
+const answerWords = t => t.toLowerCase().replace(/[’'`]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
+// F1c-T19 rewrites acceptableCorrections on these stops, so a row there would measure a moving target.
+const T19_EDITED = new Set(['m1-catch-01-context-window s2', 'm1-catch-04-embeddings s6', 'm1-catch-05-structured-outputs s5']);
+const readAppliedAiExercise = id => {
+  const f = path.join(ROOT, 'packs/applied-ai/exercises', `${id}.json`);
+  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null;
+};
+
+test('fixture: m1 polarityRows hold ≥ 1 incorrect incidental-negator row on m1-catch-06 s6, each with exactly one negator token, on a planted statement F1c-T19 doesn\'t edit', () => {
+  const m1 = readM1Labelled();
+  assert.ok(typeof m1.polarityRowsNote === 'string' && /qa-engineer/.test(m1.polarityRowsNote) && /\d{4}-\d{2}-\d{2}/.test(m1.polarityRowsNote) && /R4/.test(m1.polarityRowsNote),
+    'polarityRowsNote says who, when and why (architect RISK R4)');
+  assert.ok(Array.isArray(m1.polarityRows) && m1.polarityRows.length >= 1, 'polarityRows is a non-empty array');
+  const isExpect = v => STATUSES.includes(v) || (Array.isArray(v) && v.length > 0 && v.every(s => STATUSES.includes(s)));
+  for (const [i, r] of m1.polarityRows.entries()) {
+    const at = `polarityRows[${i}]`;
+    assert.deepEqual(keys(r), ['class', 'exercise', 'expect', 'note', 'part', 'statementId', 'tags', 'text'], `${at} fields`);
+    assert.equal(r.class, 'incorrect', `${at} class`);
+    assert.deepEqual(r.tags, ['incidental-negator'], `${at} tags`);
+    assert.equal(r.part, `stop:${r.statementId}`, `${at} part`);
+    const ex = readAppliedAiExercise(r.exercise);
+    assert.ok(ex, `${at}: ${r.exercise} exists in packs/applied-ai`);
+    assert.equal(ex.type, 'catch', `${at}: ${r.exercise} is a catch exercise`);
+    assert.ok(ex.answerKey.planted.some(p => p.statementId === r.statementId), `${at}: ${r.statementId} is planted`);
+    assert.ok(!T19_EDITED.has(`${r.exercise} ${r.statementId}`), `${at}: on a stop F1c-T19 edits`);
+    assert.deepEqual(Object.keys(r.expect ?? {}).sort(), ['correction', 'explanation', 'overall'], `${at}: expect keys`);
+    for (const d of ['explanation', 'correction', 'overall']) assert.ok(isExpect(r.expect[d]), `${at}: expect.${d} is a status or a list`);
+    assert.ok(![r.expect.overall].flat().includes('met'), `${at}: an incorrect row never expects overall met`);
+    const w = answerWords(r.text);
+    assert.ok(w.length > 0 && w.length <= 40, `${at}: ${w.length} words, need 1..40`);
+    const negs = w.filter(x => NEGATORS_18.has(x));
+    assert.equal(negs.length, 1, `${at}: ${negs.length} negator tokens, need exactly 1`);
+    assert.ok(typeof r.note === 'string' && /qa-engineer/.test(r.note) && /\d{4}-\d{2}-\d{2}/.test(r.note), `${at}: note says who wrote it and when`);
+    assert.doesNotThrow(() => graderInputFor(ex, r.part, r.text), `${at} grader input`);
+  }
+  assert.ok(m1.polarityRows.some(r => r.exercise === 'm1-catch-06-retrieval-vs-generation' && r.statementId === 's6'), '≥ 1 row on m1-catch-06 s6');
+});
+
+test('SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)', { todo: 'F1c-T18' }, async t => {
+  const { matcherGrade, combineOverall, MATCHER_VERSION } = await import('../../server/services/practice-matcher.js');
+  const { loadPracticePacks, getExercise, getTrack } = await import('../../server/services/practice-pack.js');
+  const { openDb } = await import('../../server/db.js');
+  const tracks = loadPracticePacks(path.join(ROOT, 'packs'), openDb(':memory:'), { getPack: () => null });
+  assert.ok(tracks.has('applied-ai'), 'packs/applied-ai loads');
+  const { lexicon } = getTrack('applied-ai');
+  const m1 = readM1Labelled();
+  assert.ok(m1.polarityRows?.length >= 1, 'polarityRows present');
+  const graded = [];
+  for (const r of m1.polarityRows) {
+    const ex = getExercise('applied-ai', r.exercise);
+    assert.ok(ex, `exercise ${r.exercise}`);
+    const out = matcherGrade(graderInputFor(ex, r.part, r.text, lexicon).input);
+    assert.equal(out.graderVersion, MATCHER_VERSION);
+    const e = out.dimensions.explanation.status;
+    const c = out.dimensions.correction.status;
+    const overall = combineOverall([out.dimensions.explanation, out.dimensions.correction]);
+    t.diagnostic(`${MATCHER_VERSION} ${r.exercise} ${r.statementId} ${e} ${c} ${overall}`);
+    graded.push({ at: `${r.exercise} ${r.statementId}`, overall });
+  }
+  assert.deepEqual(graded.filter(g => g.overall === 'met').map(g => g.at), [], `an incorrect polarityRows row graded overall met under ${MATCHER_VERSION}`);
+});
+
+// =============================================================================================
 // F1c-T04: catch attempt API (US1, US6.3, server edge cases)
 // =============================================================================================
 
