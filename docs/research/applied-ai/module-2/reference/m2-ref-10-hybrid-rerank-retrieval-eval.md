@@ -59,7 +59,7 @@ Hybrid helps most when queries mix exact identifiers (part numbers, error codes)
 
 ## AWS mapping (verify)
 
-- Amazon OpenSearch Service supports hybrid queries with a normalization processor in a search pipeline (techniques min_max and l2; combinations arithmetic, geometric and harmonic mean), added in OpenSearch 2.11. `verified: "UNVERIFIED"` (search snippets of AWS announcements)
+- Amazon OpenSearch Service supports hybrid queries with a normalization processor in a search pipeline (techniques min_max and l2; combinations arithmetic, geometric and harmonic mean). Check the version: open-source OpenSearch introduced it in 2.10 (reviewer's prior knowledge, not verified), and the managed service's first supporting version may differ. `verified: "UNVERIFIED"` (search snippets of AWS announcements)
 - Bedrock knowledge bases offer hybrid search for some vector stores and reranking models on retrieved results (module-1 claim 8). `verified: "UNVERIFIED"`
 - Reranker models are available through Amazon Bedrock. `verified: "UNVERIFIED"`
 

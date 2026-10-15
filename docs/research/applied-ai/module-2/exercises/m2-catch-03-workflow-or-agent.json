@@ -105,7 +105,7 @@
           ],
           "correct": [
             "keep workflow|use workflow|fixed pipeline|coded steps|stay a workflow",
-            "agent only for unpredictable|agent for emails|test both|measure both|compare on real invoices|evaluate both"
+            "agent only for unpredictable|agent for emails|test both designs|test both options|compare on real invoices|measure against the workflow|evaluate both approaches"
           ]
         }
       },
@@ -122,7 +122,7 @@
         "rubric": {
           "explain": [
             "simplest first|start simple|simplest solution|least complex|simple baseline",
-            "cant show better|no evidence|need comparison|measure against|compare against",
+            "cant prove|cant show|no proof|no evidence|need comparison|measure against baseline|compare with workflow",
             "cost latency risk|extra cost|added risk|more risk"
           ],
           "correct": [

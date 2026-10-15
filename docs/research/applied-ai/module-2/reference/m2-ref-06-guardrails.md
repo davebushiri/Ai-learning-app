@@ -58,7 +58,7 @@ Design the controls that limit what an agent can do when it is wrong or manipula
 
 ## AWS mapping (verify)
 
-- Bedrock Agents can require **user confirmation** before invoking a specific action-group function; AWS positions it as a safeguard against prompt injection from API or knowledge-base content. `verified: "UNVERIFIED"` (search snippet of the AWS user guide)
+- Bedrock Agents can require **user confirmation** before invoking a specific action-group function; AWS positions it as a safeguard against prompt injection from API or knowledge-base content. The person asked to confirm is the agent's end user, so it is not a staff approval step, and it doesn't help when the end user is the one who planted the injected text. `verified: "UNVERIFIED"` (search snippets of the AWS user guide)
 - **Return of control**: an action group can hand the elicited parameters back to your application instead of a Lambda, so your code runs (and can gate) the action. `verified: "UNVERIFIED"` (search snippet)
 - Action-group Lambdas run under their own IAM execution role, which is where least privilege is applied. `verified: "UNVERIFIED"`
 - Bedrock Guardrails include content filters with a prompt-attack category. `verified: "UNVERIFIED"`

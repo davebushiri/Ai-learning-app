@@ -108,7 +108,7 @@
         "rubric": {
           "explain": [
             "nondeterministic|non deterministic|varies between runs|different each run|randomness|run to run variation",
-            "single trial|one run|only once|one attempt",
+            "single trial|one trial|one run|only once|one attempt",
             "small sample|wide uncertainty|confidence interval|not representative|real mix differs"
           ],
           "correct": [

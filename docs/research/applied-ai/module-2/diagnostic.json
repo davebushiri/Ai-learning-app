@@ -34,7 +34,7 @@
       "isFlawed": true,
       "answer": "Wrong. A final answer only means the model stopped asking for tools. Check the outcome in code (read the record back, compare with tool results).",
       "rubric": [
-        "model stopped asking for tools|end turn|stopping is not success",
+        "model stopped asking for tools|end turn|not success",
         "verify outcome|check in code|read it back"
       ]
     },
@@ -107,7 +107,7 @@
       "isFlawed": true,
       "answer": "Wrong. A prompt instruction can be ignored or overridden by injected text. Enforce the limit in the refund tool's code, and require approval above it.",
       "rubric": [
-        "prompt is not enforcement|can be ignored|injection",
+        "not enforcement|can be ignored|injection",
         "enforce in code|limit in the tool|approval above the limit"
       ]
     },

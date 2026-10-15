@@ -107,16 +107,16 @@
       {
         "statementId": "s3",
         "misconception": "A new idempotency key per call prevents duplicates.",
-        "whyWrong": "An idempotency key only works if every retry of the same logical action reuses the same key. If the model invents a fresh key each time, a retried refund looks like a new request and is paid again. Our code should derive the key from the action (the order and refund request), store it, and send it on every attempt, so the server can return the first result.",
+        "whyWrong": "An idempotency key only works if every retry of the same logical action reuses the same key. If the model invents a fresh key on each tool call, then whenever the model calls the refund tool again (after a timeout or an unclear result), the retry looks like a new request and is paid again. Our code should derive the key from the action (the order and refund request), store it, and send it on every attempt, so the server can return the first result.",
         "acceptableCorrections": [
-          "Our code should derive one stable key per refund, from the order, and reuse it on every retry.",
+          "Our code should derive one stable key per refund, from the order and the refund request, and reuse it on every retry.",
           "The same logical action must reuse the same key, so the server can return the original result."
         ],
         "exceptions": "None.",
         "kind": "factual",
         "rubric": {
           "explain": [
-            "new request|looks like a new refund|different key each retry|key changes on retry|not recognized as duplicate|duplicate not detected",
+            "new request|looks like a new refund|different key each retry|key changes on retry|looks new|treated as new",
             "same key for same action|stable key|reuse key|key must stay the same"
           ],
           "correct": [
@@ -137,7 +137,7 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "only changes sampling|sampling variety|randomness|not a loop control|doesnt bound steps|wont stop loops|not stop loops|doesnt stop loops",
+            "only changes sampling|sampling variety|randomness|doesnt stop|wont stop|cant stop|doesnt bound|wont fix",
             "stuck|failing tool|tool keeps failing|unreachable goal|cant reach goal"
           ],
           "correct": [

@@ -36,14 +36,14 @@
       "set direction and scope|made the decisions|founder decisions",
       "designed the process and gates|roles and decision rights",
       "reviewed and playtested|merged changes",
-      "AI wrote the code|didnt hand write the code|code was AI written"
+      "AI wrote the code|didnt write it|code was AI written"
     ]
   },
   "transfer": {
     "scenario": "The interviewer says: 'So you've never actually built RAG or an agent?' Answer in about 60 seconds without overclaiming.",
     "rubric": [
       "true not in the product|not built yet|no agent in the app",
-      "what I did build: gateway with deadlines, fallback and logging",
+      "what I did build: gateway with deadlines, fallback and logging|gateway|deadlines and fallback",
       "evaluation discipline: held out set caught overfitting|fake API failure tests",
       "agent experience is in the development process|AI coding agents",
       "a concrete next step|read only agent with step cap|retrieval with citations"
@@ -52,9 +52,9 @@
   "question": "Tell me about your hands-on experience with agents. Have you taken one to production?",
   "rubric": {
     "mustCover": [
-      "not in production|no agent in the product|not shipped|havent shipped|didnt ship|never deployed|no live users",
+      "not in production|no agent in the product|not shipped|havent shipped|didnt ship|never deployed|no users",
       "single structured calls|structured output|single shot calls|one call per task",
-      "tasks are single step|simplest design|agent not justified|chose not to use an agent",
+      "tasks are single step|single step|simplest design|agent unnecessary|agent overkill",
       "deadlines|timeouts|bounded retries|max retries",
       "required fallback|logs every call|logging per call|observability",
       "AI coding agents|agent roles|multi agent development|orchestrated agents|team of agents",

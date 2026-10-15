@@ -87,7 +87,7 @@
     },
     {
       "id": "s7",
-      "text": "On our set, keyword plus vector search, reranked from the top fifty, beat either model alone, so that's what we ship."
+      "text": "On our set, keyword plus vector search with the new model, reranked from the top fifty, beat vector search alone within our latency budget, so that's what we ship."
     },
     {
       "id": "s8",
@@ -116,7 +116,7 @@
       "question": "What does recall at ten tell you, and what doesn't it tell you?",
       "rubric": [
         "right chunk in top ten|share of queries with a hit|relevant chunk retrieved",
-        "says nothing about the answer|answer can still be wrong|not answer correctness|doesnt tell answer|doesnt mean correct|not the answer",
+        "says nothing about the answer|answer can still be wrong|not answer correctness|doesnt guarantee|not correctness|not the answer",
         "measure answers separately|faithfulness|correctness of the answer"
       ]
     }

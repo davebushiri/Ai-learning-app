@@ -79,7 +79,7 @@
       "sandbox or recorded tool responses|mocked tools",
       "cost per successful task",
       "shadow mode|canary|gradual rollout",
-      "grade outcome not exact path|not one fixed sequence"
+      "grade the outcome|outcome over path|any valid path"
     ],
     "redFlags": [
       "vibe check|vibes"

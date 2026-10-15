@@ -91,8 +91,8 @@
       "credit tool capped and approved above a threshold|human approval",
       "idempotency key per credit|one credit per outage per account",
       "customer notes untrusted|injection",
-      "booking system is flaky: timeouts, retries, fallback",
-      "evaluate on real past conversations with repeated trials"
+      "booking system is flaky: timeouts, retries, fallback|timeouts and retries|fallback",
+      "evaluate on real past conversations with repeated trials|repeated trials|real past conversations"
     ]
   },
   "brief": "A parcel-delivery company handling 2 million deliveries a month wants an assistant in its app and website. It should answer 'where is my parcel', reschedule deliveries, update drop-off instructions, and issue goodwill credits when a parcel is late. Today 120 support staff do this by hand. The assistant must use the existing tracking API, a scheduling service that sometimes times out at peak, and a billing system. Last year a scripted bot issued duplicate credits during a billing outage, and finance has not forgotten. The company already runs on AWS.",
@@ -105,7 +105,7 @@
         "mix",
         "intents"
       ],
-      "reveal": "About 40,000 conversations a day. Roughly 70% are 'where is my parcel', 15% reschedules, 10% credit requests, 5% anything else."
+      "reveal": "About 4,000 conversations a day. Roughly 70% are 'where is my parcel', 15% reschedules, 10% credit requests, 5% anything else."
     },
     {
       "askAbout": [
@@ -135,7 +135,7 @@
         "api",
         "idempotency"
       ],
-      "reveal": "The scheduling service times out on about 2% of calls at peak. The billing API accepts an idempotency key and rejects a repeated key with the original result."
+      "reveal": "The scheduling service times out on about 2% of calls at peak. The billing API accepts an idempotency key and treats a repeated key as a duplicate, returning the original result."
     },
     {
       "askAbout": [
@@ -207,7 +207,7 @@
     },
     {
       "name": "Managed agent on Bedrock (Bedrock Agents or AgentCore)",
-      "summary": "Bedrock Agents with action groups backed by Lambda (least-privilege IAM role per function), user confirmation on the credit action, or return of control so the application gates credits; or agent code hosted on AgentCore Runtime with Gateway for tools and Observability for traces. Policy, approval and idempotency still enforced in the billing integration. All AWS feature details are UNVERIFIED and must be checked.",
+      "summary": "Bedrock Agents with action groups backed by Lambda (least-privilege IAM role per function), or return of control so the application gates credits; or agent code hosted on AgentCore Runtime with Gateway for tools and Observability for traces. Policy, supervisor approval above 10 dollars and idempotency are still enforced in the application or billing integration. Bedrock's user-confirmation feature asks the end user (here the customer) to confirm an action, so it is not the supervisor approval and does not stop a customer who wrote the injected note. All AWS feature details are UNVERIFIED and must be checked.",
       "strengths": [
         "Managed orchestration, tracing and hosting",
         "Fits an AWS-first team"
@@ -286,7 +286,7 @@
       "narrow tools in the customer's scope|least privilege|authorization in code",
       "credit policy and approval in code|supervisor approval above the threshold",
       "idempotency key per credit|no duplicate credits on retry",
-      "timeouts, bounded retries and fallback for the scheduling service",
+      "timeouts, bounded retries and fallback for the scheduling service|timeouts and retries|retry with backoff|fallback message|circuit breaker",
       "customer text treated as untrusted|injection defenses limit impact",
       "evaluation on real conversations before launch|repeated trials|zero wrong credits"
     ],
@@ -301,8 +301,7 @@
       "marks AWS specifics as to-be-verified"
     ],
     "redFlags": [
-      "retry every call blindly|blind retries",
-      "shared admin credentials",
+      "retry every call blindly",
       "ship on a demo|demo only"
     ]
   }

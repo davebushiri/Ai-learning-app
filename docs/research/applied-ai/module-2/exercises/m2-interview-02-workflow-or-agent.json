@@ -58,7 +58,7 @@
       "agent when steps cant be predicted|open ended|unpredictable path|model chooses the next step",
       "single call when one step is enough|one model call|no agent needed|simple lookup",
       "cost latency and variation|more model calls|compounding errors",
-      "start simple and measure|baseline first|evaluate both|simplest solution"
+      "start simple and measure|baseline first|evaluate both designs|simplest solution"
     ],
     "strongSignals": [
       "prompt chaining|routing|orchestrator workers|evaluator optimizer",
@@ -67,9 +67,7 @@
       "testability and audit|same path every time",
       "frameworks can hide prompts"
     ],
-    "redFlags": [
-      "agents for everything|agent for everything"
-    ]
+    "redFlags": []
   },
   "followUps": [
     {

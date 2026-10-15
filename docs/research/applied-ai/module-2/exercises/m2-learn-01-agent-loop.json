@@ -73,11 +73,11 @@
     },
     {
       "id": "s4",
-      "text": "The service times out, so we send back a result marked as an error that says the service is slow and to retry shortly."
+      "text": "The first call times out. Here's the decision point: a read is safe to repeat, so our code retries it once after a short wait."
     },
     {
       "id": "s5",
-      "text": "Here's the decision point. Reads are safe to repeat, so our code retries once, and the parcel shows a weather hold at the depot."
+      "text": "Had that failed too, we'd send back a result marked as an error, saying the service is slow. This time it works: a weather hold at the depot."
     },
     {
       "id": "s6",
@@ -108,7 +108,7 @@
         "model stops asking for tools|end turn|final answer ends loop|no more tool calls",
         "step cap|max steps|iteration limit|eight steps",
         "verify outcome|check the answer|check against tool result|match the result",
-        "finished is not success|done is not correct|stopping is not success"
+        "not success|isnt success|not proof|doesnt prove"
       ]
     },
     {

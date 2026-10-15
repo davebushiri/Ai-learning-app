@@ -50,7 +50,7 @@
     "rubric": [
       "code limits still hold|caps in code|tool limits hold|scoped tool",
       "approval still holds|human approval|person approves",
-      "prompt rule would not|prompt instruction fails|system prompt not enough"
+      "prompt rule fails|prompt instruction fails|prompt fails|not enough|prompt bypassed|prompt overridden"
     ]
   },
   "transfer": {
@@ -87,7 +87,7 @@
     },
     {
       "id": "s6",
-      "text": "Each refund carries an idempotency key that our code builds from the order, so a retry can't pay twice."
+      "text": "Each refund carries an idempotency key that our code builds from the order and the refund request, so a retry can't pay twice."
     },
     {
       "id": "s7",
@@ -102,7 +102,7 @@
     {
       "question": "Why do the refund limits live in code instead of in the system prompt?",
       "rubric": [
-        "model can be manipulated|injection can sway it|model may ignore the prompt|prompt is not enforcement",
+        "model can be manipulated|injection can sway it|model may ignore the prompt|not enforcement",
         "code enforces|limits in the tool|checked in code|server side checks",
         "blast radius|limit damage|contain what it can do"
       ]

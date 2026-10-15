@@ -41,7 +41,7 @@
     }
   ],
   "followUp": {
-    "question": "Design the next experiment for this catalog search: what do you change, what do you hold fixed, and what do you measure?",
+    "question": "Design the next experiment for this support search: what do you change, what do you hold fixed, and what do you measure?",
     "rubric": [
       "one change at a time|hold everything else fixed|single variable",
       "same labelled queries|same test set",
@@ -63,7 +63,7 @@
   "narration": [
     {
       "id": "s1",
-      "text": "We labelled three hundred real queries with the chunks that answer them, including part-number lookups."
+      "text": "We labelled three hundred real questions from our support inbox with the chunks that answer them, including error-code lookups."
     },
     {
       "id": "s2",
@@ -71,7 +71,7 @@
     },
     {
       "id": "s3",
-      "text": "Hybrid search merged keyword and vector results by rank, and lifted recall at ten on the part-number queries."
+      "text": "Hybrid search merged keyword and vector results by rank, and lifted recall at ten on the error-code questions."
     },
     {
       "id": "s4",
@@ -133,7 +133,7 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "retrieval not answer|retrieval metric|measures retrieval|only retrieval|retrieved not correct|doesnt measure answers",
+            "retrieval metric|measures retrieval|only retrieval|retrieval only|doesnt guarantee|not correctness|not accuracy",
             "model can misuse|ignore chunks|misread|generation errors|hallucinate|outdated chunk"
           ],
           "correct": [
@@ -154,11 +154,11 @@
         "kind": "tradeoff",
         "rubric": {
           "explain": [
-            "depends on data|depends on documents|no general rule|data dependent|case by case",
+            "depends on data|depends on documents|it depends|data dependent|case by case",
             "chunking matters|chunk size|chunk boundaries|added context|contextual chunks"
           ],
           "correct": [
-            "test both|measure both|experiment|ab test|compare on labelled set|one change at a time",
+            "test separately|measure separately|test chunking too|experiment|ab test|compare on labelled set|one change at a time",
             "recall on test set|labelled queries|let numbers decide|use metrics"
           ]
         }

@@ -44,11 +44,11 @@
     }
   ],
   "followUp": {
-    "question": "Which leg of the lethal trifecta does the email rule in this narration remove, and what would happen without it?",
+    "question": "How much of the lethal trifecta does the email rule in this narration address, and what risk is left, given that tickets are written by staff?",
     "rubric": [
-      "external communication|sending out|exfiltration leg",
-      "private data could leak|data sent to attacker|exfiltrate",
-      "allow list|company domain only|restricted recipients"
+      "external communication|sending out|exfiltration leg|outbound email",
+      "narrows not removes|staff can still receive|insider|internal attacker|ticket author gets the data",
+      "approval before sending|limit what email can contain|only the requester|restrict recipients further"
     ]
   },
   "transfer": {
@@ -128,7 +128,7 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "no guarantee|not guaranteed|reduces not removes|not fool proof|no reliable defense|not reliable|only lowers risk",
+            "no guarantee|not guaranteed|reduces risk|only lowers risk|not foolproof|isnt foolproof|not bulletproof|not reliable",
             "untrusted input|untrusted|attacker text|external text|data not instructions",
             "injection|indirect injection|prompt injection|cant stop injection|doesnt stop injection|not stop injection|wont stop injection|never stops injection"
           ],

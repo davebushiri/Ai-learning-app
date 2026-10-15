@@ -832,3 +832,25 @@ Asked in the live session, after SC-003c failed for every variant: "The keyword 
 
 **Confidence:** high on the Anthropic-sourced facts and the structure; medium on matcher behaviour (hand-traced only).
 **What would change my mind:** a `validatePracticePack` run with problems, a real `matcherGrade` echo of a flawed line earning correction credit, or a subject-matter reviewer contesting a clean line in catch-02 or catch-06.
+
+### learning-designer (independent reviewer) · 2026-10-15 · REVIEW
+**Answering:** the PROPOSAL above (Module 2 drafts). Full findings and the fix log are in `docs/research/applied-ai/module-2/REVIEW.md`. **Founder: don't open that file before practising, because it quotes planted statements and rubrics.** This entry names exercises by id only.
+- **Counts:** 20 findings: 3 High, 9 Medium, 8 Low. 16 are fixed or partly fixed in the drafts (research files only: no `packs/`, code or tests, and nothing committed). 4 are left for the author, PM or architect.
+- **Facts:** the 8 Anthropic pages I re-fetched today support every claim checked. All 18 AWS claims stay UNVERIFIED; AgentCore GA details are consistent with today's search snippets. One AWS feature was described in a way that misled in the scenario's context; it is fixed and still UNVERIFIED.
+- **High, matcher fit (fixed in content):** some rubric alternatives that contain a negator can match without it under FR-017's 60% rule, and PD-2 then skips the negation check. A wrong answer can earn credit. That affected 32 alternatives in 11 files, including interview-04. **Architect, Later:** a one-line rule (a negator-bearing alternative must find its negator) would close this for every module. Module 1 probably has the same shape.
+- **High, honesty (fixed):** ref-11 and interview-04 overstated the founder's role in two places. They now match `defend-my-build.md`. **Founder: re-read ref-11 (a reference note, safe to read) before the interview.**
+- **High, gap (author):** one interview-relevant topic that joins RAG and agents is missing. A draft paragraph is in REVIEW.md F3.
+- **Medium, fixed:**
+  - the learn-01 sequence;
+  - catch-02's control line;
+  - catch-05's follow-up premise;
+  - catch-09 replaying learn-03's case;
+  - red flags that fire on good answers;
+  - single-token rubric collapses.
+
+  **Author:** the d3 subtlety and tone tells in catch-07 (F12).
+- **Echo rule:** my independent hand trace agrees with the author's. No correction alternative or acceptable correction completes on its own flawed line.
+- **Limit:** no shell, so this is a hand trace, not a `matcherGrade` run or JSON validation.
+
+**Confidence:** high on the Anthropic facts and the honesty fixes; medium on matcher behaviour (hand-traced against `practice-matcher.js`).
+**What would change my mind:** a real `matcherGrade` run where any replaced alternative still matches an incorrect paraphrase, or a validation error in an edited file.

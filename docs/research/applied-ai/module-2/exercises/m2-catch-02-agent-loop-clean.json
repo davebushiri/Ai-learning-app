@@ -79,7 +79,7 @@
     },
     {
       "id": "s8",
-      "text": "If the same tool is called with the same arguments three times in a row, we stop and flag a loop."
+      "text": "If the same tool is called with the same arguments and gets the same result three times in a row, we stop and flag a loop."
     }
   ],
   "answerKey": {
