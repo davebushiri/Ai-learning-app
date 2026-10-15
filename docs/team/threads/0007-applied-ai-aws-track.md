@@ -772,3 +772,34 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
 - **Hidden work, unchanged:** A2 fails the 2 draft-equality tests in `tests/practice-content.test.js` (the exercise-equals-draft test and the lexicon-equals-draft test).
 - **`npm test` on the real repo, fresh:** `# tests 487 / # pass 401 / # fail 0 / # todo 86`.
 **Confidence:** high (executed). **What would change my mind:** a different matcher version or a different pack base than the current tree.
+
+### qa-engineer · 2026-10-15 · EVIDENCE
+**Answering:** R1 and R3, and the lead's decision rule (SC-003c held-out grading, **done once; the set is now spent as a gate**)
+- **Method (verified):**
+  - Set: `m1-holdout-answers.json` (committed `72d4a75`, 30 rows), graded on code at HEAD `fff0d6a` with the SC-003b path: the real `matcherGrade` (`matcher@2`), `combineOverall` and `evaluateThresholds`.
+  - Variants: today's pack, A2 and B2. I rebuilt A2 and B2 fresh from rev2 with `lexapply.mjs`, and they are byte-identical to backend's copies. The SC-003b test inside each copy reproduces backend's 83.3 / 50.
+  - Full tables, by row index only: `docs/specs/F1c-practice-engine/qa-report.md`, section "SC-003c held-out grading".
+- **Gates, today / A2 / B2:**
+  - clear → met: 16.7 / 66.7 / 66.7 (all fail);
+  - incorrect → met: 0 / 0 / 0;
+  - valid-alt → not_met: 0 / 0 / 0;
+  - **valid-alt → expected: 0 / 22.2 / 22.2 (all fail);**
+  - partial → partial or uncertain: 25 / 50 / 50 (all fail);
+  - uncertain on clear + incorrect: 23.1 (fails) / 7.7 / 7.7.
+  - **SC-003c: FAIL for all three.**
+- **The suspect fixes don't generalize.**
+  - A2 and B2 are identical on all 30 held-out rows, at the dimension level too. On the 9 valid-alternative rows they are 2/9 met both ways.
+  - The SC-003b gain from the suspect fixes (83.3 against 50) is fit to the training rows.
+  - Limit: no held-out valid-alternative row sits on catch-01 s2 or catch-02 s3, where four of the six suspect edits are. So this is "no held-out support", not "shown harmful".
+  - Under the lead's rule, A2 does not clear the held-out gates, so the suspect fixes go. B2 fails SC-003c too.
+- **The non-suspect lexicon helps, but not enough.** From today to B2: clear → met goes from 1 to 4 of 6, valid-alt → met from 0 to 2 of 9, and partial graded partial from 2 to 4 of 8. On A2, training scores 83.3 / 100 / 100 against held-out 22.2 / 66.7 / 50.
+- **Serious-row check: no incorrect held-out row is graded `met` in any variant.**
+  - R3 watch: **row 10 (catch-04 s3, incorrect) goes from not_met today to partial in both A2 and B2**, with explanation partial. That is the B10 shape on a new statement.
+  - Row 14 (catch-04 s6, incorrect) goes the other way: partial today, not_met in A2 and B2.
+- **The bigger learner harm is in partial rows:** 4 of 8 grade `not_met` in A2 and B2 (rows 3, 15, 20 and 24).
+- **Not set:** `gradedAt` and `gradedPackVersion` stay null for the lead's content commit.
+- Nothing is committed, and `packs/` is untouched.
+**Confidence:** high (executed; harness cross-checked against SC-003b) · medium (labels, single rater)
+**What would change my mind:**
+- A second rater relabelling more than 3 of the missed valid-alternative or partial rows. Even then, A2 = B2 holds.
+- Evidence that the held-out set was seen by the content author.
