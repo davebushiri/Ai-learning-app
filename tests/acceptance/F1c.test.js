@@ -348,11 +348,14 @@ test('SC-003b module-1 labelled set thresholds', { todo: 'F1c-T11' }, async t =>
 const HOLDOUT = path.join(ROOT, 'tests/fixtures/practice/m1-holdout-answers.json');
 const HOLDOUT_MIN = { 'valid-alternative': 6, partial: 6, incorrect: 4, clear: 4 };
 
-test('SC-003c holdout file shape: ≥ 6 valid-alternative, ≥ 6 partial, ≥ 4 incorrect, ≥ 4 clear rows on ≥ 4 catch exercises, every row on a planted statement, gradedAt null', () => {
+test('SC-003c holdout file shape: ≥ 6 valid-alternative, ≥ 6 partial, ≥ 4 incorrect, ≥ 4 clear rows on ≥ 4 catch exercises, every row on a planted statement, marked graded (gradedAt date, gradedPackVersion)', () => {
   assert.ok(existsSync(HOLDOUT), 'tests/fixtures/practice/m1-holdout-answers.json exists');
   const set = JSON.parse(readFileSync(HOLDOUT, 'utf8'));
+  // The set was graded once (thread 0007 DECISION) and is spent; the file must record when and against which pack.
   assert.ok(Object.hasOwn(set, 'gradedAt'), 'carries a gradedAt field');
-  assert.equal(set.gradedAt, null, 'gradedAt is null until the one grading at content freeze');
+  assert.ok(typeof set.gradedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(set.gradedAt), `gradedAt is a YYYY-MM-DD date, got ${JSON.stringify(set.gradedAt)}`);
+  assert.equal(new Date(`${set.gradedAt}T00:00:00Z`).toISOString().slice(0, 10), set.gradedAt, 'gradedAt is a real calendar date');
+  assert.ok(typeof set.gradedPackVersion === 'string' && set.gradedPackVersion.trim().length > 0, 'gradedPackVersion is a non-empty string');
   assert.ok(Array.isArray(set.rows), 'rows is an array');
 
   const exDir = path.join(ROOT, 'packs/applied-ai/exercises');
