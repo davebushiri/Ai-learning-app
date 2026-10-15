@@ -1,0 +1,124 @@
+{
+  "id": "m2-learn-03-embedding-migration",
+  "module": "m2",
+  "type": "learn",
+  "objective": "Walk through choosing and migrating to a new embedding model: evaluate on your own labelled queries, rebuild the index, retune thresholds, compare hybrid and reranking, and keep a rollback.",
+  "prerequisites": [
+    "m1-learn-02-rag-pipeline"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "embeddings",
+    "embedding-model-choice",
+    "re-embedding",
+    "recall-at-k",
+    "hybrid-search",
+    "reranking"
+  ],
+  "referenceIds": [
+    "m2-ref-09",
+    "m2-ref-10"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Embeddings",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Muennighoff et al. 2022, MTEB: Massive Text Embedding Benchmark",
+      "url": "https://arxiv.org/abs/2210.07316",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "Cormack, Clarke and Buettcher 2009, Reciprocal rank fusion (SIGIR)",
+      "url": "https://dl.acm.org/doi/10.1145/1571941.1572114",
+      "verified": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "AWS: Create a knowledge base (embedding model fixed at creation)",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Your new model wins on recall but costs twice as much per query and adds 40 ms. How do you decide?",
+    "rubric": [
+      "measure answer quality too|end to end impact|does it change answers",
+      "cost per query|latency budget|p95 latency",
+      "business value of the gain|is the gain worth it|trade off against cost"
+    ]
+  },
+  "transfer": {
+    "scenario": "A legal team's search index was built three years ago with an older embedding model. They ask whether to switch to a legal-domain model. What is your plan?",
+    "rubric": [
+      "label real queries|own test set|labelled queries from the team",
+      "recall at k|hit rate|MRR",
+      "new index|re-embed corpus|rebuild the index",
+      "retune thresholds|cutoff per model|scores differ by model",
+      "compare hybrid|keyword plus vector|reranker",
+      "rollback|keep old index|switch reads gradually"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Our search runs on an embedding model from two years ago, and a newer model ranks higher on a public leaderboard."
+    },
+    {
+      "id": "s2",
+      "text": "A leaderboard is a shortlist, not a decision, so we test on our own queries first."
+    },
+    {
+      "id": "s3",
+      "text": "We label three hundred real queries with the chunks that answer them, including part-number lookups."
+    },
+    {
+      "id": "s4",
+      "text": "For each setup we measure recall at ten: the share of queries with a right chunk in the top ten."
+    },
+    {
+      "id": "s5",
+      "text": "The new model's vectors live in a different space, so we build a second index and embed the whole corpus again."
+    },
+    {
+      "id": "s6",
+      "text": "Here's the decision point. Its scores sit on a different scale, so our old cutoff of 0.75 is retuned on the labelled queries."
+    },
+    {
+      "id": "s7",
+      "text": "On our set, keyword plus vector search, reranked from the top fifty, beat either model alone, so that's what we ship."
+    },
+    {
+      "id": "s8",
+      "text": "We switch reads to the new index, keep the old one for two weeks as a rollback, then delete it."
+    }
+  ],
+  "teachBack": [
+    {
+      "question": "Why not just pick the model at the top of the public leaderboard?",
+      "rubric": [
+        "own queries differ|domain differs|our data|benchmark is general",
+        "shortlist not decision|starting point|test before choosing",
+        "labelled set|evaluate on our queries|measure recall"
+      ]
+    },
+    {
+      "question": "What has to happen to the index and the thresholds when the embedding model changes?",
+      "rubric": [
+        "different vector space|vectors not comparable|incompatible spaces",
+        "re-embed the corpus|new index|rebuild the index|backfill",
+        "retune the cutoff|thresholds per model|score scale differs",
+        "rollback|keep the old index|switch reads"
+      ]
+    },
+    {
+      "question": "What does recall at ten tell you, and what doesn't it tell you?",
+      "rubric": [
+        "right chunk in top ten|share of queries with a hit|relevant chunk retrieved",
+        "says nothing about the answer|answer can still be wrong|not answer correctness|doesnt tell answer|doesnt mean correct|not the answer",
+        "measure answers separately|faithfulness|correctness of the answer"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "id": "m2-catch-06-embeddings-ops-clean",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Recognize correct embedding operations (input types, normalization, approximate search, dimensions, model changes, thresholds) without false alarms.",
+  "prerequisites": [
+    "m2-learn-03-embedding-migration"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "embeddings",
+    "vector-similarity",
+    "ann-index",
+    "embedding-dimensions",
+    "re-embedding"
+  ],
+  "referenceIds": [
+    "m2-ref-09"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Embeddings",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Malkov and Yashunin 2016, HNSW approximate nearest neighbor search",
+      "url": "https://arxiv.org/abs/1603.09320",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "Kusupati et al. 2022, Matryoshka Representation Learning",
+      "url": "https://arxiv.org/abs/2205.13147",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "AWS: Amazon Titan Text Embeddings models",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "You inherit a vector index with no notes. Which two of these practices would you check first, and how?",
+    "rubric": [
+      "model and version per vector|which model made the vectors|provenance",
+      "approximate recall against exact search|compare with exact search|ANN recall",
+      "recall on a labelled set|test queries|measure retrieval"
+    ]
+  },
+  "transfer": {
+    "scenario": "Search results suddenly got worse after a vendor quietly updated its embedding model behind the same API name. What do you check and change?",
+    "rubric": [
+      "query and stored vectors from different versions|version mismatch|vectors not comparable",
+      "check model version per vector|stored provenance",
+      "pin the model version|use a versioned model id",
+      "re-embed the corpus|rebuild the index",
+      "re-run recall on the test set|measure retrieval",
+      "retune thresholds|cutoff per model"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Documents and queries are embedded with the same model, using its document and query input types."
+    },
+    {
+      "id": "s2",
+      "text": "The vectors come back normalized to length one, so cosine similarity and dot product rank results the same way."
+    },
+    {
+      "id": "s3",
+      "text": "Our index uses approximate search, which can miss a few true nearest neighbors in exchange for speed."
+    },
+    {
+      "id": "s4",
+      "text": "We measured that by comparing its top ten with an exact search on a sample of queries."
+    },
+    {
+      "id": "s5",
+      "text": "Dropping from 1,024 to 512 dimensions halved the size of the stored vectors, and we kept it because recall on our test set barely moved."
+    },
+    {
+      "id": "s6",
+      "text": "Our next model isn't documented as sharing a vector space with this one, so we'll re-embed the whole corpus into a new index."
+    },
+    {
+      "id": "s7",
+      "text": "Every stored vector records the name and version of the model that produced it."
+    },
+    {
+      "id": "s8",
+      "text": "A similarity cutoff tuned for one model always gets retuned for the next, because score scales differ."
+    }
+  ],
+  "answerKey": {
+    "planted": [],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8"
+    ]
+  }
+}

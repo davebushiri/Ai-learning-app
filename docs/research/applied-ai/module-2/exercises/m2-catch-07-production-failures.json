@@ -1,0 +1,180 @@
+{
+  "id": "m2-catch-07-production-failures",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch subtle errors in fixing production agent failures: unstable idempotency keys, treating loops as a sampling problem, and blind restarts after partial failure.",
+  "prerequisites": [
+    "m2-catch-05-guardrails"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "idempotency",
+    "retries",
+    "agent-loops",
+    "runaway-cost",
+    "partial-failure"
+  ],
+  "referenceIds": [
+    "m2-ref-08",
+    "m2-ref-02"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: How we built our multi-agent research system (2025)",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: Handle tool calls (is_error)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Amazon Builders' Library: Making retries safe with idempotent APIs",
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+      "verified": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "Stripe API docs: Idempotent requests",
+      "url": "https://docs.stripe.com/api/idempotent_requests",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "AWS: Step Functions error handling (Retry and Catch)",
+      "url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Write the incident's prevention list as a release gate: which tests must pass before this agent ships again?",
+    "rubric": [
+      "retry test with timeout|simulate timeout and retry|duplicate refund test",
+      "loop test|step cap test|budget stops the run",
+      "resume after failure test|partial failure test|crash halfway",
+      "zero duplicate refunds|no double payment|pass bar set in advance"
+    ]
+  },
+  "transfer": {
+    "scenario": "An agent books meeting rooms and sends invites. Sometimes users get two invites and two bookings. Diagnose and fix.",
+    "rubric": [
+      "retries duplicate writes|retry after timeout|repeated call",
+      "idempotency key per booking|stable key|dedupe",
+      "key from our code|derived from the request",
+      "check existing booking first|check then act",
+      "trace the run|logs show two calls"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Last week a refund call timed out, our client retried, and the customer was refunded twice."
+    },
+    {
+      "id": "s2",
+      "text": "Retries stay, but a write may only be retried when repeating it can't cause a second effect."
+    },
+    {
+      "id": "s3",
+      "text": "Each refund will carry an idempotency key, and the model will make up a fresh key on each call it sends."
+    },
+    {
+      "id": "s4",
+      "text": "Our retries back off exponentially with jitter, and stop after three attempts."
+    },
+    {
+      "id": "s5",
+      "text": "One run looped through the same search for forty minutes, and nobody noticed until the monthly invoice."
+    },
+    {
+      "id": "s6",
+      "text": "To prevent a repeat, we'll lower the model's temperature, so it doesn't repeat itself."
+    },
+    {
+      "id": "s7",
+      "text": "We'll also alert when spend per hour passes a set limit."
+    },
+    {
+      "id": "s8",
+      "text": "If a run fails halfway, we restart it from the first step, since steps that already worked will simply work again."
+    },
+    {
+      "id": "s9",
+      "text": "When the shipping API is down, the tool returns a clear error saying so, and the agent tells the customer it will follow up."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "A new idempotency key per call prevents duplicates.",
+        "whyWrong": "An idempotency key only works if every retry of the same logical action reuses the same key. If the model invents a fresh key each time, a retried refund looks like a new request and is paid again. Our code should derive the key from the action (the order and refund request), store it, and send it on every attempt, so the server can return the first result.",
+        "acceptableCorrections": [
+          "Our code should derive one stable key per refund, from the order, and reuse it on every retry.",
+          "The same logical action must reuse the same key, so the server can return the original result."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "new request|looks like a new refund|different key each retry|key changes on retry|not recognized as duplicate|duplicate not detected",
+            "same key for same action|stable key|reuse key|key must stay the same"
+          ],
+          "correct": [
+            "code generates key|derive key from order|server side key|application creates key|deterministic key|key built in code",
+            "store key|reuse on retry|same key every retry|return first result|return original result"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "Lower temperature stops agent loops.",
+        "whyWrong": "Temperature changes how varied the sampling is, not whether the agent knows it is stuck. Loops usually come from a tool that keeps failing or a goal the agent can't reach, and they happen at any temperature. They are bounded by controls outside the model: a step cap, a token or cost budget, repeated-call detection and alerts.",
+        "acceptableCorrections": [
+          "Bound the run in code with a step cap, a token budget and detection of repeated identical calls.",
+          "Temperature won't stop loops; set a hard limit on steps and spend."
+        ],
+        "exceptions": "A lower temperature can make a run's choices more consistent, which may help debugging; it is not a bound on steps or spend.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "only changes sampling|sampling variety|randomness|not a loop control|doesnt bound steps|wont stop loops|not stop loops|doesnt stop loops",
+            "stuck|failing tool|tool keeps failing|unreachable goal|cant reach goal"
+          ],
+          "correct": [
+            "step cap|max steps|maximum steps|iteration limit|step limit",
+            "budget|token budget|cost cap|spend limit|repeated call detection|loop detection"
+          ]
+        }
+      },
+      {
+        "statementId": "s8",
+        "misconception": "Re-running a partly finished agent task from the start is safe.",
+        "whyWrong": "Steps that already succeeded may have side effects (a cancelled order, a sent email). Re-running them can duplicate or conflict with those effects unless every step is idempotent. Keep durable task state, resume from the last completed step, and use compensating actions to undo partial work where needed.",
+        "acceptableCorrections": [
+          "Resume from the last completed step using saved task state, and make each side effect idempotent.",
+          "Record which actions already happened, and undo or skip them instead of repeating them."
+        ],
+        "exceptions": "If every step is read-only or idempotent, restarting from the beginning can be safe; the error is assuming it without that guarantee.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "side effects|already happened|real world effects|cancelled order|email sent|irreversible",
+            "duplicate|double|conflict|repeat effects|twice"
+          ],
+          "correct": [
+            "resume from checkpoint|resume from last step|saved state|durable state|task state|checkpoint",
+            "idempotent|idempotency|compensate|compensating action|undo|saga"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s5",
+      "s7",
+      "s9"
+    ]
+  }
+}

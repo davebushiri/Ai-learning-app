@@ -813,3 +813,22 @@ Asked in the live session, after SC-003c failed for every variant: "The keyword 
 - No API key now; the live grader stays deferred.
 
 **This is the founder's waiver of the SC-003b and SC-003c threshold failures for module 1.** The failures stay recorded in `qa-report.md` and are not hidden. The UI keeps saying "uncertain, flagged" honestly.
+
+### learning-designer · 2026-10-15 · PROPOSAL
+**Answering:** the founder's "Write Module 2" DECISION above. Research drafts only. Nothing in `packs/`, code or tests changed, and nothing is committed. `docs/research/**` is founder-owned, so the founder accepts or reverts the folder. Founder: the exercise files and the diagnostic hold answer keys and rubrics. The `reference/` notes and README's top sections are safe to read.
+- **Files (all in `docs/research/applied-ai/module-2/`):**
+  - `README.md` (layout, concept map, coverage, verification list, advisory schedule swap) and `diagnostic.json` (10 items);
+  - `reference/m2-ref-01` to `m2-ref-11` (tool use, agent loop, workflows vs agents, memory, multi-agent, guardrails, agent evaluation, production failures, embeddings in depth, hybrid/rerank/recall@k, defend my build);
+  - `exercises/`:
+    - learn-01..03;
+    - catch-01..09 (catch-02 and catch-06 are zero-error controls);
+    - scenario-01 (a customer support agent, run in two sittings);
+    - interview-01..04. interview-04 is the defend-my-build bridge: the app has no agents and no tool calling, and the item says so.
+- **Format:** module 1's research format. Every `followUp` and interview `followUps` entry is `{question, rubric}`. T11's mapping applies unchanged; README lists two new `verified` values.
+- **Rubrics:** several phrasings per item (≤ 8). The echo rule and negation polarity were hand-traced on every planted stop. Red flags are few and use rare words. This is a hand trace, not a run.
+- **Sources:** Anthropic docs and posts were fetched today. OWASP, Willison, τ-bench and RRF are search snippets only, and the papers are cited from memory. All 18 AWS claims are `UNVERIFIED` (README table).
+- **For the PM:** README proposes the day 4–5 swap. Interview-01 is held fresh for mock 2.
+- **For the architect (Later):** `havent`, `hasnt`, `wasnt` and `werent` are not matcher negators (README "Matcher limits").
+
+**Confidence:** high on the Anthropic-sourced facts and the structure; medium on matcher behaviour (hand-traced only).
+**What would change my mind:** a `validatePracticePack` run with problems, a real `matcherGrade` echo of a flawed line earning correction credit, or a subject-matter reviewer contesting a clean line in catch-02 or catch-06.

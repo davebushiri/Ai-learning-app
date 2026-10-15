@@ -1,0 +1,94 @@
+{
+  "id": "m2-interview-04-defend-agents",
+  "module": "m2",
+  "type": "interview",
+  "objective": "Defend my build: answer an agents-experience question truthfully from your own project, without overclaiming.",
+  "prerequisites": [
+    "m2-interview-02-workflow-or-agent"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "defend-my-build",
+    "workflows-vs-agents",
+    "production-practices",
+    "multi-agent"
+  ],
+  "referenceIds": [
+    "m2-ref-11",
+    "m2-ref-03",
+    "m2-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Defend my build: a factual dossier on this app (repo-internal)",
+      "url": "https://github.com/davebushiri/ai-learning-app/blob/team/agents/docs/research/applied-ai/defend-my-build.md",
+      "verified": "repo-internal-2026-10-15"
+    },
+    {
+      "title": "Anthropic: Building effective agents (2024)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "verified": "fetched-2026-10-15"
+    }
+  ],
+  "followUp": {
+    "question": "What did you do yourself, and what did the AI do?",
+    "rubric": [
+      "set direction and scope|made the decisions|founder decisions",
+      "designed the process and gates|roles and decision rights",
+      "reviewed and playtested|merged changes",
+      "AI wrote the code|didnt hand write the code|code was AI written"
+    ]
+  },
+  "transfer": {
+    "scenario": "The interviewer says: 'So you've never actually built RAG or an agent?' Answer in about 60 seconds without overclaiming.",
+    "rubric": [
+      "true not in the product|not built yet|no agent in the app",
+      "what I did build: gateway with deadlines, fallback and logging",
+      "evaluation discipline: held out set caught overfitting|fake API failure tests",
+      "agent experience is in the development process|AI coding agents",
+      "a concrete next step|read only agent with step cap|retrieval with citations"
+    ]
+  },
+  "question": "Tell me about your hands-on experience with agents. Have you taken one to production?",
+  "rubric": {
+    "mustCover": [
+      "not in production|no agent in the product|not shipped|havent shipped|didnt ship|never deployed|no live users",
+      "single structured calls|structured output|single shot calls|one call per task",
+      "tasks are single step|simplest design|agent not justified|chose not to use an agent",
+      "deadlines|timeouts|bounded retries|max retries",
+      "required fallback|logs every call|logging per call|observability",
+      "AI coding agents|agent roles|multi agent development|orchestrated agents|team of agents",
+      "read only tools|step cap|repeated trials|how I would add an agent"
+    ],
+    "strongSignals": [
+      "held out set caught overfitting|held out",
+      "usage limit interruption|checkpoint per ticket|traceability",
+      "tool allow lists|least privilege for coding agents|file ownership",
+      "server decides not the model|code decides",
+      "AI wrote the code|directed the AI"
+    ],
+    "redFlags": [
+      "thousands of users|millions of requests"
+    ]
+  },
+  "followUps": [
+    {
+      "question": "If you added an agent to that app, what would you do first?",
+      "rubric": [
+        "read only tools first|least privilege",
+        "step cap and budget|deadline per step",
+        "same gateway|same logging and fallback",
+        "evaluate with repeated trials|small task set"
+      ]
+    },
+    {
+      "question": "Which production habit from your app transfers best to agents, and why?",
+      "rubric": [
+        "deadline per call|bounded retries|timeouts",
+        "required fallback|degrade not stall",
+        "logging per call|cost and latency visible|tokens logged",
+        "model proposes code decides|validate model output"
+      ]
+    }
+  ]
+}

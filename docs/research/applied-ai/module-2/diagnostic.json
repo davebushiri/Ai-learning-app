@@ -1,0 +1,204 @@
+{
+  "id": "m2-diagnostic",
+  "module": "m2",
+  "purpose": "Place the learner at a starting difficulty for Module 2 (agents, plus embeddings in depth). Ten items mixing explanation, error detection and architecture reasoning. Run as two blocks of five, and show the 'answer' of each detect item at the end of its block (module-1 REVIEW.md M4).",
+  "items": [
+    {
+      "id": "d01",
+      "kind": "explain",
+      "difficulty": 1,
+      "concepts": [
+        "tool-use"
+      ],
+      "referenceIds": [
+        "m2-ref-01"
+      ],
+      "prompt": "In one or two sentences: when a model 'calls a tool', who actually runs it, and what goes back to the model?",
+      "rubric": [
+        "model requests|structured request|model asks",
+        "application runs|code executes|our code runs",
+        "result sent back|tool result|output returned"
+      ]
+    },
+    {
+      "id": "d02",
+      "kind": "detect",
+      "difficulty": 1,
+      "concepts": [
+        "agent-loop"
+      ],
+      "referenceIds": [
+        "m2-ref-02"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'Once the model gives a final answer, the agent's task has succeeded.'",
+      "isFlawed": true,
+      "answer": "Wrong. A final answer only means the model stopped asking for tools. Check the outcome in code (read the record back, compare with tool results).",
+      "rubric": [
+        "model stopped asking for tools|end turn|stopping is not success",
+        "verify outcome|check in code|read it back"
+      ]
+    },
+    {
+      "id": "d03",
+      "kind": "explain",
+      "difficulty": 1,
+      "concepts": [
+        "workflows-vs-agents"
+      ],
+      "referenceIds": [
+        "m2-ref-03"
+      ],
+      "prompt": "What is the difference between a workflow and an agent?",
+      "rubric": [
+        "workflow follows predefined code paths|fixed steps",
+        "agent chooses its next step|model directs the process",
+        "agent costs more|more variation|harder to test"
+      ]
+    },
+    {
+      "id": "d04",
+      "kind": "detect",
+      "difficulty": 1,
+      "concepts": [
+        "stopping-conditions"
+      ],
+      "referenceIds": [
+        "m2-ref-02"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'Every agent run should have a step cap, and a run that hits it should be reported as unfinished.'",
+      "isFlawed": false,
+      "answer": "Right. A cap bounds loops and cost, and a capped run is unfinished: report it and escalate rather than showing success.",
+      "rubric": [
+        "correct|right",
+        "bounds loops|prevents runaway cost",
+        "escalate|hand to a person|never shown as success"
+      ]
+    },
+    {
+      "id": "d05",
+      "kind": "explain",
+      "difficulty": 2,
+      "concepts": [
+        "agent-memory",
+        "system-of-record"
+      ],
+      "referenceIds": [
+        "m2-ref-04"
+      ],
+      "prompt": "Where should an agent's task progress and a customer's order status live, and why not just in the conversation?",
+      "rubric": [
+        "task state in our own store|durable task state",
+        "order status in the system of record|read through a tool",
+        "context is finite|costs every call|notes go stale"
+      ]
+    },
+    {
+      "id": "d06",
+      "kind": "detect",
+      "difficulty": 2,
+      "concepts": [
+        "least-privilege",
+        "prompt-injection"
+      ],
+      "referenceIds": [
+        "m2-ref-06"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'Our system prompt tells the agent never to issue refunds over 100 dollars, so that limit is enforced.'",
+      "isFlawed": true,
+      "answer": "Wrong. A prompt instruction can be ignored or overridden by injected text. Enforce the limit in the refund tool's code, and require approval above it.",
+      "rubric": [
+        "prompt is not enforcement|can be ignored|injection",
+        "enforce in code|limit in the tool|approval above the limit"
+      ]
+    },
+    {
+      "id": "d07",
+      "kind": "architecture",
+      "difficulty": 2,
+      "concepts": [
+        "idempotency",
+        "retries"
+      ],
+      "referenceIds": [
+        "m2-ref-08"
+      ],
+      "prompt": "A payment tool call timed out, and the agent wants to call it again. What do you need in place before that retry is safe?",
+      "rubric": [
+        "idempotency key|stable key per payment",
+        "key made by our code|same key on every retry",
+        "check whether it went through|check then act",
+        "limit retries|backoff"
+      ]
+    },
+    {
+      "id": "d08",
+      "kind": "detect",
+      "difficulty": 2,
+      "concepts": [
+        "re-embedding",
+        "vector-similarity"
+      ],
+      "referenceIds": [
+        "m2-ref-09"
+      ],
+      "prompt": "Is this statement right or wrong? Explain: 'After switching to a new embedding model with no documented shared vector space, we re-embed the corpus and retune our similarity cutoffs.'",
+      "isFlawed": false,
+      "answer": "Right. Different models produce vectors in different spaces, and their score scales differ, so both the vectors and the cutoffs must be redone.",
+      "rubric": [
+        "correct|right",
+        "different vector spaces|not comparable",
+        "score scales differ|cutoff per model"
+      ]
+    },
+    {
+      "id": "d09",
+      "kind": "architecture",
+      "difficulty": 3,
+      "concepts": [
+        "agent-evaluation",
+        "pass-at-k"
+      ],
+      "referenceIds": [
+        "m2-ref-07"
+      ],
+      "prompt": "Your agent passed 45 of 50 test tasks, one run each. Is it ready for customers? What would you add before deciding?",
+      "rubric": [
+        "repeated trials|pass hat k|consistency",
+        "safety cases|zero unauthorized actions",
+        "cost and latency per task",
+        "small set|wide uncertainty|real mix of cases"
+      ]
+    },
+    {
+      "id": "d10",
+      "kind": "architecture",
+      "difficulty": 3,
+      "concepts": [
+        "reranking",
+        "recall-at-k"
+      ],
+      "referenceIds": [
+        "m2-ref-10"
+      ],
+      "prompt": "Adding a reranker on the top ten didn't improve answers. First-stage recall at ten is 0.6. What do you conclude, and what do you try?",
+      "rubric": [
+        "reranker only reorders|first stage is the ceiling",
+        "improve first stage|hybrid search|chunking|wider candidate set",
+        "measure recall at the candidate depth",
+        "measure answers separately|answer correctness"
+      ]
+    }
+  ],
+  "scoring": "Score each item 0 (missing or wrong), 1 (partly right: at least half the rubric phrases, no false claim), or 2 (all key rubric phrases, no false claim). For detect items, a correct verdict with no reason scores 1.",
+  "startingDifficultyRule": {
+    "status": "PROVISIONAL: not validated with learners; revise after the first playtests.",
+    "rule": [
+      "Compute the mean score separately for difficulty-1 items (d01-d04), difficulty-2 items (d05-d08) and difficulty-3 items (d09-d10).",
+      "If the difficulty-1 mean is below 1.5: start at difficulty 1 with learn-01, then catch-01 and catch-02.",
+      "Else if the difficulty-2 mean is below 1.5: start at difficulty 2 (learn-02 and learn-03, then catch-03, catch-04, catch-05, catch-06).",
+      "Else if the difficulty-3 mean is below 1.5: start at difficulty 3 (catch-07, catch-08, catch-09, then the scenario).",
+      "Else: go straight to the scenario and the four interview questions.",
+      "Override: any 0 on d06 (prompt-only enforcement) or d07 (unsafe retry) routes the learner to learn-02 first, whatever the band."
+    ]
+  }
+}

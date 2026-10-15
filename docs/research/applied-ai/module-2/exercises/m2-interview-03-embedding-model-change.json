@@ -1,0 +1,108 @@
+{
+  "id": "m2-interview-03-embedding-model-change",
+  "module": "m2",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m2-catch-09-retrieval-eval"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "embedding-model-choice",
+    "re-embedding",
+    "recall-at-k",
+    "embedding-dimensions",
+    "hybrid-search"
+  ],
+  "referenceIds": [
+    "m2-ref-09",
+    "m2-ref-10"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: Embeddings",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Muennighoff et al. 2022, MTEB: Massive Text Embedding Benchmark",
+      "url": "https://arxiv.org/abs/2210.07316",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "Malkov and Yashunin 2016, HNSW approximate nearest neighbor search",
+      "url": "https://arxiv.org/abs/1603.09320",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "AWS: Amazon Titan Text Embeddings models",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html",
+      "verified": "UNVERIFIED"
+    },
+    {
+      "title": "AWS: Create a knowledge base (embedding model fixed at creation)",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Where in your own engineering background have you managed a change that invalidated stored measurements, and how does that map here?",
+    "rubric": [
+      "re measure everything|new baseline|requalify",
+      "run old and new side by side|parallel run|dual index",
+      "rollback plan|keep the old version"
+    ]
+  },
+  "transfer": {
+    "scenario": "Storage costs for your 30-million-chunk index are too high. Finance asks you to cut them in half. What are your options?",
+    "rubric": [
+      "fewer dimensions|matryoshka|smaller output dimension",
+      "quantization|int8|binary",
+      "measure recall loss on the labelled set",
+      "rescore top candidates at full precision",
+      "remove duplicate or stale chunks"
+    ]
+  },
+  "question": "How would you choose an embedding model, and what happens when you change it in production?",
+  "rubric": {
+    "mustCover": [
+      "evaluate on our own queries|labelled queries|own test set|domain data",
+      "leaderboard is a shortlist|MTEB is a starting point|benchmarks are general",
+      "recall at k|hit rate|MRR|nDCG",
+      "cost latency and storage|dimensions|vector size",
+      "re-embed the corpus|new index|rebuild the index|backfill",
+      "retune thresholds|scores differ by model|cutoff per model",
+      "rollback|dual index|shadow index|switch reads gradually"
+    ],
+    "strongSignals": [
+      "chunking can matter as much|test chunking too",
+      "hybrid search with BM25|keyword plus vector",
+      "reranker on a wide candidate set",
+      "records model version per vector",
+      "quantization or fewer dimensions with measured loss|matryoshka",
+      "documented shared space exception|voyage 4",
+      "approximate search recall against exact"
+    ],
+    "redFlags": []
+  },
+  "followUps": [
+    {
+      "question": "Your corpus is 50 million chunks. How does that change the migration?",
+      "rubric": [
+        "backfill cost and time|rate limits|batch embedding",
+        "storage and dimensions|quantization",
+        "dual write during migration|shadow index",
+        "index build time|ANN tuning"
+      ]
+    },
+    {
+      "question": "How would you show the new model is actually better?",
+      "rubric": [
+        "same labelled queries|same test set",
+        "recall at k and MRR|retrieval metrics",
+        "answer quality too|end to end",
+        "latency and cost"
+      ]
+    }
+  ]
+}

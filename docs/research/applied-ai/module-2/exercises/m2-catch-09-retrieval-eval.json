@@ -1,0 +1,176 @@
+{
+  "id": "m2-catch-09-retrieval-eval",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch context-dependent errors about reranking, recall@k and the chunking-versus-model choice.",
+  "prerequisites": [
+    "m2-catch-06-embeddings-ops-clean"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "reranking",
+    "recall-at-k",
+    "hybrid-search",
+    "chunking-vs-model",
+    "retrieval-evaluation"
+  ],
+  "referenceIds": [
+    "m2-ref-10",
+    "m2-ref-09"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Introducing Contextual Retrieval (2024)",
+      "url": "https://www.anthropic.com/news/contextual-retrieval",
+      "verified": "fetched-2026-10-13"
+    },
+    {
+      "title": "Cormack, Clarke and Buettcher 2009, Reciprocal rank fusion (SIGIR)",
+      "url": "https://dl.acm.org/doi/10.1145/1571941.1572114",
+      "verified": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "Manning, Raghavan and Schuetze, Introduction to Information Retrieval, ch. 8 Evaluation",
+      "url": "https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-in-information-retrieval-1.html",
+      "verified": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "AWS: Amazon OpenSearch Service search pipelines (hybrid score normalization)",
+      "url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/search-pipelines.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Design the next experiment for this catalog search: what do you change, what do you hold fixed, and what do you measure?",
+    "rubric": [
+      "one change at a time|hold everything else fixed|single variable",
+      "same labelled queries|same test set",
+      "recall at candidate depth|recall at ten|MRR",
+      "latency and cost|p95 latency|cost per query"
+    ]
+  },
+  "transfer": {
+    "scenario": "A team reports 'recall@5 = 0.95' and wants to ship their new RAG assistant tomorrow. What questions do you ask?",
+    "rubric": [
+      "how was the test set built|real queries|who labelled",
+      "which recall definition|hit rate or recall",
+      "answer correctness measured|faithfulness|end to end quality",
+      "unanswerable and exact id queries included|hard cases",
+      "set size and uncertainty|how many queries",
+      "latency and cost"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "We labelled three hundred real queries with the chunks that answer them, including part-number lookups."
+    },
+    {
+      "id": "s2",
+      "text": "Our recall at ten counts the share of queries where a right chunk appears in the top ten results."
+    },
+    {
+      "id": "s3",
+      "text": "Hybrid search merged keyword and vector results by rank, and lifted recall at ten on the part-number queries."
+    },
+    {
+      "id": "s4",
+      "text": "Next we'll add a reranker on the top ten, which should also find the right chunks that hybrid search missed."
+    },
+    {
+      "id": "s5",
+      "text": "The reranker adds latency, so we'll measure it at the 95th percentile, not just on average."
+    },
+    {
+      "id": "s6",
+      "text": "Recall at ten is now 0.92, so the answers the model writes from those chunks will be about 92 percent correct."
+    },
+    {
+      "id": "s7",
+      "text": "We'll try a larger embedding model before touching our chunking, because the model is usually the bigger lever."
+    },
+    {
+      "id": "s8",
+      "text": "Every variant is scored on the same labelled queries, changing one thing at a time."
+    },
+    {
+      "id": "s9",
+      "text": "Queries from last month's logs get added to the set, so it keeps up with what users actually ask."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s4",
+        "misconception": "A reranker can recover documents the first stage missed.",
+        "whyWrong": "A reranker only reorders the candidates it is given. If the right chunk isn't in the candidate set, reranking can't bring it back. To lift recall, retrieve a wider candidate set (say the top 50 to 100) and rerank down to the few you pass to the model; first-stage recall at that depth caps what reranking can achieve.",
+        "acceptableCorrections": [
+          "A reranker only reorders what it's given, so retrieve more candidates, like the top fifty, and rerank down to ten.",
+          "Reranking can't add missing chunks; first-stage recall at the candidate depth sets the ceiling."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "only reorders|reorders candidates|cant add|cant recover|only sorts|works on candidates given|not in the candidates|cant find",
+            "candidate set|first stage recall|ceiling|upper bound|limited by retrieval"
+          ],
+          "correct": [
+            "retrieve more candidates|larger candidate set|top fifty|top 100|rerank down|wider first stage",
+            "measure recall at candidate depth|recall at fifty|improve first stage|tune first stage"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "High recall@k means answers are correct at the same rate.",
+        "whyWrong": "Recall@k measures whether a relevant chunk was retrieved, not whether the final answer is right. The model can still ignore, misread or mix chunks, and a retrieved chunk can be outdated. Answer correctness and faithfulness are measured separately, against expected answers.",
+        "acceptableCorrections": [
+          "Recall only says the right chunk was retrieved; we still measure answer correctness against expected answers.",
+          "Retrieval and generation are scored separately: recall for retrieval, correctness and faithfulness for the answer."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "retrieval not answer|retrieval metric|measures retrieval|only retrieval|retrieved not correct|doesnt measure answers",
+            "model can misuse|ignore chunks|misread|generation errors|hallucinate|outdated chunk"
+          ],
+          "correct": [
+            "measure correctness|answer correctness|expected answers|end to end accuracy|grade answers",
+            "faithfulness|groundedness|separate generation metric"
+          ]
+        }
+      },
+      {
+        "statementId": "s7",
+        "misconception": "The embedding model usually matters more than chunking.",
+        "whyWrong": "Which lever matters more depends on the documents and the queries. Chunk size, chunk boundaries and added context can move recall as much as a model change, and both changes mean re-embedding. Treat each as an experiment on the labelled set and let the numbers decide.",
+        "acceptableCorrections": [
+          "It depends on the data; test chunking and model changes as separate experiments on the labelled queries.",
+          "Chunking can matter as much as the embedding choice, so measure both rather than assume."
+        ],
+        "exceptions": "Trying the model first is a reasonable order if the current model is clearly weak for the domain (for example, the wrong language); the error is the general rule that the model is the bigger lever.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "depends on data|depends on documents|no general rule|data dependent|case by case",
+            "chunking matters|chunk size|chunk boundaries|added context|contextual chunks"
+          ],
+          "correct": [
+            "test both|measure both|experiment|ab test|compare on labelled set|one change at a time",
+            "recall on test set|labelled queries|let numbers decide|use metrics"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s5",
+      "s8",
+      "s9"
+    ]
+  }
+}

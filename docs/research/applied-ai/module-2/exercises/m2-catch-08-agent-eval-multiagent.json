@@ -1,0 +1,152 @@
+{
+  "id": "m2-catch-08-agent-eval-multiagent",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch context-dependent errors in agent evaluation and multi-agent design: reading reliability from single trials, and splitting interdependent work across subagents.",
+  "prerequisites": [
+    "m2-catch-03-workflow-or-agent",
+    "m2-catch-07-production-failures"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "agent-evaluation",
+    "pass-at-k",
+    "multi-agent",
+    "cost-per-task"
+  ],
+  "referenceIds": [
+    "m2-ref-07",
+    "m2-ref-05"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Demystifying evals for AI agents",
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic: How we built our multi-agent research system (2025)",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Yao et al. 2024, tau-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains",
+      "url": "https://arxiv.org/abs/2406.12045",
+      "verified": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "AWS: Multi-agent collaboration in Amazon Bedrock Agents",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/agents-multi-agent-collaboration.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "For each of the two design choices here, name the measurement that would settle it for this system.",
+    "rubric": [
+      "repeated trials per task|pass^k over several runs|consistency across runs",
+      "single agent vs multi agent on the same tasks|compare against one agent|baseline comparison",
+      "tokens and cost per task|cost per successful task|latency per task"
+    ]
+  },
+  "transfer": {
+    "scenario": "A vendor demo shows their agent solving your ten sample tasks, once each, live. What do you ask for before signing?",
+    "rubric": [
+      "several trials per task|repeat runs|consistency",
+      "your own real tasks|held out tasks|not their samples",
+      "end state checked|outcome verified",
+      "cost and latency per task",
+      "failure cases|tool errors|injected content",
+      "transcripts|traces to review"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "We built fifty test tasks from real support cases, each with an end state our code can check."
+    },
+    {
+      "id": "s2",
+      "text": "Our grader checks the final state, not whether the agent followed one exact sequence of steps."
+    },
+    {
+      "id": "s3",
+      "text": "Each task ran once, and the agent passed forty-five, so we can expect about ninety percent of real cases to succeed reliably."
+    },
+    {
+      "id": "s4",
+      "text": "We also log tokens, tool calls and time per task, because a correct result at ten dollars a case can still fail the business case."
+    },
+    {
+      "id": "s5",
+      "text": "A lead agent with parallel subagents scored higher on our broad research tasks than a single agent did."
+    },
+    {
+      "id": "s6",
+      "text": "Multi-agent runs use several times more tokens, so we kept that design for the research tasks only."
+    },
+    {
+      "id": "s7",
+      "text": "Our order-editing tasks share one record and depend on each other's steps, so splitting them across subagents should speed them up as well."
+    },
+    {
+      "id": "s8",
+      "text": "An LLM judge scores answer quality, and we checked it against fifty human-labelled transcripts before trusting it."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "One run per task measures an agent's reliability.",
+        "whyWrong": "Agents are non-deterministic, so a single trial per task can't show consistency. Run several trials per task and report how often all of them succeed (pass^k), not one pass. Fifty tasks also leave wide uncertainty, and test tasks may not match the real mix of cases.",
+        "acceptableCorrections": [
+          "Run each task several times and report how often every trial succeeds, not one pass.",
+          "One trial per task can't show consistency; measure pass^k over repeated trials."
+        ],
+        "exceptions": "A single pass rate is a fair first capability signal; the error is reading it as reliability on real traffic.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "nondeterministic|non deterministic|varies between runs|different each run|randomness|run to run variation",
+            "single trial|one run|only once|one attempt",
+            "small sample|wide uncertainty|confidence interval|not representative|real mix differs"
+          ],
+          "correct": [
+            "multiple trials|several trials|repeat runs|run many times|repeated trials|k trials",
+            "pass hat k|all trials succeed|consistency metric|every run passes|report the spread"
+          ]
+        }
+      },
+      {
+        "statementId": "s7",
+        "misconception": "Splitting any task across subagents makes it faster.",
+        "whyWrong": "Multi-agent designs help when work splits into independent parts that can run in parallel. Tasks that share one record and depend on each other's results need shared context and sequencing, so subagents add coordination overhead, conflicting edits and many more tokens. Keep them in one agent or a fixed workflow.",
+        "acceptableCorrections": [
+          "Dependent work on a shared record belongs in one agent or a workflow; parallel subagents suit independent subtasks.",
+          "Keep these in a single agent; coordination overhead and conflicting edits outweigh any parallel gain."
+        ],
+        "exceptions": "If the order edits could be split into truly independent parts (different records, no ordering), parallel workers might help; the error is splitting interdependent work.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "dependencies|sequential|not parallel|not independent|shared context|must run in order",
+            "coordination overhead|conflicting edits|conflicts|race|overwrite",
+            "more tokens|token cost|cost more|expensive"
+          ],
+          "correct": [
+            "single agent|one agent|workflow|fixed sequence|keep together",
+            "subagents for independent work|parallel only when independent|independent subtasks|breadth tasks|parallelizable"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s5",
+      "s6",
+      "s8"
+    ]
+  }
+}

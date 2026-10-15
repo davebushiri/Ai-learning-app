@@ -1,0 +1,145 @@
+{
+  "id": "m2-catch-04-memory-state",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch errors about agent memory: treating a large context window as a memory design, and saving untrusted tool output to long-term memory.",
+  "prerequisites": [
+    "m2-catch-02-agent-loop-clean"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "agent-memory",
+    "context-management",
+    "memory-poisoning",
+    "system-of-record"
+  ],
+  "referenceIds": [
+    "m2-ref-04"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Effective context engineering for AI agents (2025)",
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: Handle tool calls (untrusted tool results)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls",
+      "verified": "fetched-2026-10-15"
+    },
+    {
+      "title": "AWS: Amazon Bedrock AgentCore Memory",
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory.html",
+      "verified": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "A customer asks the agent to forget everything about them. What has to happen, and where?",
+    "rubric": [
+      "delete stored memory|remove saved preferences|erase notes",
+      "scoped to the customer|per user memory|tenant scope",
+      "logs and backups|retention policy|other copies",
+      "system of record follows its own rules|orders stay|legal retention"
+    ]
+  },
+  "transfer": {
+    "scenario": "A coding agent works on a task for three hours and starts forgetting decisions it made early on. What do you change?",
+    "rubric": [
+      "context fills up|context rot|long context degrades",
+      "compaction|summarize history|summarise older turns",
+      "structured notes|progress file|write decisions down",
+      "clear old tool results|drop raw outputs",
+      "sub agents with clean context|split the work"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "The model keeps nothing between API calls; our app sends whatever context each call needs."
+    },
+    {
+      "id": "s2",
+      "text": "Booking state, like which flights are held and what's been paid, lives in our booking database, and the agent reads it through a tool."
+    },
+    {
+      "id": "s3",
+      "text": "With a million-token window, we can keep every past conversation in the prompt, so we won't need summaries or retrieval."
+    },
+    {
+      "id": "s4",
+      "text": "When a long session nears the limit, older turns are summarized and raw tool results we've already used are dropped."
+    },
+    {
+      "id": "s5",
+      "text": "The agent writes short notes, like the customer's confirmed dates, to a store outside the context, and reloads them later."
+    },
+    {
+      "id": "s6",
+      "text": "Saved preferences are scoped to the customer's account, and a deletion request removes them."
+    },
+    {
+      "id": "s7",
+      "text": "Anything the agent reads through its tools can go straight into long-term memory, because tool output is our own data."
+    },
+    {
+      "id": "s8",
+      "text": "To answer 'is my flight still held?', the agent checks the booking system rather than its notes."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "A large context window removes the need to manage memory.",
+        "whyWrong": "Every token in the window is paid for on every call and adds latency, and recall gets worse as the context grows (context rot). Past conversations also keep growing past any limit. You still choose what goes in: summaries, notes and retrieval of what's relevant.",
+        "acceptableCorrections": [
+          "Even with a huge window, resending everything costs more and slows each call, and quality drops; we still summarise and retrieve what's relevant.",
+          "Select what goes into the context each time: recent turns, a summary and relevant notes."
+        ],
+        "exceptions": "For a short, bounded task whose full history stays small, keeping everything in context can be the simplest working choice; the error is treating window size as a memory design for open-ended history.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "expensive|pay every call|costs more|cost per call",
+            "latency|slower|slows down",
+            "quality degrades|context rot|recall drops|worse with length|lost in the middle|attention dilutes"
+          ],
+          "correct": [
+            "summarize|summarise|compact|compaction|condense",
+            "retrieve relevant|select context|relevant history|pick what matters|only relevant"
+          ]
+        }
+      },
+      {
+        "statementId": "s7",
+        "misconception": "Tool output is trusted, so it can be saved to memory without checks.",
+        "whyWrong": "Tool output often carries text written by outside parties: web pages, emails, customer notes. Saving it unfiltered lets injected instructions persist and steer later sessions (memory poisoning). Write only verified facts, with their source, and keep memory scoped and reviewable.",
+        "acceptableCorrections": [
+          "Treat what tools return as untrusted; only save checked facts with their source.",
+          "Filter memory writes so injected instructions from web pages can't persist."
+        ],
+        "exceptions": "Output from a tool that reads your own system of record (an order status) is trusted data, but it belongs in that system, not copied into memory where it goes stale.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "untrusted|external content|third party|attacker controlled|web pages|not trusted|isnt trusted|dont save untrusted",
+            "memory poisoning|persists|later sessions|future sessions|stored injection|poison",
+            "injection|injected instructions|prompt injection"
+          ],
+          "correct": [
+            "verify before saving|only verified facts|validate before storing|filter writes|review writes|checked facts",
+            "record source|keep provenance|source attached|scope to user|scoped memory"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s5",
+      "s6",
+      "s8"
+    ]
+  }
+}
