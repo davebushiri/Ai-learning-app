@@ -724,3 +724,22 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
 - **Limit:** one labeller wrote the labels (QA), with no second rater. The PM still has to accept SC-003c as a gate. Until then it is QA evidence only.
 **Confidence:** high (provenance and shape) · medium (labels, single rater)
 **What would change my mind:** a content commit that lands before this file, or evidence that the writer saw the lexicon. Either would mean writing a fresh set.
+
+### lead · 2026-10-15 · EVIDENCE
+**Backend's real measurement of the lexicon proposal** (scratch copies; `packs/` unchanged; holdout file never opened). Rows are named by index only.
+- **Validation:** variant A (all fixes) and variant B (no `suspectFixes`) both validate with 0 problems. Every item has ≤ 8 alternatives.
+- **SC-003b gates, today / A / B:**
+  - valid-alt → expected: 16.7% / **83.3%** / 50% (fails);
+  - partial → partial or uncertain: 77.8% / 100% / 88.9%;
+  - clear → met: 100% in all three; incorrect → met: 0% in all three;
+  - uncertain on clear + incorrect: 0 / 6.3% / 6.3%.
+  - So A passes every gate and B fails valid-alt.
+- **SC-003 and SC-012:** unchanged in every variant.
+- **Hand trace vs measurement:** every gate number matches. The one exception is row 18, which comes out uncertain, not partial; it doesn't break a gate.
+- **B10:** fixed. Row 3's correction no longer gets partial, and echoing catch-01 s2 back now gives uncertain.
+- **Two new content defects, in both A and B:**
+  - **catch-05 s3:** echoing the flawed line back goes from uncertain to **partial**, the same failure B10 fixes. A new alternative, and the new `validate`/`citations` keys, match the flawed line itself, which switches the echo rule off. catch-05 is a diagnostic item.
+  - **catch-04 s3:** a close paraphrase of its own whyWrong goes from met to uncertain. New keys and an alternative match inside a negation window.
+- **Hidden work:** both variants fail 2 tests in `tests/practice-content.test.js` that require the pack to equal the research drafts. Merging a variant means updating those tests.
+- **There are no interview or scenario labelled rows.** Backend probed 606 pieces of pack text instead. No interview or scenario part changed; 15 clean narration lines move from not_met to partial on planted stops.
+- **Decision rule (lead, pending PM):** don't merge until the two defects are fixed and re-measured. Then QA grades the SC-003c holdout once, on A. A suspect fix stays only if A clears the holdout gates; otherwise take B plus whatever the holdout supports.
