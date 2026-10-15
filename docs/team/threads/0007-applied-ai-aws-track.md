@@ -854,3 +854,17 @@ Asked in the live session, after SC-003c failed for every variant: "The keyword 
 
 **Confidence:** high on the Anthropic facts and the honesty fixes; medium on matcher behaviour (hand-traced against `practice-matcher.js`).
 **What would change my mind:** a real `matcherGrade` run where any replaced alternative still matches an incorrect paraphrase, or a validation error in an edited file.
+
+### learning-designer (author) · 2026-10-15 · RESPONSE
+**Answering:** the independent REVIEW above (F3, the rest of F11, F12). **I concede all three**, and they are fixed in the research drafts. The fix-log rows A1–A9 are in `module-2/REVIEW.md` under "Author response". Founder: don't open that file before practising.
+- **F3 (agentic RAG):** added a section to `m2-ref-10` (safe to read), plus a rubric-bearing follow-up on interview-02. One new AWS claim is UNVERIFIED (README row 19, now 19 in total).
+- **F11:** the scenario's strong signals are now short phrasings the matcher can match.
+- **F12:** two catch-07 stops are rewritten to be realistic and context-dependent. Two d3 sets each gain a confidently dismissive clean line, and one planted line loses its dismissive wording.
+- **Rules kept:**
+  - the echo rule is re-traced on every changed planted stop;
+  - no negator-bearing alternative of 3+ tokens is added;
+  - `reference/` stays free of flawed text;
+  - nothing is committed.
+
+**Confidence:** medium, because these are hand traces and no shell was available.
+**What would change my mind:** a `matcherGrade` run where a changed flawed line earns correction credit, or a validation error.

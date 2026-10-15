@@ -199,6 +199,28 @@
 
 Every edit keeps the planted/clean partition unchanged: no statement moved, no id changed, and no item exceeds 8 alternatives. String contents only; **no JSON validation or `matcherGrade` run** was possible here (no shell), so the traces above are by hand.
 
+## Author response (2026-10-15)
+
+The author session addressed F3, the rest of F11, and F12. The checks were hand traces against `matcher@2`; no shell was available, so nothing was run.
+- **Echo rule:** checked on every new or changed planted stop (catch-07 s3 and s6, catch-04 s3). No `explain` or `correct` alternative and no `acceptableCorrections` entry completes on its own flawed line, including through the pack lexicon.
+- **F1 shape:** no new negator-bearing alternative has 3 or more tokens. The new ones are 2-token forms such as "not enforced" and "cant enforce".
+- **Reference integrity:** no planted text was added to `reference/`.
+- **AWS:** the one new AWS claim is marked UNVERIFIED (README row 19).
+
+| # | File · field | Change | Finding |
+|---|---|---|---|
+| A1 | `reference/m2-ref-10` Explanation, Watch for, AWS mapping | Added "Agentic RAG: retrieval as a tool", built on the reviewer's draft: when it helps, what it costs, the per-search access filters, the injection risk, how to adopt it (single-shot baseline, same labelled questions, search cap, logged queries), and the evidence strength. Added one "Watch for" line and one UNVERIFIED AWS line (Bedrock Agents with knowledge bases) | F3 |
+| A2 | `exercises/m2-interview-02` `followUps[2]`, `concepts`, `referenceIds` | New rubric-bearing follow-up on when to let the agent decide when and what to retrieve (5 items, all alternatives of 2–3 tokens, no negators). Added concept `agentic-rag` and `m2-ref-10` | F3 |
+| A3 | `README.md` coverage table; AWS table row 19 | Agentic RAG row; new UNVERIFIED claim | F3 |
+| A4 | `exercises/m2-scenario-01` `rubric.strongSignals` | All 8 rewritten as short matchable phrasings (1–3 tokens per alternative) in place of descriptions of behaviour | F11 |
+| A5 | `exercises/m2-catch-07` s3 narration, `misconception`, `whyWrong`, `explain` | Planted line is now the realistic bug: a tool wrapper that mints a fresh random key per call. `whyWrong` names the model re-calling the tool. Added explain alternatives for the model re-call and for "per action". The correct items and corrections are unchanged; each was re-traced against the new line | F12 |
+| A6 | `exercises/m2-catch-07` s6 narration and whole answer key; `objective` | Replaced the temperature line, which played at d1, with a context-dependent one: a loop limit that lives only in the system prompt. New misconception, `whyWrong`, corrections, rubric and exceptions. 2-token negator forms only | F12 |
+| A7 | `reference/m2-ref-08` Loops | One sentence: a limit stated in the prompt helps the model wrap up, but only a counter and budget in code enforce it (correct-rule form) | F12 |
+| A8 | `exercises/m2-catch-07` s10 (new, clean); `exercises/m2-catch-09` s10 (new, clean) | Confidently dismissive **true** lines, added to two d3 sets to break the "dismissive means planted" tell | F12 |
+| A9 | `exercises/m2-catch-04` s3 narration | The planted line's dismissive "we won't need" became "become optional". The error is unchanged, and its rubric was re-traced | F12 |
+
+After A8 and A9, dismissive wording appears in 4 of 17 planted lines and in 2 clean lines (before: 5 and 0). The planted/clean partition is unchanged apart from the two new clean ids. Nothing is committed.
+
 ## Left for others
 
 - **Author:** F3 (agentic RAG paragraph), F11 (strong signals that describe behaviour), F12 (d3 subtlety, dismissive tone tell), and the module-1 audit for the F1 shape.

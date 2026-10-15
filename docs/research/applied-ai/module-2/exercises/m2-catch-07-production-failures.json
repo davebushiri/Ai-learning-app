@@ -2,7 +2,7 @@
   "id": "m2-catch-07-production-failures",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch subtle errors in fixing production agent failures: unstable idempotency keys, treating loops as a sampling problem, and blind restarts after partial failure.",
+  "objective": "Catch subtle errors in fixing production agent failures: idempotency keys minted per call, loop limits that live only in the prompt, and blind restarts after partial failure.",
   "prerequisites": [
     "m2-catch-05-guardrails"
   ],
@@ -75,7 +75,7 @@
     },
     {
       "id": "s3",
-      "text": "Each refund will carry an idempotency key, and the model will make up a fresh key on each call it sends."
+      "text": "Our tool wrapper attaches a fresh random idempotency key to every refund call it sends."
     },
     {
       "id": "s4",
@@ -87,7 +87,7 @@
     },
     {
       "id": "s6",
-      "text": "To prevent a repeat, we'll lower the model's temperature, so it doesn't repeat itself."
+      "text": "To stop loops, the system prompt now tells the agent to give up after ten tool calls."
     },
     {
       "id": "s7",
@@ -100,14 +100,18 @@
     {
       "id": "s9",
       "text": "When the shipping API is down, the tool returns a clear error saying so, and the agent tells the customer it will follow up."
+    },
+    {
+      "id": "s10",
+      "text": "There's no need to put the tracking lookups behind an approval step; a read can't change anything."
     }
   ],
   "answerKey": {
     "planted": [
       {
         "statementId": "s3",
-        "misconception": "A new idempotency key per call prevents duplicates.",
-        "whyWrong": "An idempotency key only works if every retry of the same logical action reuses the same key. If the model invents a fresh key on each tool call, then whenever the model calls the refund tool again (after a timeout or an unclear result), the retry looks like a new request and is paid again. Our code should derive the key from the action (the order and refund request), store it, and send it on every attempt, so the server can return the first result.",
+        "misconception": "A fresh idempotency key per tool call prevents duplicates.",
+        "whyWrong": "An idempotency key only works if every attempt at the same logical action carries the same key. A wrapper that mints a new random key per call protects nothing when the model calls the refund tool again after a timeout or an unclear result: that second call gets a new key, looks like a new refund, and is paid again. Derive the key from the action (the order and the refund request), store it, and reuse it on every attempt, so the billing server can return the first result.",
         "acceptableCorrections": [
           "Our code should derive one stable key per refund, from the order and the refund request, and reuse it on every retry.",
           "The same logical action must reuse the same key, so the server can return the original result."
@@ -116,8 +120,8 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "new request|looks like a new refund|different key each retry|key changes on retry|looks new|treated as new",
-            "same key for same action|stable key|reuse key|key must stay the same"
+            "new request|looks like a new refund|different key each retry|key changes on retry|looks new|treated as new|model calls again|model retries",
+            "same key for same action|stable key|reuse key|key must stay the same|per logical action|key per action"
           ],
           "correct": [
             "code generates key|derive key from order|server side key|application creates key|deterministic key|key built in code",
@@ -127,21 +131,21 @@
       },
       {
         "statementId": "s6",
-        "misconception": "Lower temperature stops agent loops.",
-        "whyWrong": "Temperature changes how varied the sampling is, not whether the agent knows it is stuck. Loops usually come from a tool that keeps failing or a goal the agent can't reach, and they happen at any temperature. They are bounded by controls outside the model: a step cap, a token or cost budget, repeated-call detection and alerts.",
+        "misconception": "A step limit written in the prompt bounds an agent's loop.",
+        "whyWrong": "A prompt instruction is a request, not a control. The model can miscount or ignore it, a looping agent is by definition already not following its plan, and injected text can override it. The cap has to be enforced by the loop code (a step counter and a token or cost budget that end the run), with the prompt at most telling the model the limit so it can wrap up.",
         "acceptableCorrections": [
-          "Bound the run in code with a step cap, a token budget and detection of repeated identical calls.",
-          "Temperature won't stop loops; set a hard limit on steps and spend."
+          "Enforce the cap in the loop code with a counter and a token budget; the prompt can only suggest it.",
+          "Count steps in our code and end the run at the limit, whatever the model does."
         ],
-        "exceptions": "A lower temperature can make a run's choices more consistent, which may help debugging; it is not a bound on steps or spend.",
+        "exceptions": "Stating the limit in the prompt is still useful, so the model can finish gracefully; the error is relying on it as the bound.",
         "kind": "factual",
         "rubric": {
           "explain": [
-            "only changes sampling|sampling variety|randomness|doesnt stop|wont stop|cant stop|doesnt bound|wont fix",
-            "stuck|failing tool|tool keeps failing|unreachable goal|cant reach goal"
+            "model may ignore|can ignore|miscount|not enforced|only a hint|just a suggestion|might ignore|cant enforce",
+            "already misbehaving|stuck agent|injection can override|prompt can be overridden|override"
           ],
           "correct": [
-            "step cap|max steps|maximum steps|iteration limit|step limit",
+            "enforce in code|counter in code|code enforced cap|hard cap|loop code|step counter",
             "budget|token budget|cost cap|spend limit|repeated call detection|loop detection"
           ]
         }
@@ -174,7 +178,8 @@
       "s4",
       "s5",
       "s7",
-      "s9"
+      "s9",
+      "s10"
     ]
   }
 }

@@ -96,6 +96,10 @@
     {
       "id": "s9",
       "text": "Queries from last month's logs get added to the set, so it keeps up with what users actually ask."
+    },
+    {
+      "id": "s10",
+      "text": "New help articles don't need a full re-embed; they're embedded with the same model and added to the index."
     }
   ],
   "answerKey": {
@@ -170,7 +174,8 @@
       "s3",
       "s5",
       "s8",
-      "s9"
+      "s9",
+      "s10"
     ]
   }
 }

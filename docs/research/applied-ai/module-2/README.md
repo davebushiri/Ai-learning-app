@@ -85,6 +85,7 @@ Difficulty: 1 = foundational, 2 = applied, 3 = context-dependent / subtle. `P` =
 | Embeddings: metrics, ANN, dimensions, quantization | ref-09 | learn-03 | catch-06 (d2, 0) | — | int-03 | d08 |
 | Model choice vs chunking; re-embedding migration | ref-09 | learn-03 | catch-06 (d2, 0), catch-09 (d3, P, trade-off) | — | int-03 | d08 |
 | Hybrid search, reranking, recall@k | ref-10 | learn-03 | catch-09 (d3, P) | — | int-03 | d10 |
+| Agentic RAG (retrieval as a tool) | ref-10 | — | — | — | int-02 follow-up 3 | — |
 | Defend my build (agents) | ref-11 | — | — | — | int-04 | — |
 
 Catch progression: catch-01, 02 (d1) → catch-03, 04, 05, 06 (d2) → catch-07, 08, 09 (d3, subtle and context-dependent). Zero-error controls: **catch-02** and **catch-06**. Trade-off items (`kind: "tradeoff"`): catch-03 (both), catch-04 s3, catch-08 s7, catch-09 s7.
@@ -144,6 +145,7 @@ All of these appear in `reference/` under "AWS mapping (verify)" or in the scena
 | 16 | OpenSearch hybrid query with a normalization processor (min_max, l2; arithmetic/geometric/harmonic mean); first version to check (2.10 in open source per the reviewer's memory; the managed service may differ) | ref-10, catch-09 | https://docs.aws.amazon.com/opensearch-service/latest/developerguide/search-pipelines.html |
 | 17 | Reranker models available through Amazon Bedrock | ref-10 | https://docs.aws.amazon.com/bedrock/latest/userguide/rerank.html |
 | 18 | Bedrock model evaluation supports LLM-as-judge jobs (overlaps module-1 claim 11) | ref-07 | https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-judge.html |
+| 19 | Bedrock Agents can be associated with knowledge bases and decide during orchestration when to query them (agentic RAG; module-1 claim 17) | ref-10 | https://docs.aws.amazon.com/bedrock/latest/userguide/agents-kb-add.html |
 
 Several exact AWS URLs above are best guesses at page names; if one 404s, search the relevant user guide for the topic.
 

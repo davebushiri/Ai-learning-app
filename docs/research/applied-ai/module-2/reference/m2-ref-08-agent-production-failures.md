@@ -16,7 +16,7 @@ Recognise the failure modes that appear once an agent runs for real users, and n
 
 ### Loops
 - **What happens:** the agent calls the same tool with the same arguments again and again, or alternates between two actions, because a tool keeps failing, a goal can't be reached, or it never sees the result it expects.
-- **Controls (outside the model):** a step cap; a per-task token or cost budget; repeated-call detection (same tool and arguments N times); no-progress checks; escalation when any limit fires. Sampling settings such as temperature don't bound a loop; loops happen at any temperature.
+- **Controls (outside the model):** a step cap; a per-task token or cost budget; repeated-call detection (same tool and arguments N times); no-progress checks; escalation when any limit fires. Sampling settings such as temperature don't bound a loop; loops happen at any temperature. Telling the model its limit in the prompt helps it wrap up, but only a counter and budget in the loop code actually enforce the limit.
 
 ### Runaway cost
 - **Why it happens:** each step resends the growing conversation, so cost grows faster than the step count; parallel subagents multiply it; a loop runs until something stops it.

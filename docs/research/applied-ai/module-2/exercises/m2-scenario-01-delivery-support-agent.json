@@ -291,14 +291,14 @@
       "evaluation on real conversations before launch|repeated trials|zero wrong credits"
     ],
     "strongSignals": [
-      "asks clarifying questions before designing",
-      "builds a workflow baseline before an agent",
-      "step cap and token budget per conversation",
-      "traces every tool call under one conversation id",
-      "measures cost per resolved conversation",
-      "pilot or shadow mode before full rollout",
-      "names at least two architectures and their trade-offs",
-      "marks AWS specifics as to-be-verified"
+      "clarifying questions|ask about policy|ask about volume",
+      "workflow baseline|baseline first",
+      "step cap|token budget",
+      "trace every call|tracing|conversation id",
+      "cost per conversation|cost per resolved",
+      "pilot|shadow mode|canary",
+      "two architectures|alternative design|compare designs",
+      "verify AWS|check AWS docs|unverified"
     ],
     "redFlags": [
       "retry every call blindly",

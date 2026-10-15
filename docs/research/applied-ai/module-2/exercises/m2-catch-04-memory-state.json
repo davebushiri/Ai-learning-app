@@ -63,7 +63,7 @@
     },
     {
       "id": "s3",
-      "text": "With a million-token window, we can keep every past conversation in the prompt, so we won't need summaries or retrieval."
+      "text": "With a million-token window, we can keep every past conversation in the prompt, so summaries and retrieval become optional."
     },
     {
       "id": "s4",

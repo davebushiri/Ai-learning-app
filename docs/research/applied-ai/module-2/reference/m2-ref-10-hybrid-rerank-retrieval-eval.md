@@ -41,6 +41,12 @@ Hybrid helps most when queries mix exact identifiers (part numbers, error codes)
 
 **Retrieval metrics are not answer metrics.** Recall@k says the evidence was in the top k; it doesn't say the model used it correctly. Measure answer correctness and faithfulness separately (module 1, m1-ref-08).
 
+**Agentic RAG: retrieval as a tool.** Classic RAG retrieves once, before generation, on the user's question as asked. In agentic RAG the agent gets a `search` tool (often next to other tools) and decides **whether** to search, **what** to search for (rewriting or splitting the query), whether to **search again** when results are thin or raise a new question, and when it has enough evidence to answer.
+- **Where it helps:** multi-hop questions ("which supplier made the part in last month's recall, and what's their audit status?"), vague questions that need a reformulated query, and questions that span several sources or tools. Anthropic's research system is an example of agents searching iteratively, with subagents searching in parallel (m2-ref-05).
+- **What it costs:** more model calls and searches per question (cost and latency), run-to-run variation in which searches happen, the loop risks of m2-ref-02 (repeated near-identical searches), and every retrieved passage is untrusted input that can carry injected instructions (m2-ref-06). Access-control filters still apply on every search, in the tool's code.
+- **How to adopt it:** keep fixed single-shot retrieval as the baseline; evaluate both on the same labelled questions (answer correctness, faithfulness, cost and latency per question, repeated trials); cap the number of searches per question; and log each query the agent issued, so retrieval failures can still be separated from generation failures.
+- **Evidence strength:** this is a design pattern, not a measured general result. Whether it beats single-shot retrieval on your questions is something your own evaluation decides.
+
 ## Systems-engineering analogy
 
 **First-stage retrieval and reranking are like a screening inspection followed by a detailed inspection.** The quick screen passes a wide sample; the slow, precise check ranks what passed.
@@ -56,12 +62,14 @@ Hybrid helps most when queries mix exact identifiers (part numbers, error codes)
 - Rerankers reorder; first-stage recall at the candidate depth caps them, so retrieve wide and rerank down.
 - State the recall@k definition, pick k to match the prompt, compare variants on one labelled set, and report latency and cost too.
 - High recall@k does not mean correct answers.
+- Agentic RAG (search as a tool the agent calls) is justified by multi-hop or vague questions and by an evaluation against single-shot retrieval; it needs a search cap, per-search access filters and logged queries.
 
 ## AWS mapping (verify)
 
 - Amazon OpenSearch Service supports hybrid queries with a normalization processor in a search pipeline (techniques min_max and l2; combinations arithmetic, geometric and harmonic mean). Check the version: open-source OpenSearch introduced it in 2.10 (reviewer's prior knowledge, not verified), and the managed service's first supporting version may differ. `verified: "UNVERIFIED"` (search snippets of AWS announcements)
 - Bedrock knowledge bases offer hybrid search for some vector stores and reranking models on retrieved results (module-1 claim 8). `verified: "UNVERIFIED"`
 - Reranker models are available through Amazon Bedrock. `verified: "UNVERIFIED"`
+- Bedrock Agents can be associated with knowledge bases, and the agent decides during orchestration when to query them (an agentic-RAG setup; module-1 claim 17). `verified: "UNVERIFIED"`
 
 ## Sources
 

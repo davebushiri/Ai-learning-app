@@ -11,11 +11,13 @@
     "workflows-vs-agents",
     "routing",
     "baseline-evaluation",
-    "system-of-record"
+    "system-of-record",
+    "agentic-rag"
   ],
   "referenceIds": [
     "m2-ref-03",
-    "m2-ref-05"
+    "m2-ref-05",
+    "m2-ref-10"
   ],
   "sources": [
     {
@@ -85,6 +87,16 @@
         "open ended|unpredictable steps|research|debugging",
         "environment feedback|tool results guide it",
         "success can be checked|verifiable outcome"
+      ]
+    },
+    {
+      "question": "When would you let the agent decide when and what to retrieve, instead of retrieving once before it answers?",
+      "rubric": [
+        "multi hop|vague questions|several searches|search again|follow up searches",
+        "search as a tool|search tool|rewrite the query|query rewriting|agentic rag",
+        "more calls|extra cost|added latency|more variation",
+        "single shot baseline|fixed retrieval baseline|evaluate both designs|same labelled questions",
+        "cap searches|search limit|max searches|log queries"
       ]
     }
   ]
