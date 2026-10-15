@@ -755,3 +755,20 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
 - **Row 18:** I concede the trace. It is uncertain (FR-021(a)), not partial, and no gate changes.
 - **Expected after rev2 (hand-traced):** the same SC-003b gates as variant A. Variant B still fails valid-alt. Suspect tags are unchanged, plus one new rev2 alternative tagged suspect-low.
 **Confidence:** medium (hand trace). **What would change my mind:** backend's re-measure showing any flawed line still switching off the echo rule, or a gate moving.
+
+### backend-engineer · 2026-10-15 · EVIDENCE
+**Answering:** the learning-designer's RESPONSE (rev2 re-measure). I used the real `matcherGrade` on scratch copies. `packs/` is unchanged, the holdout file was never opened, and rows are named by index only.
+- **Validation:** A2 (all fixes) and B2 (no `suspectFixes`) both have 0 problems. No item has more than 8 alternatives.
+- **SC-003b gates, A2 / B2** (verified): clear → met 100 / 100; incorrect → met 0 / 0; valid-alt → not_met 0 / 0; **valid-alt → expected 83.3 / 50 (fails)**; partial → partial or uncertain 100 / 88.9; uncertain on clear + incorrect 6.3 / 6.3.
+  - Every row and dimension status is identical to rev1 A and B. A2 misses rows 3 and 18. B2 misses rows 2, 3, 6, 13 and 18. The hand trace in `rev2.expectedRemeasure` is confirmed.
+- **SC-003 and SC-012:** unchanged in A2 and B2. SC-003 passes all 7 checks on 48 rows, and SC-012 is 7/7.
+- **606-probe sweep** (verified): **catch-05 s3's echo is back to uncertain, and catch-04 s3's whyWrong is back to met.** Against today, A2 changes 29 probes and B2 changes 28, against 34 for rev1 A. No interview, design, followUps or challenges part changed. From rev1 A to A2, 5 probes changed, and all of them went back to today's status.
+- **Rule check** ("no new key or alternative completes on a planted stop's flawed line"): **it holds in A2 and B2, with 0 completions.**
+  - Contacts where a new key form hits a flawed-line token without completing: catch-02 s3 `passages` on `correct[0]` alt 0 and on `acceptableCorrections[0]` (1 of 2 needed on the alternative; 4 found, 7 needed on the correction; deliberate per rev2); catch-05 s5 `outputs` (A2 only) and `deterministic`; catch-06 s5 `truth`.
+  - About 28 more single-token contacts come from plain words in new 2–3-token alternatives. They are listed in the scratch output.
+- **catch-04 s6 rewording:** it stops `correct[1]` alt 0 from matching (A2 1 of 2 needed, against 2 of 2 with the original). **It does not close the echo, though.** Echoing the flawed s6 line still gets correction met, and partial overall, through FR-020: `acceptableCorrections[0]` shares 7 of its 8 tokens with the flawed line through literal words, not the lexicon.
+  - **catch-05 s5 `acceptableCorrections[0]` has the same issue** (7 of 11 tokens, 7 needed).
+  - Both are present today and unchanged by rev1 or rev2. So "no flawed line switches off the echo rule" is not yet true. The fix is a reveal-wording change (PM call), as with catch-01 s2 `acceptableCorrections[1]`.
+- **Hidden work, unchanged:** A2 fails the 2 draft-equality tests in `tests/practice-content.test.js` (the exercise-equals-draft test and the lexicon-equals-draft test).
+- **`npm test` on the real repo, fresh:** `# tests 487 / # pass 401 / # fail 0 / # todo 86`.
+**Confidence:** high (executed). **What would change my mind:** a different matcher version or a different pack base than the current tree.
