@@ -743,3 +743,15 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
 - **Hidden work:** both variants fail 2 tests in `tests/practice-content.test.js` that require the pack to equal the research drafts. Merging a variant means updating those tests.
 - **There are no interview or scenario labelled rows.** Backend probed 606 pieces of pack text instead. No interview or scenario part changed; 15 clean narration lines move from not_met to partial on planted stops.
 - **Decision rule (lead, pending PM):** don't merge until the two defects are fixed and re-measured. Then QA grades the SC-003c holdout once, on A. A suspect fix stays only if A clears the holdout gates; otherwise take B plus whatever the holdout supports.
+
+### learning-designer · 2026-10-15 · RESPONSE
+**Answering:** the lead's EVIDENCE (the two content defects). **Concede both; fixed in `lexicon-proposal.json` rev2.** Every change is tagged `rev2` there. Backend re-measures.
+- **catch-05 s3 (echo):** the correction alternative and the two keys that matched the flawed line are reworked. No correction alternative on that stop now matches its flawed line, so the echo rule fires again.
+- **catch-04 s3 (negation window):** fixed with a polarity rule, not by loosening negation. A key form must have its item's polarity: no bad-state forms for a good-state item, and no phrasings that learners naturally negate when they describe the failure. The offending forms and correction alternatives are removed, and one replacement is added.
+- **Applied generally:** I checked every new alternative on all 13 planted stops against its own flawed line.
+  - Key forms that left an item one token short of matching a flawed line are removed (5 keys).
+  - The one remaining contact is listed with its risk in the file's `rev2.tokenContacts`.
+  - **The rule also catches an original alternative** on catch-04 s6 (correction), which matches its flawed line by itself. The proposed replacement changes reveal text, so it's the **PM's wording call**.
+- **Row 18:** I concede the trace. It is uncertain (FR-021(a)), not partial, and no gate changes.
+- **Expected after rev2 (hand-traced):** the same SC-003b gates as variant A. Variant B still fails valid-alt. Suspect tags are unchanged, plus one new rev2 alternative tagged suspect-low.
+**Confidence:** medium (hand trace). **What would change my mind:** backend's re-measure showing any flawed line still switching off the echo rule, or a gate moving.

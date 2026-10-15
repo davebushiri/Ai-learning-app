@@ -1,11 +1,13 @@
 {
   "about": "learning-designer proposal for F1c-B10, B12, B13 (thread 0007, 2026-10-15). Content-only edits to packs/applied-ai: practice.json lexicon.synonyms and rubric items in exercises/*.json. Each fix is tagged 'pre' (written before reading tests/fixtures/practice/m1-labelled-answers.json, derived from the pack's reference notes or the exercise's own whyWrong / acceptableCorrections) or 'post' (added after the check; SUSPECT, see suspectFixes). The founder must not open this file: it quotes rubric text.",
-  "status": "proposal; NOT run. This session had no shell, so the numbers in 'measured' are hand-traced against server/services/practice-matcher.js (matcher@2). Backend or QA must run SC-003b on a scratch copy before T11 merges.",
+  "status": "rev2, 2026-10-15: fixes the two defects backend measured (catch-05 s3 echo, catch-04 s3 negation window) and applies the flawed-line and polarity rules to all 13 planted stops. Every rev2 change is tagged 'rev2' at its key or item. rev1 was measured by backend (variant A passes SC-003b; variant B fails valid-alt at 50%). rev2 is hand-traced only, and backend re-measures it.",
 
   "designRules": [
     "The lexicon is pack-global: a key fires for every rubric item, red flag and strong signal containing a token with the same stem. Keys whose token occurs in an interview or scenario redFlag (add, prompt, index, update, change/changing, evaluation, test, permissions, knowledge, model, logs, context, long) are deliberately NOT added. Those gaps are fixed with item-level '|' alternatives instead. The one exception is 'faithfulness' (B13); see risks.",
     "Forms that reduce to a common word under word-start + stemming are excluded: 'sees' (hits 'seem'), 'only', 'user', 'live', 'bad', 'different', 'related', 'states' (hits 'status'), 'well formed' (reduces to 'form'), 'own space' (reduces to 'space' and lets 'same vector space' satisfy 'incompatible'), 'codes' as a form of 'terms' (lets the flawed catch-04 s4 text satisfy the BM25 item).",
     "'no' is NOT a form of 'not': learners open answers with 'No, ...', which would satisfy every 'not' item.",
+    "rev2 (after backend's measurement, lead EVIDENCE 2026-10-15). FLAWED-LINE RULE: no new alternative, with or without the new keys, may match the flawed narration line of its own planted stop. A match there switches off the FR-021(c) echo rule (the catch-05 s3 defect). Checked item by item for all 13 planted stops (01 s2/s4, 02 s3/s6, 04 s3/s4/s6, 05 s3/s5, 06 s5/s6, 08 s4/s5). Every rubric shares some words with its flawed line, so the rule can't be 'no shared token'. On top of the item rule, I also removed any key form that hit a flawed-line token and left the item 1 token short of matching (near misses). The remaining contacts are listed in rev2.tokenContacts.",
+    "rev2 POLARITY RULE: a key form must have the same polarity as its item. Forms naming the bad state (stale, outdated) must not serve a good-state item (currency), and verb phrases that learners naturally negate when describing the failure ('answers the question') are excluded. Otherwise a correct 'check it isn't outdated' or a whyWrong paraphrase ('may not answer the question') matches inside a negation window and turns uncertain (the catch-04 s3 defect). Negation itself is not loosened.",
     "Where the correct answer is naturally a negation, an n<=2 alternative containing a negator is used, so PD-2 skips the negation check and an un-negated wrong answer can't match it."
   ],
 
@@ -13,21 +15,21 @@
     "_note": "Add these keys to packs/applied-ai/practice.json lexicon.synonyms. Keys marked (extend) already exist: append the forms. All other existing keys stay as they are.",
     "not":          { "tag": "pre",  "forms": ["isnt", "doesnt", "dont", "arent", "wasnt", "wont", "cannot", "cant", "never", "without"], "source": "English contractions for the rubric's own 'not' items (ref-01, ref-02, ref-04)" },
     "faithfulness": { "tag": "pre",  "forms": ["faithful", "groundedness"], "source": "ref-04 'Faithfulness / groundedness'; B13 prefix gap" },
-    "queries":      { "tag": "pre",  "forms": ["query", "question", "search"], "source": "B13: stem 'queri' misses 'query'; ref-06/07" },
+    "queries":      { "tag": "pre; rev2 removed 'search' (in the flawed catch-04 s4 line; near miss on correct[1])", "forms": ["query", "question"], "source": "B13: stem 'queri' misses 'query'; ref-06/07" },
     "degrades":     { "tag": "pre",  "forms": ["drops", "worse", "declines", "suffers", "decreases"], "source": "ref-01 'accuracy and recall degrade'" },
     "quality":      { "tag": "pre",  "forms": ["accuracy", "recall", "performance"], "source": "ref-01" },
     "length":       { "tag": "pre",  "forms": ["long"], "source": "ref-01 'long input'" },
-    "input":        { "tag": "pre",  "forms": ["text", "tokens", "content", "documents"], "source": "ref-01 'documents or tool results you pass in'" },
+    "input":        { "tag": "pre; rev2 removed 'documents'", "forms": ["text", "tokens", "content"], "source": "ref-01 'documents or tool results you pass in'", "rev2": "'documents' is in the flawed catch-01 s2 line, which put correct[1] alt 1 one token short of matching it" },
     "cited":        { "tag": "pre",  "forms": ["source", "sources", "trace", "traced", "attributed", "provenance"], "source": "ref-05 'cannot point to where a fact came from'" },
     "retraining":   { "tag": "pre",  "forms": ["re train", "training run", "new training"], "source": "ref-05 'another training run, evaluation and release'" },
     "style":        { "tag": "pre",  "forms": ["tone", "format", "formatting", "voice"], "source": "ref-05 table; catch-02 s7" },
     "behavior":     { "tag": "pre",  "forms": ["behaviour", "behave", "skills"], "source": "ref-05 'skill or style'" },
     "unchanged (extend)": { "tag": "pre", "forms": ["dont change", "doesnt change", "not change", "never change", "stay same", "not modified", "unmodified", "not updated"], "source": "ref-05 'RAG does not change weights'" },
     "closeness (extend)": { "tag": "pre", "forms": ["similar meaning", "semantically similar"], "source": "ref-06" },
-    "relevance":    { "tag": "pre",  "forms": ["relevant", "answers question", "answer question", "on topic"], "source": "ref-06 'semantically close ... and still not answer it'; 'share topic but disagree'" },
+    "relevance":    { "tag": "pre; rev2 removed 'answers question', 'answer question'", "forms": ["relevant", "on topic"], "source": "ref-06 'share topic but disagree'", "rev2": "catch-04 s3 defect: whyWrong-style answers say the passage may 'not answer the question', so the form matched inside a negation window and turned a correct answer uncertain (polarity rule)" },
     "scale":        { "tag": "pre",  "forms": ["range", "calibrated", "calibration", "absolute"], "source": "ref-06 'its scale differs between models'" },
     "varies":       { "tag": "pre",  "forms": ["differs", "vary", "depends"], "source": "ref-06" },
-    "currency":     { "tag": "pre",  "forms": ["current", "up to date", "outdated", "stale", "fresh", "latest"], "source": "ref-06 'check relevance, currency and authority'" },
+    "currency":     { "tag": "pre; rev2 removed 'outdated', 'stale'", "forms": ["current", "up to date", "fresh", "latest"], "source": "ref-06 'check relevance, currency and authority'", "rev2": "catch-04 s3 defect: bad-state forms serving a good-state item, so 'check it isn't outdated' matched negated (polarity rule)" },
     "check":        { "tag": "pre",  "forms": ["verify", "validate", "confirm", "review"], "source": "ref-03/04" },
     "meaning":      { "tag": "pre",  "forms": ["semantic", "semantics", "concepts"], "source": "ref-06 'good at meaning'" },
     "miss":         { "tag": "pre",  "forms": ["misses", "fail", "fails", "struggle", "struggles", "poor", "weak", "unreliable"], "source": "ref-06 'Where embeddings struggle: exact tokens'" },
@@ -35,14 +37,14 @@
     "incompatible": { "tag": "pre",  "forms": ["not compatible", "not comparable", "isnt compatible", "arent compatible", "arent comparable", "incomparable"], "source": "ref-06 'not comparable'" },
     "meaningless":  { "tag": "pre",  "forms": ["garbage", "nonsense", "invalid", "useless", "junk", "random"], "source": "catch-04 s6 whyWrong" },
     "rankings":     { "tag": "pre",  "forms": ["rank", "scores", "results", "comparisons"], "source": "ref-06" },
-    "corpus":       { "tag": "pre",  "forms": ["documents", "docs", "dataset", "collection", "everything"], "source": "ref-06 're-embedding the corpus'; 'every part must be re-catalogued'" },
+    "corpus":       { "tag": "pre; rev2 removed 'documents', 'docs' (in the flawed catch-04 s6 line; near miss on correct[0]); the gap is covered by the rev2 alternative 're-embed'", "forms": ["dataset", "collection", "everything"], "source": "ref-06 're-embedding the corpus'; 'every part must be re-catalogued'" },
     "shape":        { "tag": "pre",  "forms": ["structure", "format", "syntax", "valid json", "parseable"], "source": "ref-03 'shape, not truth'; 'parseable and well-typed'" },
     "guarantees":   { "tag": "pre",  "forms": ["ensures", "enforces"], "source": "ref-03 'enforced'" },
-    "values":       { "tag": "pre",  "forms": ["content", "contents", "data", "numbers"], "source": "ref-03 'Validation of content'" },
+    "values":       { "tag": "pre; rev2 removed 'numbers' (in the flawed catch-05 s3 line)", "forms": ["content", "contents", "data"], "source": "ref-03 'Validation of content'" },
     "wrong":        { "tag": "pre",  "forms": ["incorrect", "false", "invalid", "made up"], "source": "ref-03/04" },
     "fabricated":   { "tag": "pre",  "forms": ["made up", "hallucinated", "invented", "fake", "nonexistent"], "source": "ref-03 'a fabricated policy number'; ref-04" },
-    "validate":     { "tag": "pre",  "forms": ["check", "verify", "confirm", "cross check"], "source": "ref-03 'check that each cited chunk exists'" },
-    "citations":    { "tag": "pre",  "forms": ["cited", "references", "cites", "policy numbers"], "source": "ref-03" },
+    "validate":     { "tag": "pre; rev2 removed 'check'", "forms": ["verify", "confirm", "cross check"], "source": "ref-03", "rev2": "catch-05 s3 defect: 'check' hit the flawed line's 'checking'" },
+    "citations":    { "tag": "pre; rev2 removed 'cited', 'cites', 'policy numbers'", "forms": ["references", "sources"], "source": "ref-03", "rev2": "catch-05 s3 defect: all three hit the flawed line's 'cited policy numbers'; together with 'check' they made correct[0] match the flawed line" },
     "consistent":   { "tag": "pre",  "forms": ["stable", "predictable", "less random", "less variable", "less variation"], "source": "ref-02 'more conservative, more consistent'" },
     "runs":         { "tag": "pre",  "forms": ["calls", "samples", "trials", "attempts"], "source": "ref-02 'over many runs'" },
     "documented":   { "tag": "pre",  "forms": ["docs", "documentation"], "source": "ref-02" },
@@ -55,7 +57,7 @@
     "superseded":   { "tag": "pre",  "forms": ["old", "outdated", "stale", "previous"], "source": "ref-08 'the index holds an old version'" },
     "current":      { "tag": "pre",  "forms": ["latest", "newest", "up to date", "active"], "source": "ref-08 'current only'" },
     "filter":       { "tag": "pre",  "forms": ["restrict", "exclude"], "source": "ref-07 'metadata filters'" },
-    "chunks":       { "tag": "pre",  "forms": ["documents", "docs", "passages"], "source": "ref-07" },
+    "chunks":       { "tag": "pre; rev2 removed 'documents', 'docs' (in the flawed catch-02 s3 line; 'passages' covers that item)", "forms": ["passages"], "source": "ref-07" },
     "passages":     { "tag": "pre",  "forms": ["chunks", "documents", "docs", "snippets", "excerpts"], "source": "ref-05/07" },
     "metrics":      { "tag": "pre",  "forms": ["measure", "measurement", "eval", "evals", "recall", "benchmark", "tests"], "source": "ref-08 'recall@k', 'measure'" },
     "tune":         { "tag": "pre",  "forms": ["pick", "choose", "select", "experiment", "optimize", "adjust", "calibrate"], "source": "ref-07 'tune k with evaluation'" },
@@ -125,8 +127,9 @@
         ],
         "correct": [
           "check relevance and currency",
-          "evaluate answers separately|test answers separately|check the answer itself|measure answer correctness"
-        ]
+          "evaluate answers separately|separate check"
+        ],
+        "_rev2": "catch-04 s3 defect. Removed 'measure answer correctness', 'test answers separately' and 'check the answer itself'. Each could reach its match count through an occurrence of 'answer' inside 'may not answer the question', so a correct answer turned uncertain. Added 'separate check' (paraphrases this item's own wording; neither token is usually negated). Row 10 still passes through it. Tag: rev2 (written after seeing row 10, so suspect-low)."
       },
       "s4": {
         "explain": [
@@ -144,10 +147,10 @@
           "rankings across them meaningless"
         ],
         "correct": [
-          "re-embed whole corpus|rebuild index|reembed|re-embed everything|re-index|recompute vectors",
-          "one model per index|do not mix|same model for queries and documents"
+          "re-embed whole corpus|rebuild index|reembed|re-embed|re-index|recompute vectors",
+          "single model per index|do not mix|same model for queries and documents"
         ],
-        "_risk": "'one model per index' is kept because practitioners say exactly that, but the flawed s6 text contains 'ones' (= one + s) and 'models', so an echo earns that item. Same family as B10, lower impact (1 of 2 correction items)."
+        "_rev2": "(a) 're-embed everything' is replaced by 're-embed' (from this stop's whyWrong 're-embedding the corpus'), because 'corpus' lost 'documents' under the flawed-line rule. (b) FLAWED-LINE RULE applied to an ORIGINAL alternative: 'one model per index' matches the flawed s6 line by itself ('ones' = one + s, plus 'models'), which switches off the echo rule, the same defect as B10 and catch-05 s3. Replaced with 'single model per index'; the qaRows clear row still matches through 'model' + 'index'. This changes reveal text, so the PM accepts the wording."
       }
     },
     "m1-catch-05-structured-outputs": {
@@ -157,9 +160,10 @@
           "values can be wrong|fabricated"
         ],
         "correct": [
-          "validate citations against index|check they exist",
+          "validate citations against index|verify against index|exists in index",
           "content checks separate from format|validate content|business rules"
-        ]
+        ],
+        "_rev2": "catch-05 s3 defect. 'check they exist' matched the flawed s3 line by itself (it has 'checking' and 'exist'). It is replaced by 'verify against index' and 'exists in index' (ref-03: 'check that each cited chunk exists and was actually retrieved'). Both need 'index', which the flawed line lacks. With the rev2 'validate' and 'citations' keys, no correction alternative matches the flawed line, so the echo rule fires again. Tag: rev2 (defect fix, not row-driven; there is no labelled catch-05 s3 row besides the qaRows clear row, which still matches through alt 1)."
       },
       "s5": {
         "explain": [
@@ -256,6 +260,27 @@
       "validAlternative_to_expected": "4/6 = 66.7% (FAIL) without 'nothing learned'"
     },
     "heldOut": "Not written by me (lead's change of plan, 2026-10-15: QA writes it blind to this diff). No held-out result exists yet."
+  },
+
+  "rev2": {
+    "changes": [
+      "keys: validate -check; citations -cited -cites -'policy numbers' (catch-05 s3 defect)",
+      "keys: relevance -'answers question' -'answer question'; currency -outdated -stale (catch-04 s3 defect, polarity rule)",
+      "keys: input -documents; chunks -documents -docs; corpus -documents -docs; queries -search; values -numbers (flawed-line near misses)",
+      "catch-05 s3 correct[0]: 'check they exist' -> 'verify against index', 'exists in index'",
+      "catch-04 s3 correct[1]: removed 'test answers separately', 'check the answer itself', 'measure answer correctness'; added 'separate check'",
+      "catch-04 s6 correct[0]: 're-embed everything' -> 're-embed'",
+      "catch-04 s6 correct[1]: ORIGINAL 'one model per index' -> 'single model per index' (pre-existing echo defect; reveal wording, PM call)"
+    ],
+    "tokenContacts": {
+      "_note": "Places where a key form still hits a token of a flawed line, but the item can't match that line. Each is kept for a stated reason, so backend can probe them on purpose.",
+      "passages.documents on catch-02 s3 correct[0] alt 1": "the flawed line gives 1 of the 2 needed tokens. An incorrect echo that also says 'prompt' or 'adds' would match. Kept because 'adds the documents to the prompt' is core practitioner phrasing (ref-05/07), and SC-003b row 6 needs it. Risk M.",
+      "outputs.answers on catch-05 s5 explain[0] alts 2-3": "the flawed line has 'answer' but neither 'vary' nor 'differ', so the 2-token alternatives can't complete.",
+      "pre-existing, not mine": "the catch-02 s6, catch-04 s3/s4 and catch-08 s4/s5 originals each share 1-3 tokens with their flawed lines without matching."
+    },
+    "rows18Correction": "Backend measured row 18 as uncertain, not partial: its correction dimension matches nothing and the answer has >= 20 tokens (FR-021(a), B11 as designed). My trace missed that rule there. No gate changes, because uncertain is not not_met.",
+    "expectedRemeasure": "Hand-traced: every SC-003b gate is the same as rev1 variant A (valid-alt 83.3%, partial 100%, clear 100%, incorrect -> met 0%, uncertain 6.3%). Rows 2, 6, 10, 14 and 22 still reach the expected status. qaRows: the keyword-list rows stay capped to partial, and the short-correct rows stay met. Variant B (no suspectFixes) still fails valid-alt at 50%; rev2 doesn't change that.",
+    "suspectTagsUnchanged": "The suspectFixes list is unchanged. 'separate check' is new and rev2-tagged: written after seeing row 10, but it rewords the item itself. Treat it as suspect-low for the holdout decision."
   },
 
   "risks": [
