@@ -84,24 +84,35 @@
       "day": 4,
       "blocks": [
         {
-          "kind": "catch",
-          "minutes": 40,
+          "kind": "learn",
+          "minutes": 20,
           "exercises": [
-            "m1-catch-04-embeddings",
-            "m1-catch-06-retrieval-vs-generation",
-            "m1-catch-05-structured-outputs"
+            "m2-learn-01-agent-loop",
+            "m2-learn-02-agent-guardrails"
+          ]
+        },
+        {
+          "kind": "catch",
+          "minutes": 45,
+          "exercises": [
+            "m2-catch-01-tool-calling",
+            "m2-catch-02-agent-loop-clean",
+            "m2-catch-03-workflow-or-agent",
+            "m2-catch-04-memory-state",
+            "m2-catch-05-guardrails"
           ]
         },
         {
           "kind": "interview",
-          "minutes": 30,
+          "minutes": 35,
           "exercises": [
-            "m1-interview-04-evaluate-rag"
+            "m2-interview-02-workflow-or-agent",
+            "m2-interview-04-defend-agents"
           ]
         },
         {
           "kind": "review",
-          "minutes": 50
+          "minutes": 20
         }
       ]
     },
@@ -109,24 +120,32 @@
       "day": 5,
       "blocks": [
         {
-          "kind": "catch",
-          "minutes": 35,
+          "kind": "learn",
+          "minutes": 10,
           "exercises": [
-            "m1-catch-02-rag-vs-finetune",
-            "m1-catch-08-design-tradeoffs",
-            "m1-catch-01-context-window"
+            "m2-learn-03-embedding-migration"
+          ]
+        },
+        {
+          "kind": "catch",
+          "minutes": 40,
+          "exercises": [
+            "m2-catch-07-production-failures",
+            "m2-catch-08-agent-eval-multiagent",
+            "m2-catch-06-embeddings-ops-clean",
+            "m2-catch-09-retrieval-eval"
           ]
         },
         {
           "kind": "interview",
           "minutes": 25,
           "exercises": [
-            "m1-interview-03-when-not-rag"
+            "m2-interview-03-embedding-model-change"
           ]
         },
         {
           "kind": "review",
-          "minutes": 60
+          "minutes": 45
         }
       ]
     },
@@ -137,7 +156,8 @@
           "kind": "interview",
           "minutes": 75,
           "exercises": [
-            "m1-interview-01-design-rag"
+            "m1-interview-01-design-rag",
+            "m2-interview-01-evaluate-agent"
           ]
         },
         {

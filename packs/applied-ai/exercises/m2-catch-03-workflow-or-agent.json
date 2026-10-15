@@ -1,0 +1,147 @@
+{
+  "id": "m2-catch-03-workflow-or-agent",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch errors in choosing between a workflow and an agent: assuming autonomy raises accuracy, and skipping the simpler baseline.",
+  "prerequisites": [
+    "m2-catch-02-agent-loop-clean"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "workflows-vs-agents",
+    "routing",
+    "baseline-evaluation"
+  ],
+  "referenceIds": [
+    "m2-ref-03"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Building effective agents (2024)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: How tool use works (when not to use tools)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "AWS: Step Functions integration with Amazon Bedrock",
+      "url": "https://docs.aws.amazon.com/step-functions/latest/dg/connect-bedrock.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "For the supplier emails, what evidence would convince you the agent is worth its extra cost over a routed workflow?",
+    "rubric": [
+      "higher task success|resolves more emails|better outcomes",
+      "same test set|compare on real emails|baseline comparison",
+      "cost and latency per email|cost per task|slower and pricier acceptable",
+      "safety holds|no unauthorized actions|read only tools"
+    ]
+  },
+  "transfer": {
+    "scenario": "A bank wants an 'AI agent' to process mortgage applications that follow a fixed regulatory checklist. What do you recommend?",
+    "rubric": [
+      "fixed checklist suits workflow|predictable steps|deterministic pipeline",
+      "model calls inside steps|extraction step|classification step",
+      "audit needs same path|compliance|traceability",
+      "agent only for open ended parts|exceptions to a person",
+      "compare on real applications|baseline first|measure"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Invoices arrive as PDFs, and every one goes through the same four steps: extract, validate, match to a purchase order, and post."
+    },
+    {
+      "id": "s2",
+      "text": "Since those steps never change, we'll write them as a fixed workflow, with a model call only for extraction."
+    },
+    {
+      "id": "s3",
+      "text": "Supplier emails can ask about anything, so the path is hard to predict; an agent with read-only tools is worth testing there."
+    },
+    {
+      "id": "s4",
+      "text": "Agents are more capable than workflows, so moving the invoice steps into an agent should also raise accuracy."
+    },
+    {
+      "id": "s5",
+      "text": "An agent adds model calls at every step, so we expect more latency and cost per item."
+    },
+    {
+      "id": "s6",
+      "text": "Posting to the ledger stays outside the agent, as a coded step after validation."
+    },
+    {
+      "id": "s7",
+      "text": "There's no need to build a baseline first; an agent is the standard design for this kind of system now."
+    },
+    {
+      "id": "s8",
+      "text": "A router sends each email to the invoice workflow or to the email agent, depending on its type."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s4",
+        "misconception": "Agents are more accurate than workflows for any task.",
+        "whyWrong": "For a fixed, known procedure, a workflow is usually more predictable, cheaper, faster, and easier to test and audit. Agents earn their cost when the steps can't be predicted in advance. Autonomy adds run-to-run variation and compounding errors, so accuracy on a fixed procedure can drop, not rise.",
+        "acceptableCorrections": [
+          "For fixed, known steps a workflow is more predictable and cheaper; keep the agent for the unpredictable emails.",
+          "Use an agent only where the path can't be planned; test both designs on real invoices."
+        ],
+        "exceptions": "If the invoices were highly varied (many formats, many exception paths), an agentic step could help; the error is assuming autonomy raises accuracy without measuring it.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "fixed steps suit workflow|predictable steps|known procedure|steps are known|steps never change|deterministic",
+            "compounding errors|more variation|less predictable|errors compound|nondeterministic|harder to test",
+            "cost latency|more expensive|slower|more cost"
+          ],
+          "correct": [
+            "keep workflow|use workflow|fixed pipeline|coded steps|stay a workflow",
+            "agent only for unpredictable|agent for emails|test both designs|test both options|compare on real invoices|measure against the workflow|evaluate both approaches"
+          ]
+        }
+      },
+      {
+        "statementId": "s7",
+        "misconception": "An agent is the default design, so no simpler baseline is needed.",
+        "whyWrong": "Start with the simplest design that could work and add autonomy only when evaluation shows it pays for its extra cost, latency and risk. Without a baseline measured on the same real cases, there is no evidence the agent is better.",
+        "acceptableCorrections": [
+          "Start simple, measure the workflow on real invoices, and add an agent only if it clearly beats that.",
+          "Use the simplest design that works and prove any agent against it with an evaluation."
+        ],
+        "exceptions": "None.",
+        "kind": "tradeoff",
+        "rubric": {
+          "explain": [
+            "simplest first|start simple|simplest solution|least complex|simple baseline",
+            "cant prove|cant show|no proof|no evidence|need comparison|measure against baseline|compare with workflow",
+            "cost latency risk|extra cost|added risk|more risk"
+          ],
+          "correct": [
+            "measure workflow|measure simple version|evaluate workflow|benchmark workflow|test workflow first",
+            "add agent only if better|only if evaluation shows|prove gain|justify with data|beats baseline"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s5",
+      "s6",
+      "s8"
+    ]
+  }
+}

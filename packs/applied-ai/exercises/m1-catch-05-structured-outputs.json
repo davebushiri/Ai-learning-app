@@ -99,7 +99,7 @@
         "misconception": "Temperature zero makes outputs perfectly repeatable.",
         "whyWrong": "Provider documentation states that even at temperature zero, outputs are not fully deterministic; identical inputs can produce different outputs across calls.",
         "acceptableCorrections": [
-          "Temperature zero makes answers more consistent, but identical questions can still get different answers.",
+          "The lowest randomness setting makes outputs more consistent, but repeated runs of the same request can still differ.",
           "We design and test as if outputs can vary."
         ],
         "exceptions": "None for hosted APIs as documented; local inference setups may differ, but don't assume it.",

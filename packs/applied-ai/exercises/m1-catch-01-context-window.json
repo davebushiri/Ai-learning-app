@@ -79,7 +79,7 @@
         "whyWrong": "The context window is per-call working memory: what the model can see while answering this request. Training data was learned into the weights beforehand and is not in the window.",
         "acceptableCorrections": [
           "The context window is what the model can see during one call, not its training data.",
-          "A bigger window lets one request hold more text; it doesn't mean the model knows more."
+          "One request can hold more text in a bigger window, but the model's knowledge stays the same."
         ],
         "exceptions": "None.",
         "kind": "factual",

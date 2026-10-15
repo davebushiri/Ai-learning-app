@@ -1,0 +1,127 @@
+{
+  "id": "m2-learn-01-agent-loop",
+  "module": "m2",
+  "type": "learn",
+  "objective": "Walk through one tool-using agent run end to end: who executes the tool, how errors come back, what ends the loop, and why the code checks the outcome.",
+  "prerequisites": [
+    "m1-learn-01-how-llms-answer"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "tool-use",
+    "agent-loop",
+    "stopping-conditions",
+    "tool-errors"
+  ],
+  "referenceIds": [
+    "m2-ref-01",
+    "m2-ref-02"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: How tool use works",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: Handle tool calls",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic: Building effective agents (2024)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "AWS: How Amazon Bedrock Agents works",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/agents-how.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "In this run, which single control would you add first if the tracking API started failing for an hour, and why?",
+    "rubric": [
+      "timeout per call|tool timeout|deadline",
+      "bounded retry|backoff|retry limit|circuit breaker",
+      "tell the customer|fallback|hand to a person|escalate"
+    ]
+  },
+  "transfer": {
+    "scenario": "A hotel chain wants an assistant that checks room availability and holds a room for ten minutes. Describe one run of its loop, and the limits you would put around it.",
+    "rubric": [
+      "model requests tool|model asks for the call|structured tool request",
+      "our code executes|application runs the tool|code calls the API",
+      "result goes back|tool result returned|send result back",
+      "step cap|max steps|iteration limit",
+      "timeout per call|deadline|budget",
+      "check the hold exists|verify outcome|read it back"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "A customer asks why parcel 4471 is late. The model has two tools: track a parcel, and open a support case."
+    },
+    {
+      "id": "s2",
+      "text": "The model can't run anything itself. It replies with a request to call the tracking tool for parcel 4471."
+    },
+    {
+      "id": "s3",
+      "text": "Our code checks that the parcel belongs to this customer, then calls the tracking service."
+    },
+    {
+      "id": "s4",
+      "text": "The first call times out. Here's the decision point: a read is safe to repeat, so our code retries it once after a short wait."
+    },
+    {
+      "id": "s5",
+      "text": "Had that failed too, we'd send back a result marked as an error, saying the service is slow. This time it works: a weather hold at the depot."
+    },
+    {
+      "id": "s6",
+      "text": "With that result, the model writes its answer instead of asking for another tool, so the loop ends."
+    },
+    {
+      "id": "s7",
+      "text": "If it had kept asking for tools, our cap of eight steps would have stopped the run and passed the case to a person."
+    },
+    {
+      "id": "s8",
+      "text": "Before the reply goes out, our code checks that it matches the tracking result we actually received."
+    }
+  ],
+  "teachBack": [
+    {
+      "question": "Walk through one pass of the loop: who does what, and what goes back to the model?",
+      "rubric": [
+        "model requests the tool|model asks for a tool call|structured request|tool use block",
+        "our code executes|application runs it|code calls the service|app runs the tool",
+        "result sent back|tool result|returns the output|result goes back",
+        "repeat until answer|loop continues|loop until done|model calls again"
+      ]
+    },
+    {
+      "question": "What ends this run, and why isn't the model's final answer enough on its own?",
+      "rubric": [
+        "model stops asking for tools|end turn|final answer ends loop|no more tool calls",
+        "step cap|max steps|iteration limit|eight steps",
+        "verify outcome|check the answer|check against tool result|match the result",
+        "not success|isnt success|not proof|doesnt prove"
+      ]
+    },
+    {
+      "question": "Why was it safe to retry the tracking call, and what changes for a call that issues a refund?",
+      "rubric": [
+        "read is safe to repeat|no side effect|read only|lookup changes nothing",
+        "refund is a write|side effect|could pay twice|duplicate refund",
+        "idempotency key|idempotent|dedupe|check before retry"
+      ]
+    }
+  ]
+}

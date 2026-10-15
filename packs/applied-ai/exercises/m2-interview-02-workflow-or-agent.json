@@ -1,0 +1,106 @@
+{
+  "id": "m2-interview-02-workflow-or-agent",
+  "module": "m2",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m2-catch-03-workflow-or-agent"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "workflows-vs-agents",
+    "routing",
+    "baseline-evaluation",
+    "system-of-record",
+    "agentic-rag"
+  ],
+  "referenceIds": [
+    "m2-ref-03",
+    "m2-ref-05",
+    "m2-ref-10"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Building effective agents (2024)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: How tool use works (when to use tools, and when not to)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "AWS: Step Functions integration with Amazon Bedrock",
+      "url": "https://docs.aws.amazon.com/step-functions/latest/dg/connect-bedrock.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Give an example from automotive or plant engineering where an agent would be the wrong tool, and one where it might be right.",
+    "rubric": [
+      "fixed procedure suits workflow|released work instruction|checklist",
+      "open ended diagnosis might suit agent|unknown fault|troubleshooting",
+      "success must be checkable|verify outcome"
+    ]
+  },
+  "transfer": {
+    "scenario": "A product manager asks for 'an agent' that answers 'how many warranty claims did part X get last month' from the claims database.",
+    "rubric": [
+      "single query not an agent|one tool call|text to SQL with validation",
+      "exact numbers from the system of record|database query",
+      "read only access|least privilege",
+      "validate the generated query|check results"
+    ]
+  },
+  "question": "How do you decide between a workflow and an agent, and when would you use neither?",
+  "rubric": {
+    "mustCover": [
+      "workflow when steps are known|fixed steps|predictable path|predefined code paths",
+      "agent when steps cant be predicted|open ended|unpredictable path|model chooses the next step",
+      "single call when one step is enough|one model call|no agent needed|simple lookup",
+      "cost latency and variation|more model calls|compounding errors",
+      "start simple and measure|baseline first|evaluate both designs|simplest solution"
+    ],
+    "strongSignals": [
+      "prompt chaining|routing|orchestrator workers|evaluator optimizer",
+      "router sends known intents to workflows",
+      "irreversible actions stay coded steps|actions outside the agent",
+      "testability and audit|same path every time",
+      "frameworks can hide prompts"
+    ],
+    "redFlags": []
+  },
+  "followUps": [
+    {
+      "question": "What changes if the task moves money or touches customer data?",
+      "rubric": [
+        "human approval|approval step",
+        "least privilege|scoped tools",
+        "coded step for the action|keep the action out of the agent",
+        "audit log"
+      ]
+    },
+    {
+      "question": "Give an example where you would pick an agent.",
+      "rubric": [
+        "open ended|unpredictable steps|research|debugging",
+        "environment feedback|tool results guide it",
+        "success can be checked|verifiable outcome"
+      ]
+    },
+    {
+      "question": "When would you let the agent decide when and what to retrieve, instead of retrieving once before it answers?",
+      "rubric": [
+        "multi hop|vague questions|several searches|search again|follow up searches",
+        "search as a tool|search tool|rewrite the query|query rewriting|agentic rag",
+        "more calls|extra cost|added latency|more variation",
+        "single shot baseline|fixed retrieval baseline|evaluate both designs|same labelled questions",
+        "cap searches|search limit|max searches|log queries"
+      ]
+    }
+  ]
+}

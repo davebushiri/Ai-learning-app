@@ -1,7 +1,7 @@
 {
   "format": "practice-v1",
   "id": "applied-ai",
-  "version": 2,
+  "version": 3,
   "title": "Applied AI",
   "modules": [
     {
@@ -24,6 +24,29 @@
         "m1-interview-02-retrieval-vs-generation",
         "m1-interview-03-when-not-rag",
         "m1-interview-04-evaluate-rag"
+      ]
+    },
+    {
+      "id": "m2",
+      "title": "Agents and embeddings in depth",
+      "exercises": [
+        "m2-learn-01-agent-loop",
+        "m2-catch-01-tool-calling",
+        "m2-catch-02-agent-loop-clean",
+        "m2-learn-02-agent-guardrails",
+        "m2-catch-03-workflow-or-agent",
+        "m2-catch-04-memory-state",
+        "m2-catch-05-guardrails",
+        "m2-learn-03-embedding-migration",
+        "m2-catch-06-embeddings-ops-clean",
+        "m2-catch-07-production-failures",
+        "m2-catch-08-agent-eval-multiagent",
+        "m2-catch-09-retrieval-eval",
+        "m2-scenario-01-delivery-support-agent",
+        "m2-interview-01-evaluate-agent",
+        "m2-interview-02-workflow-or-agent",
+        "m2-interview-03-embedding-model-change",
+        "m2-interview-04-defend-agents"
       ]
     }
   ],
@@ -414,6 +437,6 @@
     }
   },
   "provenance": {
-    "builtBy": "backend-engineer, F1c-T11: format-only copy of docs/research/applied-ai/module-1 (learning-designer REVIEW.md; thread 0007 OQ-1, OQ-6, PD-11)"
+    "builtBy": "backend-engineer, F1c-T11: format-only copy of docs/research/applied-ai/module-1 (learning-designer REVIEW.md; thread 0007 OQ-1, OQ-6, PD-11); F1c-T20: format-only copy of docs/research/applied-ai/module-2 (REVIEW.md; thread 0007 PD-15, PD-16)"
   }
 }

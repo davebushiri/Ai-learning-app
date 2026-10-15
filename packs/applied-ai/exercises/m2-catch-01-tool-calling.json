@@ -1,0 +1,174 @@
+{
+  "id": "m2-catch-01-tool-calling",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch errors about who executes a tool call, what a tool schema guarantees, and how tool descriptions affect tool choice.",
+  "prerequisites": [
+    "m2-learn-01-agent-loop"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "tool-use",
+    "tool-schema",
+    "tool-descriptions",
+    "authorization"
+  ],
+  "referenceIds": [
+    "m2-ref-01"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: How tool use works",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: Tool use with Claude (strict tool use)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic: Writing effective tools for agents",
+      "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "AWS: Tool use with the Amazon Bedrock Converse API",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Name two checks your code should run on a schema-valid tool call before executing it, and say what each catches.",
+    "rubric": [
+      "ownership|belongs to the user|authorization|permission check",
+      "business rules|range check|limits|allowed values",
+      "catches wrong customer|catches injected request|catches hallucinated value|wrong value"
+    ]
+  },
+  "transfer": {
+    "scenario": "A colleague wires a 'run_sql' tool straight to the production database so the model can answer any data question. Review the design.",
+    "rubric": [
+      "model only requests|code executes the query|application runs it",
+      "too broad|excessive functionality|narrow tools instead|specific queries",
+      "least privilege|read only|scoped role",
+      "validate arguments|check user permissions|authorize in code",
+      "log every call|audit"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "We give the model three tools, each with a name, a short description and a JSON schema for its inputs."
+    },
+    {
+      "id": "s2",
+      "text": "When the model wants shipping data, it calls the carrier's API directly and reads the reply."
+    },
+    {
+      "id": "s3",
+      "text": "Our code runs each requested call and sends the output back as a tool result with the matching id."
+    },
+    {
+      "id": "s4",
+      "text": "With strict mode on, the tool arguments always match our schema."
+    },
+    {
+      "id": "s5",
+      "text": "Because the arguments match the schema, we pass the customer number straight to the database with no further checks."
+    },
+    {
+      "id": "s6",
+      "text": "A tool's description is just a label for us; its wording doesn't change which tool the model picks."
+    },
+    {
+      "id": "s7",
+      "text": "If the carrier's API fails, we return the error text flagged as an error, so the model can adjust."
+    },
+    {
+      "id": "s8",
+      "text": "The model only sees our tool definitions and the results we return, never the code behind them."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s2",
+        "misconception": "The model calls external APIs itself.",
+        "whyWrong": "The model only emits a structured tool request: a tool name and arguments. Your application runs the call (or the provider does, for its own server tools) and sends the result back. That execution step is where you enforce permissions, timeouts and logging.",
+        "acceptableCorrections": [
+          "The model only requests the call; our code executes it and returns the result.",
+          "Our application executes the tool request and sends back the output."
+        ],
+        "exceptions": "Server tools such as a provider-hosted web search are executed by the provider, not by the model either. A carrier API you integrate is a client tool, so your application runs it.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "model emits request|model requests|model asks|structured request|tool use block|model proposes",
+            "never executes|not execute|cant run|doesnt run|cannot run|doesnt call|cant call|not call",
+            "control execution|enforce permissions|apply timeouts|log calls"
+          ],
+          "correct": [
+            "code executes|code runs|application executes|app runs|application runs|we execute|server runs|backend runs",
+            "return result|sends result|tool result|result back|returns output"
+          ]
+        }
+      },
+      {
+        "statementId": "s5",
+        "misconception": "Schema-valid tool arguments are safe and correct.",
+        "whyWrong": "Strict mode guarantees the arguments have the right shape and types, not that the values are right or allowed. The model can pick the wrong customer, invent a value, or be steered by injected text. Your code must check the value against the logged-in user and business rules before it touches the database.",
+        "acceptableCorrections": [
+          "A valid shape doesn't mean the right customer; we check it belongs to the logged-in user first.",
+          "Validate the value and the user's permission in code before calling the database."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "only shape|shape only|only types|types only|not correctness|not the values|valid but wrong|right shape wrong value",
+            "wrong customer|wrong id|wrong value|another customer|someone else|other user|hallucinated",
+            "injection|injected|manipulated|steered by text"
+          ],
+          "correct": [
+            "authorize|authorization|permission check|owns the order|belongs to user|logged in user|user owns",
+            "validate value|business rules|validate in code|range check|server side check|check value"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "Tool descriptions don't affect which tool the model chooses.",
+        "whyWrong": "The model chooses tools from their names, descriptions and schemas; that text is part of the prompt. Vague or overlapping descriptions cause wrong or missed tool calls, so descriptions are written and tested like prompts, with examples and clear boundaries between similar tools.",
+        "acceptableCorrections": [
+          "The description is part of the prompt, so vague wording leads to wrong tool choices; we write and test it carefully.",
+          "Clear descriptions with examples help the model choose correctly."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "part of prompt|acts as prompt|prompt engineering|guides selection|steers choice|drives selection|model reads it",
+            "vague|ambiguous|overlapping|unclear",
+            "wrong tool|missed call|misses tool|picks badly"
+          ],
+          "correct": [
+            "write clear descriptions|add examples|usage examples|clear boundaries|test descriptions|iterate on descriptions",
+            "evaluate tool choice|test with examples|measure tool selection|test tool selection"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s3",
+      "s4",
+      "s7",
+      "s8"
+    ]
+  }
+}

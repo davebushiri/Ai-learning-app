@@ -1,0 +1,190 @@
+{
+  "id": "m2-catch-07-production-failures",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch subtle errors in fixing production agent failures: idempotency keys minted per call, loop limits that live only in the prompt, and blind restarts after partial failure.",
+  "prerequisites": [
+    "m2-catch-05-guardrails"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "idempotency",
+    "retries",
+    "agent-loops",
+    "runaway-cost",
+    "partial-failure"
+  ],
+  "referenceIds": [
+    "m2-ref-08",
+    "m2-ref-02"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: How we built our multi-agent research system (2025)",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic docs: Handle tool calls (is_error)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Amazon Builders' Library: Making retries safe with idempotent APIs",
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+      "verified": false,
+      "note": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "Stripe API docs: Idempotent requests",
+      "url": "https://docs.stripe.com/api/idempotent_requests",
+      "verified": false,
+      "note": "cited-from-memory-not-fetched"
+    },
+    {
+      "title": "AWS: Step Functions error handling (Retry and Catch)",
+      "url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Write the incident's prevention list as a release gate: which tests must pass before this agent ships again?",
+    "rubric": [
+      "retry test with timeout|simulate timeout and retry|duplicate refund test",
+      "loop test|step cap test|budget stops the run",
+      "resume after failure test|partial failure test|crash halfway",
+      "zero duplicate refunds|no double payment|pass bar set in advance"
+    ]
+  },
+  "transfer": {
+    "scenario": "An agent books meeting rooms and sends invites. Sometimes users get two invites and two bookings. Diagnose and fix.",
+    "rubric": [
+      "retries duplicate writes|retry after timeout|repeated call",
+      "idempotency key per booking|stable key|dedupe",
+      "key from our code|derived from the request",
+      "check existing booking first|check then act",
+      "trace the run|logs show two calls"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Last week a refund call timed out, our client retried, and the customer was refunded twice."
+    },
+    {
+      "id": "s2",
+      "text": "Retries stay, but a write may only be retried when repeating it can't cause a second effect."
+    },
+    {
+      "id": "s3",
+      "text": "Our tool wrapper attaches a fresh random idempotency key to every refund call it sends."
+    },
+    {
+      "id": "s4",
+      "text": "Our retries back off exponentially with jitter, and stop after three attempts."
+    },
+    {
+      "id": "s5",
+      "text": "One run looped through the same search for forty minutes, and nobody noticed until the monthly invoice."
+    },
+    {
+      "id": "s6",
+      "text": "To stop loops, the system prompt now tells the agent to give up after ten tool calls."
+    },
+    {
+      "id": "s7",
+      "text": "We'll also alert when spend per hour passes a set limit."
+    },
+    {
+      "id": "s8",
+      "text": "If a run fails halfway, we restart it from the first step, since steps that already worked will simply work again."
+    },
+    {
+      "id": "s9",
+      "text": "When the shipping API is down, the tool returns a clear error saying so, and the agent tells the customer it will follow up."
+    },
+    {
+      "id": "s10",
+      "text": "There's no need to put the tracking lookups behind an approval step; a read can't change anything."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s3",
+        "misconception": "A fresh idempotency key per tool call prevents duplicates.",
+        "whyWrong": "An idempotency key only works if every attempt at the same logical action carries the same key. A wrapper that mints a new random key per call protects nothing when the model calls the refund tool again after a timeout or an unclear result: that second call gets a new key, looks like a new refund, and is paid again. Derive the key from the action (the order and the refund request), store it, and reuse it on every attempt, so the billing server can return the first result.",
+        "acceptableCorrections": [
+          "Our code should derive one stable key per refund, from the order and the refund request, and reuse it on every retry.",
+          "The same logical action must reuse the same key, so the server can return the original result."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "new request|looks like a new refund|different key each retry|key changes on retry|looks new|treated as new|model calls again|model retries",
+            "same key for same action|stable key|reuse key|key must stay the same|per logical action|key per action"
+          ],
+          "correct": [
+            "code generates key|derive key from order|server side key|application creates key|deterministic key|key built in code",
+            "store key|reuse on retry|same key every retry|return first result|return original result"
+          ]
+        }
+      },
+      {
+        "statementId": "s6",
+        "misconception": "A step limit written in the prompt bounds an agent's loop.",
+        "whyWrong": "A prompt instruction is a request, not a control. The model can miscount or ignore it, a looping agent is by definition already not following its plan, and injected text can override it. The cap has to be enforced by the loop code (a step counter and a token or cost budget that end the run), with the prompt at most telling the model the limit so it can wrap up.",
+        "acceptableCorrections": [
+          "Enforce the cap in the loop code with a counter and a token budget; the prompt can only suggest it.",
+          "Count steps in our code and end the run at the limit, whatever the model does."
+        ],
+        "exceptions": "Stating the limit in the prompt is still useful, so the model can finish gracefully; the error is relying on it as the bound.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "model may ignore|can ignore|miscount|not enforced|only a hint|just a suggestion|might ignore|cant enforce",
+            "already misbehaving|stuck agent|injection can override|prompt can be overridden|override"
+          ],
+          "correct": [
+            "enforce in code|counter in code|code enforced cap|hard cap|loop code|step counter",
+            "budget|token budget|cost cap|spend limit|repeated call detection|loop detection"
+          ]
+        }
+      },
+      {
+        "statementId": "s8",
+        "misconception": "Re-running a partly finished agent task from the start is safe.",
+        "whyWrong": "Steps that already succeeded may have side effects (a cancelled order, a sent email). Re-running them can duplicate or conflict with those effects unless every step is idempotent. Keep durable task state, resume from the last completed step, and use compensating actions to undo partial work where needed.",
+        "acceptableCorrections": [
+          "Resume from the last completed step using saved task state, and make each side effect idempotent.",
+          "Record which actions already happened, and undo or skip them instead of repeating them."
+        ],
+        "exceptions": "If every step is read-only or idempotent, restarting from the beginning can be safe; the error is assuming it without that guarantee.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "side effects|already happened|real world effects|cancelled order|email sent|irreversible",
+            "duplicate|double|conflict|repeat effects|twice"
+          ],
+          "correct": [
+            "resume from checkpoint|resume from last step|saved state|durable state|task state|checkpoint",
+            "idempotent|idempotency|compensate|compensating action|undo|saga"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s2",
+      "s4",
+      "s5",
+      "s7",
+      "s9",
+      "s10"
+    ]
+  }
+}

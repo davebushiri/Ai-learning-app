@@ -132,8 +132,8 @@
         "misconception": "You can mix vectors from two embedding models.",
         "whyWrong": "Each embedding model normally defines its own vector space. Old and new vectors are not comparable, so search across them gives meaningless rankings. Changing models means re-embedding the corpus.",
         "acceptableCorrections": [
-          "If we switch embedding models we must re-embed all documents with the new model.",
-          "Keep one embedding model per index; migrate by rebuilding the index."
+          "For the migration, we build a fresh index by re-encoding the whole corpus with the replacement encoder, and queries move over once it is complete.",
+          "Each index is built with a single encoder, and a migration rebuilds it from scratch."
         ],
         "exceptions": "Running two separate indexes during a migration is fine if each query is embedded with the matching model. A few model families are documented by their provider as sharing one vector space (for example Voyage AI's Voyage 4 series, January 2026); mixing within such a family can be valid, but only on that documented basis and after retrieval tests. Switching to an unrelated model, as here, still needs re-embedding.",
         "kind": "factual",

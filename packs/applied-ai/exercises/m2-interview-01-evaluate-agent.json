@@ -1,0 +1,120 @@
+{
+  "id": "m2-interview-01-evaluate-agent",
+  "module": "m2",
+  "type": "interview",
+  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "prerequisites": [
+    "m2-catch-08-agent-eval-multiagent"
+  ],
+  "difficulty": 3,
+  "concepts": [
+    "agent-evaluation",
+    "pass-at-k",
+    "trajectory-review",
+    "cost-per-task",
+    "production-monitoring"
+  ],
+  "referenceIds": [
+    "m2-ref-07",
+    "m2-ref-08"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic: Demystifying evals for AI agents",
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic: How we built our multi-agent research system (2025)",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Yao et al. 2024, tau-bench",
+      "url": "https://arxiv.org/abs/2406.12045",
+      "verified": false,
+      "note": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "AWS: Amazon Bedrock AgentCore Observability",
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "Map your agent evaluation onto a validation plan and gate review you have run. Where does it differ?",
+    "rubric": [
+      "test campaign|validation plan|gate review",
+      "repeated trials because outputs vary|non deterministic unlike hardware",
+      "judge needs calibration|graders validated",
+      "regression on every change|prompt or model change reruns tests"
+    ]
+  },
+  "transfer": {
+    "scenario": "Your team's agent passed its eval last month. Since then the model provider shipped a new version and two tools changed. What do you run, and what would block the update?",
+    "rubric": [
+      "regression suite|rerun the eval|same task set",
+      "repeated trials|pass^k|consistency",
+      "compare cost and latency per task",
+      "safety cases must stay at zero|no unauthorized actions",
+      "pre set thresholds block release|release gate",
+      "pin versions|roll out gradually|canary"
+    ]
+  },
+  "question": "How would you evaluate an AI agent before and after it goes into production?",
+  "rubric": {
+    "mustCover": [
+      "tasks from real cases|real failures|realistic tasks|production logs|real conversations",
+      "check the end state|task success|final state|outcome in the system",
+      "trajectory review|read transcripts|tool calls checked|policy violations|path review",
+      "repeated trials|several runs per task|pass hat k|consistency across runs|run multiple times",
+      "cost per task|tokens per task|latency per task|cost and latency",
+      "safety cases|unauthorized actions|injection tests|zero tolerance",
+      "thresholds set before running|release gate|pass bar in advance",
+      "monitoring after launch|tracing|production traces|sample transcripts|escalation rate"
+    ],
+    "strongSignals": [
+      "calibrate the judge against human labels|judge calibration|human labels",
+      "code graders where possible|deterministic checks",
+      "capability and regression suites|regression suite",
+      "sandbox or recorded tool responses|mocked tools",
+      "cost per successful task",
+      "shadow mode|canary|gradual rollout",
+      "grade the outcome|outcome over path|any valid path"
+    ],
+    "redFlags": [
+      "vibe check|vibes"
+    ]
+  },
+  "followUps": [
+    {
+      "question": "How many tasks and trials do you need to start?",
+      "rubric": [
+        "20 to 50 tasks|start small|from real failures",
+        "several trials per task|repeat runs",
+        "grow from production logs|add new failures over time",
+        "small sets give wide uncertainty|confidence interval"
+      ]
+    },
+    {
+      "question": "How do you know your LLM judge is right?",
+      "rubric": [
+        "compare with human labels|calibrate|agreement with people",
+        "read transcripts|spot check grades",
+        "code checks where possible|deterministic graders"
+      ]
+    },
+    {
+      "question": "What would make you roll back after launch?",
+      "rubric": [
+        "unauthorized action|safety breach|wrong credits or refunds",
+        "success rate drops|regression",
+        "cost or latency over budget",
+        "thresholds agreed in advance"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "id": "m2-catch-05-guardrails",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Catch errors in agent guardrails: shared admin credentials, and relying on a prompt instruction to stop prompt injection.",
+  "prerequisites": [
+    "m2-learn-02-agent-guardrails"
+  ],
+  "difficulty": 2,
+  "concepts": [
+    "least-privilege",
+    "prompt-injection",
+    "human-in-the-loop",
+    "lethal-trifecta"
+  ],
+  "referenceIds": [
+    "m2-ref-06"
+  ],
+  "sources": [
+    {
+      "title": "OWASP Top 10 for LLM Applications 2025: LLM06 Excessive Agency",
+      "url": "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/",
+      "verified": false,
+      "note": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "OWASP Top 10 for LLM Applications 2025: LLM01 Prompt Injection",
+      "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "verified": false,
+      "note": "search-snippet-2026-10-13"
+    },
+    {
+      "title": "Anthropic docs: Handle tool calls (untrusted tool results)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Simon Willison: The lethal trifecta for AI agents (2025)",
+      "url": "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/",
+      "verified": false,
+      "note": "search-snippet-2026-10-15"
+    },
+    {
+      "title": "AWS: Get user confirmation before invoking an action group function",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/agents-userconfirmation.html",
+      "verified": false,
+      "note": "UNVERIFIED"
+    }
+  ],
+  "followUp": {
+    "question": "How much of the lethal trifecta does the email rule in this narration address, and what risk is left, given that tickets are written by staff?",
+    "rubric": [
+      "external communication|sending out|exfiltration leg|outbound email",
+      "narrows not removes|staff can still receive|insider|internal attacker|ticket author gets the data",
+      "approval before sending|limit what email can contain|only the requester|restrict recipients further"
+    ]
+  },
+  "transfer": {
+    "scenario": "A sales agent can read the CRM, browse the web for company news, and post to a shared chat channel. A security reviewer is worried. What do you tell them?",
+    "rubric": [
+      "private data plus web content plus posting|lethal trifecta",
+      "web pages can carry injected instructions|untrusted content|injection",
+      "remove a leg|restrict posting|no untrusted input with private data",
+      "least privilege|read only CRM fields|scoped access",
+      "approval before posting|human review",
+      "injection tests|red team"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "The helpdesk agent can read tickets, reset a user's password, disable an account and send email to staff."
+    },
+    {
+      "id": "s2",
+      "text": "To keep setup simple, its tools share the IT team's admin credentials."
+    },
+    {
+      "id": "s3",
+      "text": "A password reset only works for the person who opened the ticket, and that check runs in our code."
+    },
+    {
+      "id": "s4",
+      "text": "Disabling an account is hard to reverse, so the agent drafts the action and a technician approves it first."
+    },
+    {
+      "id": "s5",
+      "text": "Our system prompt says to ignore instructions inside tickets, so text pasted into a ticket can't steer the agent."
+    },
+    {
+      "id": "s6",
+      "text": "Outbound email can only go to addresses on our company domain, and the email tool enforces that."
+    },
+    {
+      "id": "s7",
+      "text": "Every tool call is logged with the ticket, the arguments, the result and who approved it."
+    }
+  ],
+  "answerKey": {
+    "planted": [
+      {
+        "statementId": "s2",
+        "misconception": "Agent tools can run with broad admin rights.",
+        "whyWrong": "The agent's tools should have only the permissions their tasks need (least privilege), ideally acting within the requesting user's scope. With admin credentials, any wrong or manipulated tool call can do admin-level damage, and the audit trail can't separate the agent's actions from staff actions.",
+        "acceptableCorrections": [
+          "Give each tool its own narrowly scoped credentials with only the rights it needs.",
+          "Use least privilege: a separate service identity limited to resets for the ticket's requester."
+        ],
+        "exceptions": "None.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "least privilege|minimum permissions|only what it needs|excessive permissions|too much access|overprivileged|blast radius",
+            "manipulated|wrong call|admin damage|misuse|any mistake is serious",
+            "audit|attribution|separate identity|tell apart"
+          ],
+          "correct": [
+            "scoped credentials|separate identity|service account|dedicated account|limited role|narrow permissions",
+            "only needed actions|read only where possible|limit to requester|user scope|act as user|per user permissions"
+          ]
+        }
+      },
+      {
+        "statementId": "s5",
+        "misconception": "A prompt instruction prevents prompt injection.",
+        "whyWrong": "Telling the model to ignore embedded instructions lowers the risk but is no guarantee; there is no fool-proof defence against prompt injection. Ticket text is untrusted input, so the real protection is limiting what a steered agent could do: least-privilege tools, approval for risky actions, allow-listed destinations, and injection tests.",
+        "acceptableCorrections": [
+          "A prompt rule reduces injection risk but doesn't remove it, so we limit what a hijacked agent could do.",
+          "Treat ticket text as untrusted and contain the damage with tool limits and approvals."
+        ],
+        "exceptions": "None. Fencing ticket text and instructing the model are still worth doing; the error is the conclusion that they make injection impossible.",
+        "kind": "factual",
+        "rubric": {
+          "explain": [
+            "no guarantee|not guaranteed|reduces risk|only lowers risk|not foolproof|isnt foolproof|not bulletproof|not reliable",
+            "untrusted input|untrusted|attacker text|external text|data not instructions",
+            "injection|indirect injection|prompt injection|cant stop injection|doesnt stop injection|not stop injection|wont stop injection|never stops injection"
+          ],
+          "correct": [
+            "limit blast radius|least privilege|restrict tools|approval|human approval|allow list|contain damage",
+            "injection tests|red team|test with injected tickets|adversarial tests"
+          ]
+        }
+      }
+    ],
+    "clean": [
+      "s1",
+      "s3",
+      "s4",
+      "s6",
+      "s7"
+    ]
+  }
+}

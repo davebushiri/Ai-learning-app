@@ -1,0 +1,100 @@
+{
+  "id": "m2-catch-02-agent-loop-clean",
+  "module": "m2",
+  "type": "catch",
+  "objective": "Recognize a correctly bounded agent loop (stop reasons, step caps, budgets, timeouts, loop detection, honest reporting) without false alarms.",
+  "prerequisites": [
+    "m2-learn-01-agent-loop"
+  ],
+  "difficulty": 1,
+  "concepts": [
+    "agent-loop",
+    "stopping-conditions",
+    "step-cap",
+    "loop-detection"
+  ],
+  "referenceIds": [
+    "m2-ref-02"
+  ],
+  "sources": [
+    {
+      "title": "Anthropic docs: How tool use works (the agentic loop)",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    },
+    {
+      "title": "Anthropic: Building effective agents (2024)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "verified": true,
+      "note": "fetched-2026-10-15"
+    }
+  ],
+  "followUp": {
+    "question": "An agent you inherit has none of these controls. Which two would you add first, and why those?",
+    "rubric": [
+      "step cap|max steps|iteration limit",
+      "budget|token limit|cost limit|spend cap",
+      "timeout per call|deadline|tool timeout",
+      "report unfinished|escalate|hand to a person"
+    ]
+  },
+  "transfer": {
+    "scenario": "A colleague's agent sometimes runs for twenty minutes and costs four dollars on a single request. What do you add?",
+    "rubric": [
+      "step cap|max steps|iteration limit",
+      "token budget|cost cap|spend limit",
+      "timeout per tool call|deadline",
+      "repeated call detection|loop detection|same call repeated",
+      "report as unfinished|escalate|hand over",
+      "read the traces|check the logs|find why it loops"
+    ]
+  },
+  "narration": [
+    {
+      "id": "s1",
+      "text": "Our agent runs a loop: the model asks for a tool, our code runs it, and the result goes back in."
+    },
+    {
+      "id": "s2",
+      "text": "All our tools run in our own code, so the loop keeps going while the stop reason says tool use."
+    },
+    {
+      "id": "s3",
+      "text": "A final answer only means the model stopped asking for tools, so our code still checks the outcome."
+    },
+    {
+      "id": "s4",
+      "text": "Every run has a step cap of ten and a token budget, and hitting either one ends the run as unfinished."
+    },
+    {
+      "id": "s5",
+      "text": "An unfinished run is reported as unfinished and handed to a person, never shown as a success."
+    },
+    {
+      "id": "s6",
+      "text": "We set the cap at ten from our logs: almost every successful run finished in six steps or fewer."
+    },
+    {
+      "id": "s7",
+      "text": "Each tool call has its own timeout, so one slow service can't hang the whole run."
+    },
+    {
+      "id": "s8",
+      "text": "If the same tool is called with the same arguments and gets the same result three times in a row, we stop and flag a loop."
+    }
+  ],
+  "answerKey": {
+    "planted": [],
+    "clean": [
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8"
+    ]
+  }
+}
