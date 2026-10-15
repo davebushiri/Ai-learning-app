@@ -411,3 +411,94 @@ No blocking findings. F1c-T17 meets FR-059, FR-060 and FR-035 and holds invarian
 ### Optional
 - **T17-O1.** `app.js:297-298`: `S.stop && statementLi(...)` guards a value already dereferenced on line 297. The guard is dead. Drop it, or move the null check above both lines. This shape predates T17.
 - **T17-O2.** `state.js:111` maps 408 and 429 to `rejected`. The server sends neither today. If a rate limiter or a proxy that returns them is ever added, carve those two into `'net'` (a retry can help), with a test row.
+
+## Ruling on F1c-B11, the T11 slug deviation, and the SC-003b overfitting risk (2026-10-15)
+
+**Reviewer:** principal-architect · **Base:** `4db8290` (F1c-T11) on `team/agents`. No code was changed. Every number below comes from the real `practice-matcher.js` in a scratch copy, with only the FR-021(a) line switched. The harness reuses `graderInputFor` and `evaluateThresholds` from `tests/acceptance/practice-helpers.mjs`. Rows are named by their index in `m1-labelled-answers.json` (`rows[i]`, `qaRows[i]`). This section quotes no answer text.
+
+**Correction to the brief:** SC-003b has **31 rows**, not 27: 24 `rows` plus 7 `qaRows`. The two failing classes have 15 rows between them: valid-alternative (6) and partial (9).
+
+### 1. F1c-B11: keep FR-021(a) per dimension. B11 closes as "works as designed", and its rows move to B12.
+
+**Variants measured.** In every variant, a dimension that matched nothing in a long answer (≥ 20 content words) gets the status shown below.
+- **(D) per dimension (today, `matcher@2`):** `uncertain`.
+- **(A) answer level:** `uncertain` only when no dimension of the answer matched. Otherwise the dimension is `not_met`.
+- **(X) rule off:** `not_met`. Measured only as a control.
+
+| Gate | (D) per dimension | (A) answer level | (X) off |
+|---|---|---|---|
+| SC-003 (48 rows), all 7 checks | pass, 7/7 | pass, 7/7 (identical table) | **fails** should-flag → uncertain, 75% |
+| SC-012 (7 rows) | 7/7 | 7/7 | 7/7 |
+| SC-003b clear → met (10) | 100% | 100% | 100% |
+| SC-003b incorrect → never met (6) | 0% met | 0% met | 0% met |
+| SC-003b valid-alt → never not_met (6) | 0% | 0% | **16.7% ✗** |
+| SC-003b valid-alt → expected (6; gate ≥ 75%, so 5 of 6) | **16.7% ✗** (1/6) | **33.3% ✗** (2/6) | 33.3% ✗ |
+| SC-003b partial → partial/uncertain (9; gate ≥ 80%, so 8 of 9) | **77.8% ✗** (7/9) | **77.8% ✗** (7/9) | 77.8% ✗ |
+| SC-003b uncertain on clear + incorrect | 0% | 0% | 0% |
+
+SC-003b confusion matrices, (D) → (A):
+
+| class | met | partial | not_met | uncertain |
+|---|---|---|---|---|
+| clear (10) | 10 → 10 | 0 → 0 | 0 → 0 | 0 → 0 |
+| incorrect (6) | 0 → 0 | 1 → 1 | 5 → 5 | 0 → 0 |
+| partial (9) | 0 → 0 | 7 → 7 | 2 → 2 | 0 → 0 |
+| valid-alternative (6) | 0 → 0 | 2 → 5 | 0 → 0 | 4 → 1 |
+
+Valid-alternative rows. Each cell gives explanation / correction → overall.
+
+| row | expected overall | (D) | (A) | what (A) does |
+|---|---|---|---|---|
+| `rows[2]` | met | partial / **uncertain** → uncertain | partial / **not_met** → partial | asserts `not_met` on a correction the label says is valid |
+| `rows[6]` | met | partial / met → partial | same | nothing (content) |
+| `rows[10]` | met or partial | partial / **uncertain** → uncertain | partial / not_met → partial ✓ | the only row (A) gains |
+| `rows[14]` | met or partial | not_met / partial → partial ✓ | same | — |
+| `rows[18]` | met | uncertain / uncertain → uncertain | same | nothing: the whole answer matched nothing, so it is the case rule (a) exists for |
+| `rows[22]` | met | **uncertain** / met → uncertain | **not_met** / met → partial | asserts `not_met` on an explanation the label says is valid |
+
+**Why (D) stays:**
+1. **(A) invents scores, which the founder ruled out.** In `rows[2]` and `rows[22]`, (A) turns an honest "can't read this dimension" into a confident `not_met` on a dimension the label calls valid. FR-052 and FR-053 would count it: for example, `detectAndCorrect` needs correction `met`. The learner would be scored down for wording the matcher can't parse. Under (D) the same dimension is flagged and left out of mastery.
+2. **(A) gains one row, and only on a lenient label.** `rows[10]` passes only because its label also accepts `partial`. Valid-alternative goes from 1/6 to 2/6, and the partial class doesn't move.
+3. **No other evidence favours (A).** SC-003 and SC-012 come out identical under (D) and (A). The control (X) shows that rule (a) earns its place: without it, SC-003 should-flag fails and a valid alternative becomes `not_met`.
+4. **The fix is the same under either rule.** Once content makes a dimension match, it leaves rule (a) under (D) and (A) alike. The rule only decides what happens when content misses, and an honest flag beats a wrong `not_met`.
+
+**B11 alone cannot reach the gates.** The best rule variant reaches valid-alternative 2/6 (33.3%) against the 5/6 the gate needs, and leaves partial at 7/9 against the 8/9 needed. **Under (D), 100% of the remaining gap is content work (B12, B13, B10). Under (A), at least 3 of the 4 missing valid-alternative rows (75%) and all of the partial gap would still be content work.**
+
+Minimum content work to pass SC-003b under (D):
+- **Valid-alternative: 4 more rows of `rows[2]`, `[6]`, `[10]`, `[18]`, `[22]`.** That is at least 5 dimension-level fixes:
+  - `rows[6]`: explanation, 1 fix;
+  - `rows[10]`: correction matching anything, 1 fix;
+  - `rows[22]`: explanation, 1 fix;
+  - `rows[2]` or `rows[18]`: both dimensions, 2 fixes.
+- **Partial: 1 more row of `rows[13]` and `rows[17]`.** Each needs one dimension to reach `partial`.
+- **B10 (`rows[3]`):** an incorrect answer earns correction `partial` because catch-01's correction rubric echoes the misconception. It doesn't fail a gate, because overall isn't `met`, but it is the same content pass and should be fixed in it.
+
+**Who changes what:**
+- **PM:** mark F1c-B11 resolved (works as designed) in `tasks.md`. Add the four `rows[]` ids above to B12 as its acceptance list. FR-021(a) and US1.6 stay unchanged. No `MATCHER_VERSION` bump.
+- **Content author and learning-designer, B12/B13:** use the lexicon and rubric `|` alternatives only, with no matcher change. Every lexicon form must pass FR-017 word-start matching, like T11's dropped forms.
+- **Backend:** none.
+
+### 2. T11 deviation: the 60-character architecture slug is **confirmed**
+- **The rule:** `ID_RE = ^[a-z0-9-]{1,60}$` (`practice-pack.js:21`, `:291`). The C12 slug of scenario-01's third architecture name is 77 characters long. Cutting it at the last hyphen within 60 gives a 59-character id.
+- **Why the cut is safe:**
+  - It is deterministic.
+  - It sits in the test's `mapDraft`, and `tests/practice-content.test.js` asserts that the ids are valid and unique.
+  - `architectureId` is a pack-internal key. Nothing outside the matcher reads it today (`grep` across `server/`, `web/` and `shared/`), and it is never a mastery key or an event field.
+- **Rejected alternatives:**
+  - Raising the limit is a format change under ADR 0008 for a cosmetic gain.
+  - A hand-picked short id is a content edit that needs the author.
+- **Follow-ups:**
+  - **PM:** add one clause to C12 in `spec.md` and to T11's mapping in `tasks.md`: "a slug longer than 60 characters is cut at the last `-` within 60. The ids must stay unique (tested)."
+  - **T07:** the scenario reveal shows `summary`, never the `id`, as the label. The cut drops the qualifier from the end of the name.
+
+### 3. RISK: SC-003b is now a training set
+The B12 lexicon will be written against the same 15 failing-class rows that SC-003b grades, using the per-row miss list the test prints. Passing then shows that the content fits those rows, not that the matcher reads new wordings. Small n makes this worse: one valid-alternative row is 16.7 points of the gate. The 24 `rows` were also written by the author of the draft lexicon.
+- Likelihood: H · Impact: M (SC-004 κ in real use would catch it, but only after the founder's 7 days).
+- **Mitigation (proposed; the PM owns gates and decides):**
+  - **SC-003c held-out set.** QA writes and commits `tests/fixtures/practice/m1-holdout-answers.json` **before** the B12 content commit. The commit order is checkable in `git log`.
+    - It has ≥ 6 valid-alternative, ≥ 6 partial, ≥ 4 incorrect and ≥ 4 clear rows, on ≥ 4 catch exercises.
+    - Its texts are written from the exercise's narration and reference only. The writer sees neither the lexicon diff nor SC-003b's miss list.
+    - The content author does not open the file.
+  - **Graded once,** at content freeze, by QA, with the same thresholds. The result and the pack version go in `qa-report.md`. The test in `npm test` checks only the file's shape (no grading), so the result can't be iterated against.
+  - **After grading, the set is spent.** It joins SC-003b as training data, and any later content iteration needs a fresh held-out set.
+  - **Until then,** SC-003b passing is necessary but not sufficient, and matcher grades stay advisory (Design review risk 2).

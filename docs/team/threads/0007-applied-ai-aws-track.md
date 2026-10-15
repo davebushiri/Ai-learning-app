@@ -624,3 +624,55 @@ I checked this by hand against `validatePracticePack` (`server/services/practice
   - **lead:** refresh `defend-my-build.md` §3, §5.4 and the test counts before day 2's pass 2.
   - **principal-architect:** none now. A per-block `label` comes to you only if it is pulled from Later.
 - **Thread status** stays `open`: Wave B, LR-9 and LR-10 (advisory) and the founder's Leadership Principles question are still discussed here.
+
+### principal-architect · 2026-10-15 · DECISION
+**Answering:** F1c-B11 (FR-021(a) per dimension or per answer), backend's T11 slug deviation, and the SC-003b overfitting risk. Full tables: `docs/specs/F1c-practice-engine/review.md`, "Ruling on F1c-B11 …". Rows are named by index in `m1-labelled-answers.json`. No answer text appears here.
+
+- **Call 1: FR-021(a) stays per dimension. B11 closes as "works as designed", and its rows move to B12.** I measured with the real matcher in a scratch copy, changing only that line:
+
+  | Gate | per dimension (today) | answer level |
+  |---|---|---|
+  | SC-003, 48 rows, 7 checks | 7/7 pass | 7/7 pass (identical) |
+  | SC-012 | 7/7 | 7/7 |
+  | SC-003b valid-alternative → expected (needs 5/6) | 1/6, 16.7% | 2/6, 33.3% |
+  | SC-003b partial → partial/uncertain (needs 8/9) | 7/9, 77.8% | 7/9, 77.8% |
+
+  - **Answer level invents scores.** On `rows[2]` and `rows[22]`, it turns an honest flag into a confident `not_met` on a dimension the label calls valid. That `not_met` would feed mastery and `detectAndCorrect`. The founder's rule ("uncertain, flag for review instead of inventing a score") rules it out.
+  - **Its one gain is narrow.** It wins `rows[10]` only because that label also accepts `partial`.
+  - **Rule (a) earns its place.** With it removed entirely, SC-003 should-flag fails (75%).
+- **B11 alone can't reach the 75% gate.** The best rule variant reaches 33.3%. Under the per-dimension rule, **100% of the remaining SC-003b gap is content work (B12/B13)**. Under the answer-level rule, at least 75% would still be content work.
+  - Content work needed under the per-dimension rule: at least **4 more valid-alternative rows** out of `rows[2]`, `[6]`, `[10]`, `[18]`, `[22]` (at least 5 dimension-level fixes), plus **1 partial row** out of `rows[13]`, `[17]`.
+  - B10 (`rows[3]`, correction `partial` on an incorrect answer) belongs in the same content pass.
+- **Call 2: the slug deviation is confirmed.** The id for scenario-01's third architecture is cut at the last hyphen within 60 characters (77 → 59). The cut is deterministic and tested for validity and uniqueness. `architectureId` is a pack-internal key: it is not an event field and not a mastery key.
+  - The PM adds this clause to C12.
+  - T07's reveal shows `summary` as the label, never the id.
+- **Evidence:** `npm test` gives `# tests 486 / # pass 400 / # fail 0 / # todo 86` (SC-003b is still `todo: F1c-T11`).
+- **Dissent:** backend's filing labels B11 a matcher defect. I hold that it is a content-coverage gap, for the reasons above.
+- **Follow-ups:**
+  - **PM:** resolve B11 in `tasks.md`, and give B12 the row list above as its acceptance list. Add the C12 slug clause. Decide on SC-003c below.
+  - **Content author and learning-designer:** B12/B13 through the lexicon and `|` alternatives only.
+  - **Backend:** no code change, no `MATCHER_VERSION` bump.
+  - **QA:** SC-003c, if the PM accepts it.
+
+### principal-architect · 2026-10-15 · RISK
+**R1. SC-003b becomes a training set.** The B12 lexicon will be written against the same 15 failing-class rows that SC-003b grades. SC-003b has 31 rows in all (24 `rows` + 7 `qaRows`), not 27. The test prints a per-row miss list, so passing would prove fit, not generalization. One valid-alternative row is worth 16.7 points of the gate.
+- Likelihood: H · Impact: M
+- **Mitigation (proposed; the PM decides the gate):**
+  - **SC-003c, a held-out set.** QA commits `tests/fixtures/practice/m1-holdout-answers.json` **before** the B12 content commit. The commit order is checkable.
+    - At least 6 valid-alternative, 6 partial, 4 incorrect and 4 clear rows.
+    - Written from the narration and reference only, without seeing the lexicon diff or SC-003b's miss list. The content author never opens the file.
+  - **Graded once at content freeze,** with the same thresholds. QA records the result in `qa-report.md` with the pack version. `npm test` checks only the file's shape.
+  - **Once graded, the set is spent:** it joins SC-003b, and the next content iteration needs a fresh set.
+
+### principal-architect · 2026-10-15 · RISK
+**R2. My ruling may push the uncertain share up in real use.** Long answers in unfamiliar wording get flagged rather than scored, so SC-004's "uncertain share ≤ 10%" may miss.
+- Likelihood: M · Impact: M
+- **Mitigation:** that miss is the pre-registered trigger for the live grader. It is the honest signal, so it is not a reason to change the rule. The share from rule (a) alone can be rebuilt offline by re-running the matcher on stored `explained.text`, with no new event field.
+
+### principal-architect · 2026-10-15 · RISK
+**R3. Broadening the lexicon can make incorrect answers match.** Wider synonym forms raise recall on valid wordings, and they also raise it on misconceptions. B10 is already one case: an incorrect answer earns correction `partial`.
+- Likelihood: M · Impact: H (an incorrect answer graded `met` teaches the wrong thing)
+- **Mitigation:**
+  - SC-003b's "incorrect → never met" stays at 100%, and so does SC-003c's.
+  - Every new lexicon form is checked so that it does not match the wording of the flawed statement it is meant to correct.
+  - The B12 PR lists each added form with the row it targets.
