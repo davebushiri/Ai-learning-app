@@ -582,3 +582,67 @@ A fourth variant (polarity: a matched token must sit in a negation window) was w
 3. **The new negators widen negation windows.** A correct answer containing "hasn't" next to a matched token becomes `uncertain`. Measured 0 changes, but on small sets. L · M. Mitigation: unit test (d), and the ≤ 20% gate on uncertain over clear + incorrect.
 4. **The evidence is training data.** SC-003b is already a training set, and the held-out set is spent. The §2 probes are synthetic. Nothing here shows generalization; it shows only that the bug class is closed and no gate regresses.
 5. **Order blindness is unchanged.** FR-017 is a bag of tokens, so "Y not X" still matches "X not Y" under every variant. Out of scope here, and a reason to keep matcher grades advisory.
+
+## Revision 6 design review: Wave B.1, F1c-T18 to T22 (2026-10-15)
+
+**Reviewer:** principal-architect · **Reviewed:** `spec.md` and `tasks.md` revision 6 at `7ce0aa2` (PD-12 to PD-16, FR-062 to FR-064, SC-014 to SC-016, US7, Wave B.1), thread 0007's PM DECISION of 2026-10-15, ADR 0006 Am. 3 and ADR 0008. This is a gate before build, not a full review. No code, pack or test was changed. **No answer, rubric or narration text is quoted.**
+
+### Verdict: APPROVED
+
+T18, T19 → T20 and T21 may proceed in the order tasks.md gives. S1–S3 below are wording fixes for the PM. They don't block the start, and each would be caught by a red test or the PR quote anyway.
+
+**Evidence (run this turn):**
+- `npm test` on the working tree (T21 in flight, uncommitted): `# tests 490 / # pass 403 / # fail 0 / # todo 87`.
+- A scratch `matcher@3` (T18's exact rule and the four negators, applied to a copy of `practice-matcher.js`) was run through `graderInputFor` against the real pack:
+  - **T18's tests (a)–(e) and (g):** each gives the result the ticket asserts under `matcher@3`. (a), (d), (e) and (g) give a different result under `matcher@2`, so they can fail. (b) and (c) are the positive controls.
+  - **SC-003b:** `matcher@3` alone reproduces the R2 column (clear → met 6/6; only `rows[6]` and `rows[10]` change, met → partial). T19 alone changes 0 rows. T18 plus T19 changes the same 2 rows. So the "if T19 merged first" clause will list no extra row.
+  - **Echo probe (FR-062, SC-015):**
+    - Module 1 today: catch-04 `s6` and catch-05 `s5` get correction `met` under both matchers. Those are the two defects T19 targets.
+    - Module 1 with T19's four strings: all 13 stops grade overall `uncertain` under both `matcher@2` and `matcher@3`.
+    - Module-2 drafts, unmapped: all 17 planted stops in the 7 planted catches grade overall `uncertain` under both matchers, with no dimension `met`. T20's echo half is unlikely to trip the defect rule. Validation of the mapped drafts is still unrun.
+  - **T21's in-flight R4 row (catch-06 `s6`):** under both matchers, explanation is `partial`, correction `met` and overall `partial`. It exercises the exposed shape (validity holds), and SC-014's R4 line (overall not `met`) passes. The correction-level `met` is R4's accepted gap (RISK R4).
+- **ARCH-2 / no-prompt guard:** `tests/practice-catch.test.js:607` ("server/ai and server/prompts never import a practice module") holds. No file in `server/prompts` or `server/ai` imports a practice module.
+
+### Answers to the PM's three questions
+1. **Module 2 under ARCH-2: no new ADR text needed. Confirmed.**
+   - ADR 0006 Am. 3 and ADR 0008 scope the F2 hard rule by *path into a prompt*, not by module or by pack content. Module 2 is the same practice pack (`applied-ai`), it enters no prompt, and the transitive import guard makes that structural.
+   - The version mechanism ("immutable per version; `'conflict'` refuses the pack") is ADR 0008's and applies unchanged.
+   - Invariant 1 holds: module 2 is pack content only, and no engine file changes in T20. The founder's override route is OQ-8(b).
+2. **Bump sequencing: confirmed.**
+   - T19 and T20 land in one push with one bump 2 → 3 in T20. The fallback is T19 alone → 3 and T20 → 4.
+   - Every intermediate commit passes its own tests, because `"loader stores applied-ai@N once"` uses a fresh database. Only a stored `@2` database would see the refused, changed content, and one push means none does.
+   - **T18 merges after T21: confirmed.** It is the same pattern as T15 → T12: the `matcher@2` validity record must exist before the grader changes. T18 is independent of T19 and T20 (no shared file), and SC-003b is unchanged by T19 (measured above).
+3. **T18's tests and SC-014/SC-015 match my `matcher@3` ruling: confirmed.**
+   - (a)–(e) are my list. (g) covers the FR-020 path, and (f) is a pack-wide regression guard.
+   - The `:21`/`:28` version moves, the 18-negator order and SC-014's numbers (SC-003 7/7 with 0 changes, SC-012 7/7, the SC-003b R2 column, 0 exposed) are my §3 and §4.
+   - SC-015's 13 + module-2 scope is the right FR-062 gate. One wording point is in S2.
+
+### Files collisions: none
+- T18, T19, T20, T21 and T22 share no file with T06 (`web/**`, `web/speech.js`), T07 (`server/services/practice.js`, `server/routes/practice.js`, `tests/practice-modes.test.js`), T08 (`practice-progress` files, `server/index.js`, `server/db.js`, `tests/db.test.js`), T01b (`tests/e2e/F1c.e2e.mjs`, `labelled-answers.json`) or T17.
+- Inside Wave B.1:
+  - T19 → T20 share `tests/practice-content.test.js` (and `practice.json` under the fallback). They are sequenced.
+  - T21 → T22 share `F1c.test.js` and `qa-report.md`. They are sequenced.
+- **Behavioral couplings with no shared file (acceptable):**
+  - T07, T08 and T01b run on `accept-pack`, never on `packs/applied-ai`, so T20 can't break them.
+  - `accept-pack` holds one exposed negator alternative (`catch-lines`, a 3-token "does not" form). Any labelled row that T01b or T07 writes under `matcher@2` and leans on that alternative would change when T18 lands. The merge-time `npm test` catches it.
+
+### Should fix (PM wording in tasks.md; not blocking the start)
+- **S1. T19 fallback, incomplete `old → new`** (`tasks.md` F1c-T19, the "Fallback" bullet):
+  - The fallback names only `"loader stores applied-ai@2 once"` → `"@3"`. `tests/practice-content.test.js:56` (`"applied-ai validates"`, `manifest.version === 2`) must also move 2 → 3.
+  - Under the fallback, T20's two version `old → new` lines then read 3 → 4.
+  - Smallest fix: add both to the bullet.
+- **S2. T18 (f), the exposure probe, must grade each alternative alone** (`tasks.md` F1c-T18 (f)):
+  - "Graded alone … as a one-item dimension" can be read as the whole `|` item. A sibling positive alternative could then legitimately match the stripped probe, and the test would fail falsely once T20 adds module 2.
+  - The "holds by construction" claim in the Wave B.1 coupling note is true only per alternative.
+  - Smallest fix: "the one-item dimension's item is that single alternative (no `|`)". `acceptableCorrections` entries already are.
+- **S3. T18's PR must quote the R4 line too** (`tasks.md` F1c-T18 Acceptance):
+  - SC-014 makes the R4 row part of T18's merge gate. But T18's quote command runs only SC-003, SC-012 and SC-003b, and T18 can't remove QA's `todo`.
+  - Smallest fix: add `"SC-014 R4"` to the `--test-name-pattern`. The `todo` test still runs and prints. Measured this turn: overall `partial`, so it passes.
+
+### Optional
+- O1. QA's `todo` removals for T06, T07 and T08 also edit `tests/acceptance/F1c.test.js` and `qa-report.md`. They have the same owner as T21 and T22, so serialize them in one QA lane to avoid merge conflicts.
+
+### Risks (devil's advocate)
+1. **R4 shows up at dimension level.** The in-flight R4 row earns correction `met` under `matcher@3`, and only `combineOverall` keeps it off overall `met`. If T08's mastery reads per-dimension statuses, an incorrect answer with a stray "no" credits the correction skill. L · M. Mitigation: T08's mastery uses overall per stop. I check this in T08's code review. R2c stays the Later fix.
+2. **The one-push rule is a process rule, not a mechanism.** Nothing stops a push of T19 alone. Then the founder's stored `@2` makes the track disappear (a visible degrade, not a crash). M · M. Mitigation: T19's commit message names the rule, and B23's `err.rejected` recovers. A pre-push check is not worth its cost for one release.
+3. **Module-2 grades are structural-only.** There's no labelled set, so SC-014 and SC-015 prove absence of two bug classes, not accuracy. Module-2 `met` rates will look like module 1's and may be wrong in ways nobody measures. M · M. Mitigation: grades stay advisory, and self-rating is the main signal (PD-12).

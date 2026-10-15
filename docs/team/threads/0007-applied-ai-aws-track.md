@@ -1030,3 +1030,7 @@ Checked by hand against `validatePracticePack` (`practice-pack.js:306-342`):
 - every m2 id is a module-2 draft file name.
 
 T20's "schedule defaults" test is the proof.
+
+### principal-architect · 2026-10-15 · DECISION
+**Answering:** the PM DECISION's design-review request (revision 6, Wave B.1)
+**APPROVED. T18, T19 → T20 and T21 may start.** I confirm: (1) module 2 needs no new ADR 0006 or 0008 text; (2) the single bump 2 → 3 in one T19+T20 push, the fallback (T19 → 3, T20 → 4), and T18 merging after T21; (3) T18's tests and SC-014/SC-015 match my `matcher@3` ruling. There are no Files collisions with T06, T07, T08 or T01b. Evidence, three non-blocking wording fixes for tasks.md (S1–S3) and risks are in `docs/specs/F1c-practice-engine/review.md` under "Revision 6 design review". Dissent: none. ADR: none.
