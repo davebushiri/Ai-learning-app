@@ -1,7 +1,7 @@
 # F1c: Tickets
 
-**Status:** Approved (revision 5: F1c-T11's gates all cleared; module-1 schedule recorded)
-**Revision history:** revision 5 (2026-10-14): F1c-T11's content and merge gates all cleared in thread 0007 (spec PD-11; OQ-1, OQ-3, OQ-5 and OQ-6 resolved). T11 copies `schedule.json` exactly from the thread 0007 PM DECISION of 2026-10-14. No new tickets and no Files changes. Revision 4 (2026-10-14): the architect's Wave A.1 re-check (APPROVED) applied. New F1c-T17 (frontend, the F1c-B23 fix: one skip per statement, `err.rejected` on a 4xx; spec PD-9, FR-059, FR-060, SC-013), gated before F1c-T11 merges and before F1c-T01b runs and merges. F1c-T06 gains the OQ-7 voice commands and the "back" command (spec PD-10, FR-061). Shared-file sequence, Wave B order, T01b, T06, T11, the summary and the B23 status updated. Revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
+**Status:** Approved (revision 6: Wave B.1 added, F1c-T18 to T22: `matcher@3`, echo-safe reveal wordings, module 2 and the revised schedule in one pack bump 2 → 3. Architect design review of revision 6 requested in thread 0007 before T18–T20 start)
+**Revision history:** revision 6 (2026-10-15): Wave B.1 (spec PD-12 to PD-16, FR-062 to FR-064, SC-014 to SC-016, US7). F1c-T18 (backend, `matcher@3`), F1c-T19 (backend, reveal wordings and the echo probe), F1c-T20 (backend, module 2, the schedule and the single pack bump), F1c-T21 (QA, the R4 incidental-negator row) and F1c-T22 (QA, verify and verdict). F1c-B10 to B13 statuses updated. Shared-file sequences gain T12 → T18, T11 → T19 → T20 and T16 → T21 → T22. Revision 5 (2026-10-14): F1c-T11's content and merge gates all cleared in thread 0007 (spec PD-11; OQ-1, OQ-3, OQ-5 and OQ-6 resolved). T11 copies `schedule.json` exactly from the thread 0007 PM DECISION of 2026-10-14. No new tickets and no Files changes. Revision 4 (2026-10-14): the architect's Wave A.1 re-check (APPROVED) applied. New F1c-T17 (frontend, the F1c-B23 fix: one skip per statement, `err.rejected` on a 4xx; spec PD-9, FR-059, FR-060, SC-013), gated before F1c-T11 merges and before F1c-T01b runs and merges. F1c-T06 gains the OQ-7 voice commands and the "back" command (spec PD-10, FR-061). Shared-file sequence, Wave B order, T01b, T06, T11, the summary and the B23 status updated. Revision 3 (2026-10-14): Wave A.1 (F1c-T12 to T16) added to turn the Wave A verdicts (architect CHANGES REQUESTED, QA DON'T SHIP) into SHIP: W-B1/B20 (`matcher@2`), W-B2 (ADR 0002 Am. 4 skipped stops), W-S1, W-S3–W-S6, B21, B22 and the favicon (spec PD-4 to PD-8). W-S2 moves into F1c-T06. Shared-file sequences, T01b, T04, T06, T07 and T11 updated to match. Revision 2 (2026-10-13): [`review.md`](review.md) "Design review" (APPROVED WITH CHANGES) applied: C1–C15, plus the learning-designer's B2/B3 matcher fixes and PD-1 to PD-3 (spec "Product decisions"). Every Files line is now a single line with backticked paths (C6). Shared-file sequences gain the cross-spec order with F1a Wave 2 (C7), mirrored in F1a `tasks.md` rev 4.7. Revision 1: first draft. Spec: [`spec.md`](spec.md). Binding: ADRs 0001–0006 with all amendments, ADR 0008, ADR 0002 Amendment 3 and ADR 0006 Amendment 3 (an ADR wins over this file).
 
 Legend: [P] = can run in parallel with other [P] tickets in the same wave (no shared files).
 
@@ -13,7 +13,8 @@ Legend: [P] = can run in parallel with other [P] tickets in the same wave (no sh
 - **Changed assertions** are listed as `old → new`.
 - **No prompt, gateway or model-routing change** in any F1c ticket.
 - **Shared-file sequences (never in parallel):**
-  - F1c-internal: `server/index.js` T04 → T08; `server/routes/practice.js` T04 → T07; `server/services/practice.js` and `tests/practice-catch.test.js` T04 → T13 → T07; `server/services/practice-matcher.js` and `tests/practice-matcher.test.js` T03 → T12; `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/state.js` and `tests/practice-web-state.test.js` T05 → T14 → T17 → T06 → T09 → T10 (each later ticket touches only those of these files it lists); `web/practice/api.js` and `web/practice/practice.css` T05 → T06 → T09 → T10; `web/practice/commands.js` and `tests/practice-web-commands.test.js` T06 only; `server/packs.js` T02 only; `web/speech.js` T06 only; `tests/acceptance/F1c.test.js` is changed after T01a only by F1c-T15 → F1c-T16 (Wave A.1, listed `old → new`) and by QA `todo` removals; `tests/e2e/F1c.e2e.mjs` is changed after T01b only by QA `todo` removals.
+  - F1c-internal: `server/index.js` T04 → T08; `server/routes/practice.js` T04 → T07; `server/services/practice.js` and `tests/practice-catch.test.js` T04 → T13 → T07; `server/services/practice-matcher.js` and `tests/practice-matcher.test.js` T03 → T12; `web/practice/app.js`, `web/practice.html`, `web/practice/copy.js`, `web/practice/state.js` and `tests/practice-web-state.test.js` T05 → T14 → T17 → T06 → T09 → T10 (each later ticket touches only those of these files it lists); `web/practice/api.js` and `web/practice/practice.css` T05 → T06 → T09 → T10; `web/practice/commands.js` and `tests/practice-web-commands.test.js` T06 only; `server/packs.js` T02 only; `web/speech.js` T06 only; `tests/acceptance/F1c.test.js` is changed after T01a only by F1c-T15 → F1c-T16 (Wave A.1, listed `old → new`), by F1c-T21 → F1c-T22 (Wave B.1) and by QA `todo` removals; `tests/e2e/F1c.e2e.mjs` is changed after T01b only by QA `todo` removals.
+  - **Wave B.1 (revision 6):** `server/services/practice-matcher.js` and `tests/practice-matcher.test.js` T12 → T18. `packs/applied-ai/**` and `tests/practice-content.test.js` T11 → T19 → T20 (one push, one pack bump; spec PD-15). `tests/fixtures/practice/m1-labelled-answers.json` T15 → T21. `docs/specs/F1c-practice-engine/qa-report.md` T16 → T21 → T22. **Merge order:** T21 → T18 (T21's `matcher@2` validity record must exist first, as T15 → T12); T19 + T20 as one push, at any point relative to T18; T22 last.
   - **Wave A.1 merge order:** F1c-T15 → F1c-T13 → F1c-T12 (T12 merges after T13, because T13 makes `tests/practice-catch.test.js` assert `MATCHER_VERSION` instead of `'matcher@1'`, and after T15's SC-012 rows and QA's `matcher@1` validity record exist). F1c-T14 merges at any point. F1c-T16 verifies last.
   - **Cross-spec order with F1a Wave 2 (C7; F1a is on hold, mirrored in F1a `tasks.md` rev 4.7):**
 
@@ -32,6 +33,11 @@ Legend: [P] = can run in parallel with other [P] tickets in the same wave (no sh
     - **Backend lane:** T07 (after T13) and T08 [P], unchanged. T11 [P] after T02, T03, T12 and its content gates; **T11 merges only after T17 has merged** (plus the founder's ARCH-2).
     - **QA:** T01b may be written now. **Its run for the verdict and its merge wait for T17** (it carries the B23 e2e tests with no `todo`).
     - T17 shares no file with T07, T08, T11 or T01b, so it runs in parallel with all of them.
+  - **Wave B.1** (revision 6; runs beside the rest of Wave B, sharing no file with T17, T06, T07, T08 or T01b):
+    - **Backend lane A:** T18 [P] (`matcher@3`).
+    - **Backend lane B:** T19 → T20 (content; one push to `team/agents`, one bump 2 → 3).
+    - **QA:** T21 [P] now (it merges before T18); T22 after T18, T19, T20 and T21 have merged.
+    - Lanes A and B can be built at the same time by one engineer or two. Neither waits on the other.
   - **Wave C:** T09 → T10.
 
 ## Shared shapes (referenced by several tickets)
@@ -706,6 +712,156 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 
 ---
 
+## Wave B.1: `matcher@3` and the module-2 content release (revision 6)
+
+**Goal:** a stated misconception never earns credit, and module 2 is playable on days 4–5, with one pack bump. Spec PD-12 to PD-16, FR-017 (negator guard), FR-021(b), FR-022, FR-062 to FR-064, US7, SC-014 to SC-016.
+
+**Rules for this wave:**
+- **Founder answers are never quoted.** Thread entries, PR descriptions and test output name exercises and statements by id only. Exact pack strings appear only in this file (F1c-T19) and in the pack.
+- **`docs/research/**` is read, never edited** (founder-owned). A content defect found in a draft is reported in thread 0007 by id, and the learning-designer fixes the draft.
+- **One pack bump** (spec PD-15): F1c-T19's commit and F1c-T20's commit go to `team/agents` in one push. `version` changes once, 2 → 3, in F1c-T20. Push between founder sessions, never while the founder has an attempt open (F1c-B23).
+- **No prompt, gateway or model-routing change,** so the eval gate is not triggered. Golden replay after the wave: 0 diffs.
+
+### F1c-T18 [P] `matcher@3`: the negator guard and four negators (architect ruling R2)
+- **Owner:** backend-engineer · **Size:** S · **Depends on:** none to build. **Merge** waits on F1c-T21 (its `matcher@2` validity record, as T15 → T12).
+- **Files:** modify `server/services/practice-matcher.js`, `tests/practice-matcher.test.js`
+- **Interfaces:**
+  - Consumes: nothing new. The exposure-probe test reads `packs/applied-ai/practice.json` and `packs/applied-ai/exercises/*.json` (read-only).
+  - Produces (signatures unchanged; only these values and one rule change):
+    - `MATCHER_VERSION = 'matcher@3'`;
+    - `MATCHER_RULES.negators` = the 14 current entries in their current order, then `'havent', 'hasnt', 'wasnt', 'werent'` (18; still frozen). Every other `MATCHER_RULES` key and value is unchanged;
+    - `matcherGrade(input: GraderInput) → GraderOutput`, where `graderVersion` is `'matcher@3'`.
+  - Internal (the architect's one-line rule, review.md §4.1): `makeAnswer` also returns `hasNegator = tokens.some(t => NEGATORS.has(t))`. In `matchAlternative`, right after `toks` is computed: `if (toks.some(t => NEGATORS.has(t)) && !ans.hasNegator) return null;`. PD-2's skip in `matchItem` is unchanged. Because every FR-017 match goes through `matchAlternative`, the guard covers rubric items, `acceptableCorrections` (FR-020), red flags, strong signals, `mustInclude` and `askAbout` with no other edit.
+- **Acceptance:**
+  - FR-017 negator guard; FR-021(b) and FR-022 with the 18 negators; FR-014 (version bumped).
+  - `STOPWORDS` is unchanged, no subject word is added anywhere (inv. 1, FR-003), and no other rule changes.
+  - **SC-014, quoted in the PR** from `node --test --test-name-pattern="SC-003 labelled|SC-012|SC-003b" tests/acceptance/F1c.test.js` (SC-003b runs as a `todo` and prints its table): SC-003 7/7 with 0 rows changing overall status, SC-012 7/7, and SC-003b equal to the R2 column (clear → met 100%, incorrect → met 0%, valid-alt → not_met 0%, valid-alt → expected 50%, partial 88.9%, uncertain 6.3%; dimensions changed: `rows[6]` and `rows[10]` only). If F1c-T19 is already merged, list any difference by row index.
+- **Tests that prove it:** `tests/practice-matcher.test.js`. The architect's (a)–(e), plus (f) and (g), all with subject-neutral words except (f), which reads the pack:
+  - (a) "a positive restatement no longer matches a 3-token negator alternative": item `beacon not lit tonight`, answer "the beacon was lit tonight" → `matched` is `[]` and status `not_met`;
+  - (b) "the negated form still matches": the same item, answer "the beacon is not lit tonight" → `met`, confidence `high` (PD-2 skip);
+  - (c) "a different negator still matches": the same item, answer "the beacon was never lit tonight" → `met`;
+  - (d) "hasnt within 3 words negates a matched token": item `kettle boils`, answer "the kettle hasn't boiled yet this morning" → `uncertain`. The same sentence with "has" → `met`;
+  - (e) "a red flag that contains a negator does not fire on a positive answer": `redFlags: ['beacon not lit tonight']`, answer "the beacon was lit tonight and the kettle boils", explanation item `kettle boils` → `redFlagsMatched` is `[]` and explanation `met`;
+  - (g) "an acceptableCorrections entry with a negator needs a negator in the answer (FR-020 path)": correction `{items: ['harbor orbit'], alternatives: ['the beacon is not lit tonight']}`, answer "the beacon is lit tonight" → correction not `met`; answer "the beacon isn't lit tonight" → correction `met`;
+  - (f) "exposure probe: no negator-bearing alternative in packs/applied-ai matches its own text with the negators removed". For every `|` alternative of every rubric array (catch `explain`/`correct`, `teachBack[].rubric`, `followUp.rubric`, `followUps[].rubric`, `challenges[].rubric`, `transfer.rubric`, `mustCover`, `strongSignals`, `redFlags`, `mustInclude`, `askAbout`) and every `acceptableCorrections` entry whose content tokens include a negator: the probe answer is that text with every negator word removed, followed by the filler " kettle lantern orbit", so FR-018's 3-word minimum never decides it. Graded alone, with the pack lexicon, as a one-item dimension (an `acceptableCorrections` entry as `alternatives`), `matched` is `[]` for 100% of probes. Control in the same test: the probe graded against the alternative with its negators removed matches in > 0 cases (non-vacuous). It prints the probe count, the control count and the exposed count (0), never the text;
+  - old → new, "version and rules are exported and frozen": `'matcher@2'` → `'matcher@3'` (`:21` and `:28`), plus `MATCHER_RULES.negators.length === 18` and the last four equal `['havent', 'hasnt', 'wasnt', 'werent']`;
+  - unchanged and still passing: "negation is skipped when the matched alternative itself contains a negator (PD-2)", "negators are content tokens: …", and "module-1 hand traces: incorrect answers never met".
+- **Notes:** no ADR (ADR 0008's "any rule change bumps N"). Stored `matcher@2` events are never rewritten. The rule's known gap (RISK R4) is F1c-T21's to measure, not this ticket's to close.
+
+### F1c-T19 [P] Echo-safe reveal wordings and the echo probe (module 1)
+- **Owner:** backend-engineer · **Size:** S · **Depends on:** none. **Lands** in one push with F1c-T20 (one pack bump, spec PD-15). [P] with F1c-T18 and F1c-T21; before F1c-T20 (same test file).
+- **Files:** modify `packs/applied-ai/exercises/m1-catch-01-context-window.json`, `packs/applied-ai/exercises/m1-catch-04-embeddings.json`, `packs/applied-ai/exercises/m1-catch-05-structured-outputs.json`, `tests/practice-content.test.js`, `packs/applied-ai/practice.json`
+  - `practice.json` **only under the fallback** below. Otherwise it is untouched, and `version` stays 2 in this commit.
+- **Interfaces:**
+  - Consumes: `matcherGrade` and `combineOverall` from `server/services/practice-matcher.js`; `graderInputFor(ex, part, answer, lexicon) → {input, dims}` from `tests/acceptance/practice-helpers.mjs` (read-only import); `validatePracticePack`.
+  - Produces: in `tests/practice-content.test.js`, a frozen `REV6_REVEAL` constant (the 4 edits below as `{exercise, statementId, index, text}`), applied after the B2 edits in the "each exercise is its draft …" test; and the echo-probe test, written so that F1c-T20 extends it by changing only the set of exercises it walks.
+- **The edits: exact strings (spec PD-14). Each replaces the entry at that index; no other field changes.**
+
+  | # | Exercise · stop · field | New text |
+  |---|---|---|
+  | 1 | `m1-catch-01-context-window` · `s2` · `acceptableCorrections[1]` | One request can hold more text in a bigger window, but the model's knowledge stays the same. |
+  | 2 | `m1-catch-04-embeddings` · `s6` · `acceptableCorrections[0]` | For the migration, we build a fresh index by re-encoding the whole corpus with the replacement encoder, and queries move over once it is complete. |
+  | 3 | `m1-catch-04-embeddings` · `s6` · `acceptableCorrections[1]` | Each index is built with a single encoder, and a migration rebuilds it from scratch. |
+  | 4 | `m1-catch-05-structured-outputs` · `s5` · `acceptableCorrections[0]` | The lowest randomness setting makes outputs more consistent, but repeated runs of the same request can still differ. |
+
+  - `rubric.correct[1]` of catch-04 `s6` ("single model per index|…", already in the pack from B2) is **confirmed unchanged**.
+  - **The PM's hand trace of the echo rule** (FR-017 content tokens after stopwords; "need" = `ceil(0.6n − 1e-9)` for an `acceptableCorrections` entry matched whole under FR-020; "from flawed" = tokens the flawed line satisfies directly or through a pack lexicon form):
+
+    | # | Flawed line's content tokens | New text's content tokens (n) | Need | From flawed |
+    |---|---|---|---|---|
+    | 1 | context, window, set, documents, model, trained, bigger, window, means, knows, more | one, request, hold, more, text, bigger, window, models, knowledge, stays, same (11) | 7 | 4 (more, bigger, window, models) |
+    | 2 | next, quarter, switch, embedding, models, keep, old, vectors, add, new, ones, documents, change ("we'll" → `well`, a stopword) | migration, build, fresh, index, re, encoding, whole, corpus, replacement, encoder, queries, move, once, complete (14) | 9 | 0 |
+    | 3 | as #2 | index, built, single, encoder, migration, rebuilds, scratch (7) | 5 | 0 |
+    | 4 | set, temperature, zero, every, identical, question, get, identical, answer | lowest, randomness, setting, makes, outputs, more, consistent, repeated, runs, same, request, differ (12) | 8 | 0 |
+
+    - Traps checked: `setting` stems to `sett`, which "set" doesn't start with. `once` doesn't match "ones". `re` (≤ 3 letters) needs the whole word. The lexicon keys these texts touch (`corpus`, `queries`, `consistent`, `repeated`, `runs`) have no form in the flawed lines. `deterministic` (whose forms include "identical") and `passages` (whose forms include "documents") are deliberately not used. None of the four texts contains a negator, so the `matcher@3` guard doesn't apply to them.
+    - The hand trace is the PM's. The echo-probe test is the proof.
+- **Acceptance:**
+  - FR-062 and SC-015 for module 1: the echo probe passes on all 13 module-1 planted statements, and overall is `uncertain` for catch-01 `s2`, catch-04 `s6` and catch-05 `s5`.
+  - `packs/applied-ai` validates with 0 problems. Module 1's planted/clean partitions are unchanged.
+  - **SC-003b, informational (waived), printed before and after in the PR:** clear → met stays 100%, and incorrect → met stays 0%. Any row whose status changes is listed by index. **If clear → met drops below 100%, stop and report the row index in thread 0007.** The PM then picks a wording; don't choose one yourself.
+  - If the echo probe fails on a module-1 stop **other than** the three above, stop and report its id in thread 0007. Don't edit that stop.
+  - **Fallback (PM rule, spec PD-15):** if F1c-T20 is blocked on a module-2 content defect, this ticket may land alone only with `packs/applied-ai/practice.json` `version` 2 → 3 and "loader stores applied-ai@2 once" → "@3". F1c-T20 then bumps to 4.
+- **Tests that prove it:** `tests/practice-content.test.js`:
+  - old → new: "each exercise is its draft under the C12 mapping plus the PD-1 follow-up rubrics and the B2 rubric edits" → "… plus the B2 rubric edits and the revision-6 reveal edits". It applies `REV6_REVEAL`, and asserts each edited draft entry differs from its new text;
+  - new: "FR-062 echo probe: no planted statement's own narration text earns correction or overall met; the three reworded stops are uncertain". It walks every catch exercise in the pack with ≥ 1 planted statement, grades `stop:<id>` with the flawed narration text as the answer and the pack lexicon, and prints `exercise statementId explanation correction overall` only;
+  - new: "revision-6 reveal edits hold no negator". It checks each `REV6_REVEAL` text's content tokens against `MATCHER_RULES.negators`.
+- **Notes:** `docs/research/applied-ai/module-1/` is not edited. The pack diverging from the drafts is recorded in the test, as for B2. LR-12 (wording, advisory) may bring a replacement wording. Any replacement goes through the PM and must pass the same probe.
+
+### F1c-T20 Module 2 into packs/applied-ai, the revision-6 schedule and the pack bump 2 → 3
+- **Owner:** backend-engineer · **Size:** M · **Depends on:** F1c-T19 (same test file; one push). Not on F1c-T18: the echo probe holds under `matcher@2` and `matcher@3`. If an m2 stop fails the probe only under `matcher@2`, report it in thread 0007, and T20 waits for T18.
+- **Files:** create `packs/applied-ai/exercises/m2-*.json`, `packs/applied-ai/reference/m2-ref-*.md`; modify `packs/applied-ai/practice.json`, `packs/applied-ai/schedule.json`, `tests/practice-content.test.js`
+- **Interfaces:**
+  - Consumes: `validatePracticePack`, `loadPracticePacks`, `listTracks` (F1c-T02); `matcherGrade` and `graderInputFor` (as in T19); `docs/research/applied-ai/module-2/exercises/*.json` and `reference/*.md` (read, never edited); thread 0007's PM DECISION of 2026-10-15 (the schedule block).
+  - Produces:
+    - **`practice.json`:** `version: 3`. `modules` = `[<m1 unchanged>, {id: 'm2', title: 'Agents and embeddings in depth', exercises: [...]}]`, with these 17 ids in this order: `m2-learn-01-agent-loop`, `m2-catch-01-tool-calling`, `m2-catch-02-agent-loop-clean`, `m2-learn-02-agent-guardrails`, `m2-catch-03-workflow-or-agent`, `m2-catch-04-memory-state`, `m2-catch-05-guardrails`, `m2-learn-03-embedding-migration`, `m2-catch-06-embeddings-ops-clean`, `m2-catch-07-production-failures`, `m2-catch-08-agent-eval-multiagent`, `m2-catch-09-retrieval-eval`, `m2-scenario-01-delivery-support-agent`, `m2-interview-01-evaluate-agent`, `m2-interview-02-workflow-or-agent`, `m2-interview-03-embedding-model-change`, `m2-interview-04-defend-agents`. `lexicon` unchanged. `provenance.builtBy` gains "; F1c-T20: format-only copy of docs/research/applied-ai/module-2 (REVIEW.md; thread 0007 PD-15, PD-16)".
+    - **`exercises/m2-*.json` (17 files):** each draft under the C12 mapping (spec "Format mapping of the module-2 drafts"): `verified` `fetched-*` → `true`, else `false`, with the original string in `note`; scenario `challenges[]` `challenge` → `question`, `expected` → `rubric`; architecture `id` = the slug of `name` (cut at the last `-` within 60 if longer), and `name` dropped. Every other field is copied as it is, including the `{question, rubric}` follow-ups. No content edit.
+    - **`reference/m2-ref-01.md` … `m2-ref-11.md`:** the 11 drafts `m2-ref-NN-<topic>.md` renamed, byte for byte.
+    - **`schedule.json`:** deep-equal to the JSON block after the marker "revision 6 schedule: copy this block exactly into `packs/applied-ai/schedule.json`" in thread 0007's entry `### technical-product-manager · 2026-10-15 · DECISION`.
+    - **Not copied:** module 2's `diagnostic.json`, `README.md`, `REVIEW.md`.
+- **Acceptance:**
+  - FR-063, FR-064, FR-062 (module-2 half), SC-015 and SC-016.
+  - `packs/applied-ai` validates with 0 problems. `listSubjects()` is unchanged (C3). The deny-list test still passes.
+  - Module 1 is byte-identical to its T19 state: exercises, references and lexicon.
+  - The loader stores `applied-ai@3` once, with no `[practice]` warning.
+  - **Defect rule (spec PD-15):** if any module-2 draft fails validation or the echo probe, don't edit it. Report the exercise id, the statement id and the validator message, never the text, in thread 0007, and stop.
+- **Tests that prove it:** `tests/practice-content.test.js` (a `DRAFTS2` constant for `docs/research/applied-ai/module-2`):
+  - old → new: "applied-ai validates": `version` 2 → 3; modules `['m1']` → `['m1', 'm2']`; also m2's exercise list deep-equals the order above, and its set equals module 2's draft file names;
+  - old → new: "each type present" and "zero-planted present" run per module. m2's zero-planted catches are exactly `m2-catch-02-agent-loop-clean` and `m2-catch-06-embeddings-ops-clean`;
+  - old → new: "schedule defaults" reads the revision-6 block (marker and entry header above). `[practice, total]` `[780, 840]` → `[750, 840]`. The diagnostic assertion is unchanged;
+  - old → new: "verified mapping keeps the original string in note" walks the module-1 and module-2 drafts. For module 2 it also asserts that every source whose draft value is `UNVERIFIED` has `verified: false`, and that there is at least one;
+  - old → new: "planted/clean partitions equal the drafts" also checks module 2's 9 catch exercises;
+  - old → new: "each exercise is its draft …": module-2 exercises equal `mapDraft(draft)` with no overlay. Architecture ids are valid and unique for both scenarios;
+  - old → new: "reference files are the drafts renamed to <referenceId>.md, byte for byte" covers both modules (`/^(m[12]-ref-\d+)-/`);
+  - old → new: "loader stores applied-ai@2 once" → "loader stores applied-ai@3 once" (`version: 3` in both assertions);
+  - extended: the FR-062 echo probe now walks module 2's planted statements as well;
+  - unchanged: the lexicon test (module 2 adds no key), "B2 drops every suspect fix …" and "listSubjects() is unchanged …".
+- **Notes:** this is the version bump for revision 6. If the founder has an attempt open when this is pushed, B23's `err.rejected` → Back to exercises is the recovery (US7.8). Push between sessions.
+
+### F1c-T21 [P] The R4 incidental-negator row (QA)
+- **Owner:** qa-engineer · **Size:** S · **Depends on:** none. **Merges before F1c-T18.**
+- **Files:** modify `tests/fixtures/practice/m1-labelled-answers.json`, `tests/acceptance/F1c.test.js`, `docs/specs/F1c-practice-engine/qa-report.md`
+- **Interfaces:**
+  - Consumes: `matcherGrade`, `combineOverall` and `MATCHER_VERSION`; `loadPracticePacks` and `getTrack` (as the SC-003b test does); `graderInputFor`.
+  - Produces, in `m1-labelled-answers.json`:
+    - a new top-level `polarityRows` array. `rows` and `qaRows` are untouched, so SC-012 and the existing fixture tests don't change;
+    - each item is `{exercise, statementId, part: "stop:<id>", class: "incorrect", tags: ["incidental-negator"], text, expect: {explanation, correction, overall}, note}`, with `expect` values as in `rows` (a status or a list);
+    - plus `polarityRowsNote` (who, when, why: architect RISK R4).
+  - **Row rules:**
+    - ≥ 1 row on `m1-catch-06-retrieval-vs-generation` `s6` (the live instance in the architect's ruling). A second row on another exposed stop is optional, but never on catch-01 `s2`, catch-04 `s6` or catch-05 `s5` (F1c-T19 edits those).
+    - The text asserts the misconception in a learner's own words, in ≤ 40 words. It contains exactly one negator token, and that negator does not negate the misconception (for example a hedge or an opener).
+    - Written from the narration and the stop's `misconception` only, never from the rubric or `acceptableCorrections`.
+- **Acceptance:**
+  - SC-014's R4 line can be run as a named test.
+  - **Validity record, in `qa-report.md` under "matcher@3 (F1c-T18)", before T18 merges:** under `matcher@2`, each row reaches at least `partial` on a dimension through a negator-bearing alternative (it exercises the exposed shape). If not, rewrite it.
+- **Tests that prove it:** `tests/acceptance/F1c.test.js`:
+  - new: "fixture: m1 polarityRows hold ≥ 1 incorrect incidental-negator row on m1-catch-06 s6, each with exactly one negator token, on a planted statement F1c-T19 doesn't edit";
+  - new: "SC-014 R4: an incorrect answer with an incidental negator is never graded met (packs/applied-ai, current MATCHER_VERSION)", `{ todo: 'F1c-T18' }`. It prints `MATCHER_VERSION exercise statementId explanation correction overall` per row, and asserts overall is not `met`.
+- **Notes:** if the row grades overall `met` under `matcher@3`, that is a major bug (an incorrect answer graded `met`). File it, keep the test as `todo` against that bug id, and raise it in thread 0007. The fix route (R2c, or a positive rewrite of catch-06 `s6`'s alternatives) is a PM and architect call.
+
+### F1c-T22 Wave B.1 verify: leak scan on the real pack, todo removal, ship verdict (QA)
+- **Owner:** qa-engineer · **Size:** M · **Depends on:** F1c-T18, F1c-T19, F1c-T20 and F1c-T21, all merged (same test file as T21).
+- **Files:** modify `tests/acceptance/F1c.test.js`, `docs/specs/F1c-practice-engine/qa-report.md`, `docs/team/threads/0007-applied-ai-aws-track.md`
+  - The thread: append-only, for the QA DECISION.
+- **Interfaces:** consumes `practiceLeakScan` and `LEAK_ALLOW`; the start route (`POST /api/practice/attempts`) with `PRACTICE_PACKS_DIR` pointing at `<ROOT>/packs`; `GET /api/practice/tracks/applied-ai`.
+- **Acceptance:**
+  - SC-014, SC-015 and SC-016; US7.1–US7.8 at the levels below.
+  - `npm test` passes on a fresh run with `# fail 0` (output quoted), and no `F1c-T18` todo remains.
+  - Golden replay: 0 diffs.
+  - **Real-browser smoke** (the qa-report harness, real server, `packs/` loaded). Text mode at 390 and 1280 px; voice mode at 1280 px:
+    - the picker lists module `m2` (US7.1);
+    - m2 catch-01, one hit: the feedback and `say.corrected` are spoken exactly as shown (US7.2, US7.3);
+    - m1 catch-05 `s5`, with the flawed line typed or dictated as the answer: `fb.hit.uncertain`, then "Corrected: …" with the revision-6 text, spoken exactly as shown (US7.4, US7.5);
+    - a pack-version 404 mid-attempt reaches `err.rejected` (US7.8);
+    - 0 console errors, with no filter.
+  - QA appends a `DECISION` to thread 0007 with **separate Functional and AI-quality verdicts**. AI quality is judged on SC-014 and SC-015, with SC-003b reported as information (waived).
+- **Tests that prove it:** `tests/acceptance/F1c.test.js`:
+  - new: "SC-016 applied-ai v3: the track lists m1 then m2 with the PD-15 order; starting each of the 33 exercises returns 200 and the start body passes practiceLeakScan";
+  - todo removal: "SC-014 R4 …" (`F1c-T18`);
+  - plus the quoted `npm test`, the golden replay and the browser record in `qa-report.md`, section "Wave B.1".
+
+---
+
 ## Wave C: the remaining screens
 
 ### F1c-T09 Learn, interview, scenario, follow-up and transfer screens
@@ -771,6 +927,11 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 | F1c-T07 [P] | backend-engineer | M | T04, T13 | B |
 | F1c-T08 [P] | backend-engineer | M | T04 | B |
 | F1c-T11 [P] | backend-engineer | S | T02, T03, T12, thread-0007 content gates; merge: founder ARCH-2 and T17 (revision 5: all cleared) | B (ready) |
+| F1c-T18 [P] | backend-engineer | S | none; merge after T21 | B.1 |
+| F1c-T19 [P] | backend-engineer | S | none; lands in one push with T20 | B.1 |
+| F1c-T20 | backend-engineer | M | T19 (same test file, one push, the single bump 2 → 3) | B.1 |
+| F1c-T21 [P] | qa-engineer | S | none; merges before T18 | B.1 |
+| F1c-T22 | qa-engineer | M | T18, T19, T20, T21 | B.1 (last) |
 | F1c-T09 | frontend-engineer | M | T06, T07 | C |
 | F1c-T10 | frontend-engineer | M | T08, T09 | C |
 
@@ -784,6 +945,13 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
   - T16 shares `tests/acceptance/F1c.test.js` and `qa-report.md` with T15, so it runs after T15 (not [P]).
   - The only cross-ticket coupling is a merge-order one: T12 changes the grader version that T13's tests read through `MATCHER_VERSION`, so T13 merges first.
 - **Wave B:** T17 touches `web/practice/{app,state,copy}.js`, `web/practice.html` and `tests/practice-web-state.test.js`. T06 touches `web/practice/*`, `web/speech.js` and its new test. T07 touches `server/services/practice.js`, `server/routes/practice.js` and its new test. T08 touches the new `practice-progress` files, `server/index.js`, `server/db.js` and `tests/db.test.js`. T11 touches `packs/applied-ai/**` and its new test. T01b touches its one new file and `labelled-answers.json`. **T17 and T06 share `web/practice/app.js`, `copy.js` and `practice.html`, so T06 is not [P] with T17 and runs after it (revision 4).** T17 has no overlap with T07, T08, T11 or T01b (T17's source check only reads two server files). No other overlap.
+- **Wave B.1 (revision 6):**
+  - T18 touches only `server/services/practice-matcher.js` and `tests/practice-matcher.test.js`. It reads, but never writes, `packs/applied-ai/**`.
+  - T19 touches three `packs/applied-ai/exercises/m1-catch-0{1,4,5}-*.json` files and `tests/practice-content.test.js` (plus `practice.json` under the fallback only).
+  - T20 touches `packs/applied-ai/{practice,schedule}.json`, the new `m2-*` exercise and reference files and `tests/practice-content.test.js`. **It shares the test file (and, under the fallback, `practice.json`) with T19, so it runs after T19 (not [P]).**
+  - T21 touches `m1-labelled-answers.json`, `tests/acceptance/F1c.test.js` and `qa-report.md`. T22 touches `tests/acceptance/F1c.test.js`, `qa-report.md` and thread 0007 (append-only). **T22 shares two files with T21, so it runs after T21.**
+  - T18, T19 and T21 share no file with each other, or with T17, T06, T07, T08 or T01b. T07 and T08 change `server/services/practice*.js` files other than the matcher. T01b touches `labelled-answers.json`, not `m1-labelled-answers.json`.
+  - **Behavioral coupling (no shared file):** T18 changes grades that T21's test reads, hence "T21 merges before T18", and the R4 test stays `todo` until T18 merges. T18's exposure probe grades the pack, but it lives in T18's own test file, so it always runs with `matcher@3`. Under the guard it holds by construction, whatever T19 and T20 add. T19's echo probe passes under either matcher version (PM hand trace; the test proves it on whichever version is in the tree).
 
 ## Bugs (QA appends)
 
@@ -793,15 +961,19 @@ type Grader = (input: GraderInput) => GraderOutput   // synchronous in F1c (ADR 
 
 ### F1c-B10 [minor] catch-01's correction rubric repeats the flawed statement
 - Its first alternative ("bigger window means more input fits") nearly matches the misconception, so an incorrect answer earns correction partial. · Owner: content author (T11)
+- **Status (PM, 2026-10-15, revision 6): fixed** by the B2 rubric edits (pack version 2; backend's measurement in thread 0007). F1c-T19 removes the last echo contact on this stop (`acceptableCorrections[1]`, spec PD-14).
 
 ### F1c-B11 [major] FR-021(a) "uncertain" applies per dimension, so one missed dimension makes the whole answer uncertain
 - This causes most valid-alternative answers to come out uncertain (catch-01, catch-04, catch-06, catch-08). · Owner: technical-product-manager, with principal-architect
+- **Status (PM, 2026-10-15, revision 6): closed, works as designed** (architect ruling, review.md "Ruling on F1c-B11 …"). FR-021(a) and US1.6 are unchanged, and the rows moved to B12.
 
 ### F1c-B12 [major] Lexicon and rubric gaps fail valid alternative wordings
 - E.g. "faithful" vs "faithfulness", "old", "near", "junk", "pricier". Only 1 of 6 valid alternatives in module 1 is met today, against SC-003's ≥ 75%. · Owner: content author + learning-designer (T11 lexicon)
+- **Status (PM, 2026-10-15, revision 6): closed by the founder's DECISION of 2026-10-15.** The B2 lexicon is applied (pack version 2; valid-alternative → expected 50%), the SC-003b and SC-003c failures are waived for module 1, and grader tuning has stopped (spec PD-12). The failures stay recorded in `qa-report.md`.
 
 ### F1c-B13 [minor] Prefix-only matching: "faithful" doesn't hit "faithfulness"
 - Accepted limit; fix through the lexicon. · Owner: content author
+- **Status (PM, 2026-10-15, revision 6): closed.** The B2 lexicon adds `faithfulness` (spec PD-12).
 
 **Matcher rules the spec didn't spell out** (principal-architect to confirm at code review): the negation window counts every word and stops at `. ; : ! ?`; the PD-2 exception covers red flags and strong signals; red flags and echoes make every dimension uncertain; lexicon lookups go one way; 4-letter plurals are stripped.
 

@@ -906,3 +906,127 @@ Asked in the live session, after SC-003c failed for every variant: "The keyword 
   - **QA:** the incidental-negator incorrect row.
   - **Content:** positive rewrites of the "X not Y" alternatives at the next module-1 edit.
   - **No ADR:** this falls under ADR 0008's "any rule change bumps N". Stored `matcher@2` events stay as written.
+
+### technical-product-manager · 2026-10-15 · DECISION
+**Answering:**
+- the architect's `matcher@3` DECISION and RISKs R4–R6;
+- the pending reveal-wording calls (lexicon-proposal rev2; backend's rev2 EVIDENCE);
+- the module-2 PROPOSAL and REVIEW: L7, L8, and the README's schedule swap.
+
+Applied as F1c spec and tasks **revision 6**, Wave B.1, tickets F1c-T18 to T22. **No answer text is quoted here.** Exact strings are only in `tasks.md` F1c-T19 and in the pack. Founder: don't open either.
+
+- **1. `matcher@3` is in scope (spec PD-13).** It is a correctness fix, not tuning. No gate number moves, and nothing was chosen to raise one. It removes a live case where a stated misconception earns credit (catch-06 s6) and 47 exposed alternatives, and that breaks the one gate the founder didn't waive (incorrect → never `met`).
+  - **F1c-T18** (backend, S): R2 plus `havent`, `hasnt`, `wasnt`, `werent`; `MATCHER_VERSION` → `matcher@3`; tests (a)–(e) as ruled, plus (g) for the `acceptableCorrections` path and (f), an exposure probe over the pack (0 exposed).
+  - **F1c-T21** (QA, S): the R4 incidental-negator incorrect row on catch-06 s6. Its `matcher@2` validity is recorded before T18 merges.
+  - PD-2, FR-017, FR-021(b) and FR-022 are reworded. Pre-registered as **SC-014**: SC-003 7/7 with 0 rows changed, SC-012 7/7, SC-003b reproducing the R2 column, 0 exposed, and the R4 row never `met`.
+- **2. Reveal wordings (spec PD-14), in F1c-T19** (backend, S):
+  - **catch-01 s2 `acceptableCorrections[1]`:** the proposal's optional rewording is **accepted**. Its overlap with the flawed line drops from 7 of 8 needed to 4 of 7.
+  - **catch-04 s6 `acceptableCorrections[0]` and catch-05 s5 `acceptableCorrections[0]`:** **reworded by me.** Both are positive and use none of the flawed line's content words, directly or through the lexicon (0 of 9 and 0 of 8 needed tokens). The hand trace is in the ticket.
+  - **catch-04 s6 `acceptableCorrections[1]`:** also reworded. It was 1 token short of matching, so an echo plus one word would match.
+  - **catch-04 s6 `correct[1]` "single model per index":** **confirmed**, unchanged.
+  - **New rule FR-062 / SC-015:** no planted stop's own flawed line may earn correction or overall `met`. T19 adds an echo-probe test, and T20 extends it to module 2.
+- **3. Module 2 loads as `m2`, "Agents and embeddings in depth" (spec PD-15), in F1c-T20** (backend, M):
+  - format-only mapping as T11;
+  - references renamed to `m2-ref-NN.md`;
+  - every non-`fetched-*` source is `verified: false`, so all 19 AWS claims stay unverified;
+  - the lexicon is unchanged.
+  - **L7: module 2's `diagnostic.json` is not copied.** The 7-day diagnostic stays module 1's 6 ids. **L8: Later.**
+  - If a draft fails validation or the echo probe, T20 stops and reports ids, and the learning-designer fixes the draft.
+- **4. Schedule: the README's swap is adopted with three adjustments (spec PD-16).**
+  - m2 catch-04 moves to day 4, so day 4 holds all of agent mechanics.
+  - m2 catch-08 goes on day 5 next to its look-alike catch-09, not into day 7, because day 7 stays "no new material".
+  - m2 interview-04 is day 4's defend pass, done aloud in the app.
+  - Both modules' interview-01 stay fresh for mock 2, and m2 interview-01 fills its "agents, 10 min" slot. m2 scenario-01 is unscheduled (picker; Later).
+  - Practice share: 750/840 = 89.3%. Without the ~160 off-app minutes it is 70.2%, and also without the mocks' non-app parts it is 62.1%. All pass ≥ 60%.
+  - **Cost, accepted:** module 1's day-4/5 replays go, so module-1 spacing now rests on review blocks and day 7. LR-11 asks the learning-designer to check this.
+
+  | Day | In-app blocks (kind · min · ids) | Off-app inside the named block |
+  |---|---|---|
+  | 1–3 | unchanged | unchanged |
+  | 4 | learn 20 (m2 learn-01, 02) · catch 45 (m2 catch-01, 02, 03, 04, 05) · interview 35 (m2 interview-02, 04) · review 20 | ~5 of interview: read `m2-ref-11` (safe) before interview-04 |
+  | 5 | learn 10 (m2 learn-03) · catch 40 (m2 catch-07, 08, 06, 09) · interview 25 (m2 interview-03) · review 45 | 30 of review: defend, eval, security, cost (unchanged) |
+  | 6 | interview 75 (m1 interview-01, m2 interview-01) · review 45 | mock 2: m2 interview-01 is the agents slot |
+  | 7 | unchanged | unchanged |
+- **5. Order and the single bump (spec PD-15).**
+  - **Lanes:**
+    - T18 [P];
+    - T19 → T20;
+    - T21 [P], which merges before T18;
+    - T22 last.
+  - T18, T19 and T21 share no file.
+  - **One bump, 2 → 3, in T20.** T19's content commit goes in the same push and doesn't touch `version`. Content changed under a stored version is refused by the loader, and the track would disappear.
+  - Push between founder sessions. B23's `err.rejected` covers an attempt left open across the bump.
+  - **Fallback:** if T20 is blocked, T19 lands alone with the bump to 3, and T20 bumps to 4.
+- **Dissent recorded:**
+  - The module-2 reviewer's R1 (the architect's record) stands.
+  - I override the README on m2 catch-04 and catch-08 placement, for the reasons above; the learning-designer may contest them in LR-11.
+- **Follow-ups:**
+  - **principal-architect:** design review of revision 6. Two items to confirm: module 2 under ARCH-2 needs no ADR text, and the bump sequencing. T18–T20 start after your review.
+  - **learning-designer:** LR-11 (schedule adjustments) and LR-12 (do the two reworded corrections teach well without their topic word?). Both advisory. A replacement wording must pass SC-015.
+  - **founder (OQ-8, non-blocking; override here):**
+    - (a) whether `matcher@3` counts as tuning (if yes, T18 and T21 drop);
+    - (b) module 2 in the app on the same terms you accepted for module 1 (if you revert the research folder, T20 is reverted).
+  - **backend-engineer:** T18, then T19 → T20 once the architect approves. **qa-engineer:** T21 now.
+- **Thread status** stays `open`: Wave B, LR-9 to LR-12, OQ-8 and the Leadership Principles question.
+
+**For backend (F1c-T20): revision 6 schedule: copy this block exactly into `packs/applied-ai/schedule.json`.**
+```json
+{
+  "days": 7,
+  "minutesPerDay": 120,
+  "diagnostic": [
+    "m1-catch-01-context-window",
+    "m1-catch-02-rag-vs-finetune",
+    "m1-catch-03-pipeline-clean",
+    "m1-catch-04-embeddings",
+    "m1-catch-05-structured-outputs",
+    "m1-interview-04-evaluate-rag"
+  ],
+  "plan": [
+    { "day": 1, "blocks": [
+      { "kind": "diagnostic", "minutes": 40 },
+      { "kind": "learn", "minutes": 20, "exercises": ["m1-learn-01-how-llms-answer", "m1-learn-02-rag-pipeline", "m1-learn-03-rag-failures"] },
+      { "kind": "review", "minutes": 60 }
+    ] },
+    { "day": 2, "blocks": [
+      { "kind": "catch", "minutes": 35, "exercises": ["m1-catch-07-access-freshness-clean", "m1-catch-06-retrieval-vs-generation", "m1-catch-08-design-tradeoffs"] },
+      { "kind": "interview", "minutes": 20, "exercises": ["m1-interview-02-retrieval-vs-generation"] },
+      { "kind": "review", "minutes": 65 }
+    ] },
+    { "day": 3, "blocks": [
+      { "kind": "scenario", "minutes": 45, "exercises": ["m1-scenario-01-policy-assistant"] },
+      { "kind": "interview", "minutes": 35, "exercises": ["m1-interview-03-when-not-rag"] },
+      { "kind": "review", "minutes": 40 }
+    ] },
+    { "day": 4, "blocks": [
+      { "kind": "learn", "minutes": 20, "exercises": ["m2-learn-01-agent-loop", "m2-learn-02-agent-guardrails"] },
+      { "kind": "catch", "minutes": 45, "exercises": ["m2-catch-01-tool-calling", "m2-catch-02-agent-loop-clean", "m2-catch-03-workflow-or-agent", "m2-catch-04-memory-state", "m2-catch-05-guardrails"] },
+      { "kind": "interview", "minutes": 35, "exercises": ["m2-interview-02-workflow-or-agent", "m2-interview-04-defend-agents"] },
+      { "kind": "review", "minutes": 20 }
+    ] },
+    { "day": 5, "blocks": [
+      { "kind": "learn", "minutes": 10, "exercises": ["m2-learn-03-embedding-migration"] },
+      { "kind": "catch", "minutes": 40, "exercises": ["m2-catch-07-production-failures", "m2-catch-08-agent-eval-multiagent", "m2-catch-06-embeddings-ops-clean", "m2-catch-09-retrieval-eval"] },
+      { "kind": "interview", "minutes": 25, "exercises": ["m2-interview-03-embedding-model-change"] },
+      { "kind": "review", "minutes": 45 }
+    ] },
+    { "day": 6, "blocks": [
+      { "kind": "interview", "minutes": 75, "exercises": ["m1-interview-01-design-rag", "m2-interview-01-evaluate-agent"] },
+      { "kind": "review", "minutes": 45 }
+    ] },
+    { "day": 7, "blocks": [
+      { "kind": "review", "minutes": 65 },
+      { "kind": "catch", "minutes": 30, "exercises": ["m1-catch-03-pipeline-clean", "m1-catch-07-access-freshness-clean"] },
+      { "kind": "interview", "minutes": 25, "exercises": ["m1-interview-02-retrieval-vs-generation"] }
+    ] }
+  ]
+}
+```
+Checked by hand against `validatePracticePack` (`practice-pack.js:306-342`):
+- the days sum to 120 each: day 4 is 20+45+35+20, day 5 is 10+40+25+45, and days 1–3, 6 and 7 are as before;
+- practice kinds: 750/840;
+- 6 diagnostic ids;
+- no `exercises` on `diagnostic` or `review` blocks;
+- every m2 id is a module-2 draft file name.
+
+T20's "schedule defaults" test is the proof.
