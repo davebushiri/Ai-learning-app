@@ -11,8 +11,8 @@
     "After grading the set is spent: it joins SC-003b as training data, and a later content iteration needs a fresh held-out set."
   ],
   "labels": "expect.explanation and expect.correction are the statuses a careful human grader would give; expect.overall follows combineOverall (both met -> met; both not_met -> not_met; otherwise partial). clear and valid-alternative rows are fully correct answers (clear echoes the reference's wording; valid-alternative is correct in the learner's own words, analogies or speech-like phrasing). partial rows get one dimension right or both half right. incorrect rows miss or endorse the error.",
-  "gradedAt": null,
-  "gradedPackVersion": null,
+  "gradedAt": "2026-10-15",
+  "gradedPackVersion": "B2",
   "rows": [
     {
       "exercise": "m1-catch-01-context-window",

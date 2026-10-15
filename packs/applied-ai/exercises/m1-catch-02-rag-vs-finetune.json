@@ -84,13 +84,13 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "retrieves at query time|runtime",
-            "weights unchanged|no training",
-            "knowledge in index"
+            "retrieves at query time|runtime|inference time|on the fly",
+            "weights unchanged|no training|not retrained|not trained",
+            "knowledge in index|stored in index|knowledge base|vector store|vector database"
           ],
           "correct": [
-            "adds passages to prompt",
-            "update index not model"
+            "adds passages to prompt|puts chunks in context|inserts into prompt|augments prompt|adds context",
+            "update index not model|update documents not weights"
           ]
         }
       },
@@ -106,11 +106,11 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "retraining needed for each change",
-            "fine-tuned facts can't be cited|filtered by permission"
+            "retraining needed for each change|retrain every month|retrain each time",
+            "fine-tuned facts can't be cited|filtered by permission|access control|no source|can't trace"
           ],
           "correct": [
-            "update the index for freshness",
+            "update the index for freshness|current index|re-sync index|re-ingest documents",
             "fine-tuning for style or behavior"
           ]
         }

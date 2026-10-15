@@ -85,12 +85,12 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "working memory for one call|what it can see now",
-            "training data is separate|learned into weights"
+            "working memory for one call|what it can see now|working memory|short memory|what it sees per request",
+            "training data is separate|learned into weights|not training|learned in training|baked into weights|trained into weights"
           ],
           "correct": [
-            "window holds the current request",
-            "bigger window means more input fits|not more knowledge"
+            "holds the current request|input for this call|what is sent in the request",
+            "more input fits per call|not know|not smarter"
           ]
         }
       },
@@ -107,11 +107,11 @@
         "rubric": {
           "explain": [
             "quality degrades with length|context rot",
-            "middle content under-used|position matters"
+            "middle content under-used|position matters|lost in the middle|start and end|beginning and end"
           ],
           "correct": [
-            "send relevant text|retrieve",
-            "test long-context accuracy"
+            "send relevant text|retrieve|only relevant parts|curate",
+            "test long-context accuracy|evaluate accuracy|measure accuracy"
           ]
         }
       }

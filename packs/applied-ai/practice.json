@@ -1,7 +1,7 @@
 {
   "format": "practice-v1",
   "id": "applied-ai",
-  "version": 1,
+  "version": 2,
   "title": "Applied AI",
   "modules": [
     {
@@ -59,13 +59,23 @@
       "unchanged": [
         "same",
         "frozen",
-        "untouched"
+        "untouched",
+        "dont change",
+        "doesnt change",
+        "not change",
+        "never change",
+        "stay same",
+        "not modified",
+        "unmodified",
+        "not updated"
       ],
       "closeness": [
         "near",
         "nearby",
         "close",
-        "distance"
+        "distance",
+        "similar meaning",
+        "semantically similar"
       ],
       "truth": [
         "right",
@@ -81,13 +91,17 @@
       ],
       "faithful": [
         "grounded",
-        "supported",
-        "loyal"
+        "supported"
       ],
       "noise": [
         "junk",
         "irrelevant",
-        "clutter"
+        "clutter",
+        "distractors",
+        "distracting",
+        "off topic",
+        "dilute",
+        "dilutes"
       ],
       "cost": [
         "expensive",
@@ -99,7 +113,10 @@
         "slow",
         "slower",
         "delay",
-        "response time"
+        "response time",
+        "takes longer",
+        "lag",
+        "wait"
       ],
       "deterministic": [
         "repeatable",
@@ -121,6 +138,278 @@
         "reranker",
         "re-rank",
         "cross-encoder"
+      ],
+      "not": [
+        "isnt",
+        "doesnt",
+        "dont",
+        "arent",
+        "wasnt",
+        "wont",
+        "cannot",
+        "cant",
+        "never",
+        "without"
+      ],
+      "faithfulness": [
+        "faithful",
+        "groundedness"
+      ],
+      "queries": [
+        "query",
+        "question"
+      ],
+      "degrades": [
+        "drops",
+        "worse",
+        "declines",
+        "suffers",
+        "decreases"
+      ],
+      "quality": [
+        "accuracy",
+        "recall",
+        "performance"
+      ],
+      "length": [
+        "long"
+      ],
+      "input": [
+        "text",
+        "tokens",
+        "content"
+      ],
+      "cited": [
+        "source",
+        "sources",
+        "trace",
+        "traced",
+        "attributed",
+        "provenance"
+      ],
+      "retraining": [
+        "re train",
+        "training run",
+        "new training"
+      ],
+      "style": [
+        "tone",
+        "format",
+        "formatting",
+        "voice"
+      ],
+      "behavior": [
+        "behaviour",
+        "behave",
+        "skills"
+      ],
+      "relevance": [
+        "relevant",
+        "on topic"
+      ],
+      "scale": [
+        "range",
+        "calibrated",
+        "calibration",
+        "absolute"
+      ],
+      "varies": [
+        "differs",
+        "vary",
+        "depends"
+      ],
+      "currency": [
+        "current",
+        "up to date",
+        "fresh",
+        "latest"
+      ],
+      "check": [
+        "verify",
+        "validate",
+        "confirm",
+        "review"
+      ],
+      "meaning": [
+        "semantic",
+        "semantics",
+        "concepts"
+      ],
+      "miss": [
+        "misses",
+        "fail",
+        "fails",
+        "struggle",
+        "struggles",
+        "poor",
+        "weak",
+        "unreliable"
+      ],
+      "real": [
+        "actual",
+        "production"
+      ],
+      "incompatible": [
+        "not compatible",
+        "not comparable",
+        "isnt compatible",
+        "arent compatible",
+        "arent comparable",
+        "incomparable"
+      ],
+      "meaningless": [
+        "garbage",
+        "nonsense",
+        "invalid",
+        "useless",
+        "junk",
+        "random"
+      ],
+      "rankings": [
+        "rank",
+        "scores",
+        "results",
+        "comparisons"
+      ],
+      "corpus": [
+        "dataset",
+        "collection",
+        "everything"
+      ],
+      "shape": [
+        "structure",
+        "format",
+        "syntax",
+        "valid json",
+        "parseable"
+      ],
+      "guarantees": [
+        "ensures",
+        "enforces"
+      ],
+      "values": [
+        "content",
+        "contents",
+        "data"
+      ],
+      "wrong": [
+        "incorrect",
+        "false",
+        "invalid",
+        "made up"
+      ],
+      "fabricated": [
+        "made up",
+        "hallucinated",
+        "invented",
+        "fake",
+        "nonexistent"
+      ],
+      "validate": [
+        "verify",
+        "confirm",
+        "cross check"
+      ],
+      "citations": [
+        "references",
+        "sources"
+      ],
+      "consistent": [
+        "stable",
+        "predictable",
+        "less random",
+        "less variable",
+        "less variation"
+      ],
+      "runs": [
+        "calls",
+        "samples",
+        "trials",
+        "attempts"
+      ],
+      "documented": [
+        "docs",
+        "documentation"
+      ],
+      "provider": [
+        "anthropic",
+        "vendor",
+        "api"
+      ],
+      "received": [
+        "given",
+        "gets",
+        "provided",
+        "fed"
+      ],
+      "internal": [
+        "private",
+        "company",
+        "proprietary"
+      ],
+      "problem": [
+        "issue",
+        "failure",
+        "fault"
+      ],
+      "sync": [
+        "resync",
+        "re sync",
+        "re index",
+        "reindex",
+        "re ingest",
+        "reingest",
+        "refresh"
+      ],
+      "remove": [
+        "delete",
+        "drop",
+        "purge",
+        "retire"
+      ],
+      "superseded": [
+        "old",
+        "outdated",
+        "stale",
+        "previous"
+      ],
+      "current": [
+        "latest",
+        "newest",
+        "up to date",
+        "active"
+      ],
+      "filter": [
+        "restrict",
+        "exclude"
+      ],
+      "chunks": [
+        "passages"
+      ],
+      "passages": [
+        "chunks",
+        "documents",
+        "docs",
+        "snippets",
+        "excerpts"
+      ],
+      "metrics": [
+        "measure",
+        "measurement",
+        "eval",
+        "evals",
+        "recall",
+        "benchmark",
+        "tests"
+      ],
+      "tune": [
+        "pick",
+        "choose",
+        "select",
+        "experiment",
+        "optimize",
+        "adjust",
+        "calibrate"
       ]
     }
   },

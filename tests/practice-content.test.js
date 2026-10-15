@@ -53,7 +53,7 @@ test('applied-ai validates', () => {
   const p = readPack();
   assert.deepEqual(validatePracticePack(p), []);
   assert.equal(p.manifest.id, 'applied-ai');
-  assert.equal(p.manifest.version, 1);
+  assert.equal(p.manifest.version, 2, 'bumped for B2: the loader refuses changed content under a stored version');
   assert.deepEqual(p.manifest.modules.map(m => m.id), ['m1']);
   assert.deepEqual([...module1(p).exercises].sort(), [...readDrafts().keys()], 'every draft exercise, nothing else');
 });
@@ -151,10 +151,82 @@ const PD1 = {
   'm1-catch-08-design-tradeoffs': ['measure recall@k|hit rate', 'measure answer quality|faithfulness', 'latency and cost per query']
 };
 
-test('each exercise is its draft under the C12 mapping plus the PD-1 follow-up rubrics', () => {
+// Variant B2, the founder DECISION of 2026-10-15 in thread 0007: the learning-designer's lexicon
+// proposal (rev2) without its suspectFixes, and with faithful.loyal dropped (its recommendedRemoval).
+// The edits are read from the proposal file and applied here, so a drift on either side fails.
+const PROPOSAL = readJson(path.join(DRAFTS, 'lexicon-proposal.json'));
+const B2_SUSPECT = (() => {
+  const rubric = [];
+  const lexicon = [];
+  for (const { fix } of PROPOSAL.suspectFixes.rows) {
+    const r = /^(catch-\d{2}) (s\d+) (explain|correct)\[(\d+)\] alt '([^']+)'$/.exec(fix);
+    if (r) { rubric.push({ prefix: `m1-${r[1]}-`, sid: r[2], dim: r[3], index: Number(r[4]), alt: r[5] }); continue; }
+    const l = /^lexicon '([^']+)': \[(.+)\]$/.exec(fix);
+    assert.ok(l, `suspect fix is in a known shape: ${fix}`);
+    lexicon.push({ key: l[1], forms: [...l[2].matchAll(/'([^']+)'/g)].map(x => x[1]) });
+  }
+  return { rubric, lexicon };
+})();
+
+function applyB2Rubrics(id, ex) {
+  const edits = PROPOSAL.rubricEdits[id] ?? {};
+  for (const [sid, dims] of Object.entries(edits)) {
+    const planted = ex.answerKey.planted.find(x => x.statementId === sid);
+    assert.ok(planted, `${id} ${sid} is planted`);
+    for (const dim of ['explain', 'correct']) {
+      if (!dims[dim]) continue;
+      planted.rubric[dim] = dims[dim].map((item, index) => {
+        const drop = B2_SUSPECT.rubric.filter(x => id.startsWith(x.prefix) && x.sid === sid && x.dim === dim && x.index === index).map(x => x.alt);
+        const alts = item.split('|');
+        for (const d of drop) assert.ok(alts.includes(d), `${id} ${sid} ${dim}[${index}] has the suspect alternative ${d}`);
+        return alts.filter(a => !drop.includes(a)).join('|');
+      });
+    }
+  }
+  return ex;
+}
+
+function applyB2Lexicon(synonyms) {
+  const out = structuredClone(synonyms);
+  for (const [raw, { forms }] of Object.entries(PROPOSAL.lexiconSynonyms_mergeIntoPracticeJson)) {
+    if (raw.startsWith('_')) continue;
+    const key = raw.replace(/ \(extend\)$/, '');
+    const extend = key !== raw;
+    const suspect = B2_SUSPECT.lexicon.filter(x => x.key === key).flatMap(x => x.forms);
+    for (const f of suspect) assert.ok(forms.includes(f), `lexicon ${key} has the suspect form ${f}`);
+    const kept = forms.filter(f => !suspect.includes(f));
+    if (extend) {
+      assert.ok(out[key], `${key} exists to extend`);
+      for (const f of kept) if (!out[key].includes(f)) out[key].push(f);
+    } else {
+      assert.ok(!out[key], `${key} is a new key`);
+      if (kept.length) out[key] = kept;
+    }
+  }
+  for (const [key, form] of Object.keys(PROPOSAL.recommendedRemoval).map(k => k.split('.'))) {
+    assert.ok(out[key]?.includes(form), `${key}: ${form} is there to remove`);
+    out[key] = out[key].filter(f => f !== form);
+  }
+  return out;
+}
+
+test('B2 drops every suspect fix the proposal lists, and nothing else', () => {
+  assert.equal(PROPOSAL.suspectFixes.rows.length, B2_SUSPECT.rubric.length + B2_SUSPECT.lexicon.length);
+  assert.ok(B2_SUSPECT.rubric.length > 0 && B2_SUSPECT.lexicon.length > 0, 'both kinds are exercised');
+  const p = readPack();
+  const syn = p.manifest.lexicon.synonyms;
+  for (const { key, forms } of B2_SUSPECT.lexicon) for (const f of forms) assert.ok(!(syn[key] ?? []).includes(f), `lexicon ${key} lacks ${f}`);
+  for (const x of B2_SUSPECT.rubric) {
+    const [, ex] = [...p.exercises].find(([id]) => id.startsWith(x.prefix));
+    const items = ex.answerKey.planted.find(q => q.statementId === x.sid).rubric[x.dim];
+    assert.ok(!items[x.index].split('|').includes(x.alt), `${x.prefix} ${x.sid} ${x.dim}[${x.index}] lacks a suspect alternative`);
+  }
+});
+
+test('each exercise is its draft under the C12 mapping plus the PD-1 follow-up rubrics and the B2 rubric edits', () => {
   const p = readPack();
   for (const [id, draft] of readDrafts()) {
-    const want = mapDraft(draft);
+    const want = applyB2Rubrics(id, mapDraft(draft));
     if (PD1[id]) want.followUp = { question: draft.followUp, rubric: PD1[id] };
     assert.deepEqual(p.exercises.get(id), want, id);
   }
@@ -175,14 +247,14 @@ test('reference files are the drafts renamed to <referenceId>.md, byte for byte'
 // common word ("fixed" stems to "fix", so any "fix" would count as "unchanged").
 const DROPPED = { weights: ['model itself'], unchanged: ['fixed'], faithful: ['stuck to'] };
 
-test('lexicon is the draft synonym list minus the FR-017-failing forms', () => {
+test('lexicon is the draft synonym list minus the FR-017-failing forms, plus the B2 lexicon edits', () => {
   const draft = readJson(path.join(DRAFTS, 'exercises', '_matcher-test-answers.json')).proposedLexicon.synonyms;
   const want = Object.fromEntries(Object.entries(draft).map(([k, forms]) => [k, forms.filter(f => !(DROPPED[k] ?? []).includes(f))]));
   for (const [k, forms] of Object.entries(DROPPED)) for (const f of forms) assert.ok(draft[k].includes(f), `${k}: ${f} is a draft form`);
-  assert.deepEqual(readPack().manifest.lexicon.synonyms, want);
+  assert.deepEqual(readPack().manifest.lexicon.synonyms, applyB2Lexicon(want));
 });
 
-test('loader stores applied-ai@1 once', t => {
+test('loader stores applied-ai@2 once', t => {
   const dir = mkdtempSync(path.join(tmpdir(), 'f1c-t11-'));
   const file = path.join(dir, 'app.db');
   const warn = console.warn;
@@ -198,11 +270,11 @@ test('loader stores applied-ai@1 once', t => {
   db.close();
   console.warn = warn;
   assert.deepEqual(warnings.filter(w => w.startsWith('[practice]')), []);
-  assert.deepEqual(listTracks().find(x => x.id === 'applied-ai'), { id: 'applied-ai', title: 'Applied AI', version: 1 });
+  assert.deepEqual(listTracks().find(x => x.id === 'applied-ai'), { id: 'applied-ai', title: 'Applied AI', version: 2 });
   const ro = new DatabaseSync(file, { readOnly: true });
   t.after(() => ro.close());
   const rows = ro.prepare("SELECT id, version FROM subject_pack WHERE id = 'applied-ai'").all().map(r => ({ ...r }));
-  assert.deepEqual(rows, [{ id: 'applied-ai', version: 1 }]);
+  assert.deepEqual(rows, [{ id: 'applied-ai', version: 2 }]);
 });
 
 test('listSubjects() is unchanged by packs/applied-ai (C3)', () => {

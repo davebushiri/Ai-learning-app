@@ -98,13 +98,13 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "faithfulness is support by context|groundedness",
-            "stale context: faithful but wrong",
-            "faithfulness is not correctness"
+            "faithfulness is support by context|groundedness|supported by retrieved|matches retrieved chunks|grounded in sources",
+            "stale context: faithful but wrong|faithful to stale chunks|outdated source",
+            "faithfulness is not correctness|not correct"
           ],
           "correct": [
-            "add correctness against expected answers",
-            "add freshness test cases"
+            "add correctness against expected answers|expected answers|reference answers|ground truth|gold answers",
+            "add freshness test cases|freshness tests"
           ]
         }
       },
@@ -120,12 +120,12 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "model can't use evidence it never received",
-            "internal changes not in training data"
+            "model can't use evidence it never received|receives same stale evidence|retrieval problem",
+            "internal changes not in training data|not trained"
           ],
           "correct": [
-            "fix sync|remove superseded chunks",
-            "filter to current versions"
+            "fix sync|remove superseded chunks|re-sync index|update index",
+            "filter to current versions|version filter"
           ]
         }
       }

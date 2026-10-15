@@ -108,13 +108,13 @@
         "kind": "tradeoff",
         "rubric": {
           "explain": [
-            "trade-off|depends on documents",
-            "large: more context but diluted match and window cost",
+            "trade-off|depends on documents|tradeoff|depends|balance",
+            "large: more context but diluted match and window cost|dilute|noise|less precise|token cost",
             "small: precise but loses context"
           ],
           "correct": [
-            "tune by evaluation",
-            "headings|hierarchical|parent-child chunks"
+            "tune by evaluation|tune by testing|test sizes|experiment|measure retrieval",
+            "headings|hierarchical|parent-child chunks|headers|titles|structure|overlap|contextual"
           ]
         }
       },
@@ -130,13 +130,13 @@
         "kind": "tradeoff",
         "rubric": {
           "explain": [
-            "higher recall vs more noise",
+            "higher recall vs more noise|more noise|recall vs precision",
             "cost and latency",
-            "middle of long context under-used"
+            "middle of long context under-used|lost in the middle|middle ignored"
           ],
           "correct": [
-            "tune k with metrics",
-            "retrieve then rerank"
+            "tune k with metrics|evaluate",
+            "retrieve then rerank|rerank"
           ]
         }
       }

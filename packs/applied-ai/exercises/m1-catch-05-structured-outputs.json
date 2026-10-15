@@ -89,8 +89,8 @@
             "values can be wrong|fabricated"
           ],
           "correct": [
-            "validate citations against index",
-            "content checks separate from format"
+            "validate citations against index|verify against index|exists in index",
+            "content checks separate from format|validate content|business rules"
           ]
         }
       },
@@ -106,12 +106,12 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "not fully deterministic at zero",
-            "documented by provider"
+            "not fully deterministic at zero|outputs can still vary|outputs differ|nondeterministic|non-deterministic",
+            "documented by provider|inference serving|floating point|batching"
           ],
           "correct": [
-            "more consistent not identical",
-            "test over repeated runs"
+            "more consistent not identical|less random|reduces variation",
+            "test over repeated runs|run many times|evaluate across runs"
           ]
         }
       }

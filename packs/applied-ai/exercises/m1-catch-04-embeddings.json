@@ -96,13 +96,13 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "similarity is closeness|ranking signal",
+            "similarity is closeness|ranking signal|rank results|relative score|similar meaning",
             "not relevance or truth",
-            "scale varies by model"
+            "scale varies by model|not calibrated|arbitrary scale"
           ],
           "correct": [
             "check relevance and currency",
-            "evaluate answers separately"
+            "evaluate answers separately|separate check"
           ]
         }
       },
@@ -118,11 +118,11 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "embeddings capture meaning|can miss exact strings",
-            "BM25 matches exact terms"
+            "embeddings capture meaning|can miss exact strings|miss exact|not exact|fuzzy",
+            "BM25 matches exact terms|bm25 exact"
           ],
           "correct": [
-            "add keyword search|hybrid",
+            "add keyword search|hybrid|bm25",
             "test on real code queries"
           ]
         }
@@ -139,12 +139,12 @@
         "kind": "factual",
         "rubric": {
           "explain": [
-            "different models: incompatible vector spaces",
+            "different models: incompatible vector spaces|not comparable|different spaces|different coordinate systems",
             "rankings across them meaningless"
           ],
           "correct": [
-            "re-embed whole corpus|rebuild index",
-            "one model per index"
+            "re-embed whole corpus|rebuild index|reembed|re-embed|re-index|recompute vectors",
+            "single model per index|do not mix|same model for queries and documents"
           ]
         }
       }
