@@ -486,7 +486,7 @@ test('SC-014 R4: an incorrect answer with an incidental negator is never graded 
 });
 
 // =============================================================================================
-// F1c-T22: SC-016 / US7.1 / FR-063, the real pack (packs/applied-ai v3) through the HTTP routes.
+// F1c-T22: SC-016 / US7.1 / FR-063, the real pack (packs/applied-ai, version read from practice.json) through the HTTP routes.
 // The m2 order is copied from the spec (PD-15; tasks.md F1c-T20), not read from the pack, so a reorder
 // in the pack fails here. No answer text is read or printed: only ids, types and leak-scan paths.
 // =============================================================================================
@@ -497,14 +497,18 @@ const M2_ORDER = ['m2-learn-01-agent-loop', 'm2-catch-01-tool-calling', 'm2-catc
   'm2-scenario-01-delivery-support-agent', 'm2-interview-01-evaluate-agent', 'm2-interview-02-workflow-or-agent',
   'm2-interview-03-embedding-model-change', 'm2-interview-04-defend-agents'];
 
-test('SC-016 applied-ai v3: the track lists m1 then m2 with the PD-15 order; starting each of the 33 exercises returns 200 and the start body passes practiceLeakScan', async t => {
+test('SC-016 applied-ai (version from the pack file): the track lists m1 then m2 with the PD-15 order; starting each of the 33 exercises returns 200 and the start body passes practiceLeakScan', async t => {
   const { A } = await fresh(t, { db: true, packsDir: path.join(ROOT, 'packs') });
+  // Version-agnostic: the API must report whatever packs/applied-ai/practice.json declares. The floor of 4
+  // pins the spoiler-free objective rewrite so the pre-rewrite v3 pack can't silently come back.
+  const packVersion = JSON.parse(readFileSync(path.join(ROOT, 'packs', 'applied-ai', 'practice.json'), 'utf8')).version;
+  assert.ok(Number.isInteger(packVersion) && packVersion >= 4, `packs/applied-ai/practice.json version is an integer >= 4: ${packVersion}`);
   const list = ok(await A.tracks(), 'tracks');
-  assert.ok(list.some(x => x.id === 'applied-ai' && x.version === 3), `tracks list applied-ai@3: ${JSON.stringify(list)}`);
+  assert.ok(list.some(x => x.id === 'applied-ai' && x.version === packVersion), `tracks list applied-ai@${packVersion}: ${JSON.stringify(list)}`);
   noLeak(list, LEAK_ALLOW.other, 'tracks');
   const detail = ok(await A.track('applied-ai'), 'track applied-ai');
   noLeak(detail, LEAK_ALLOW.other, 'track applied-ai');
-  assert.equal(detail.version, 3);
+  assert.equal(detail.version, packVersion, 'track detail version matches the pack file');
   assert.deepEqual(detail.modules.map(m => m.id), ['m1', 'm2'], 'modules m1 then m2');
   const [m1, m2] = detail.modules;
   assert.equal(m2.title, 'Agents and embeddings in depth');

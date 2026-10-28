@@ -671,3 +671,16 @@ A scratch script (`<scratchpad>/f1c-t22/compare.mjs`, not committed) graded ever
 ### Bugs
 
 None new. F1c-B23's fix (F1c-T17, `c568f62` approved) is in the tree; its `err.rejected` path is the one US7.8 exercises above.
+
+## Addendum 2026-10-28: applied-ai v4 (spoiler-free objectives)
+
+- **Test change:** `tests/acceptance/F1c.test.js` "SC-016 applied-ai (version from the pack file) …" now reads the expected version from `packs/applied-ai/practice.json` (must be an integer >= 4, pinning the rewrite) and asserts the tracks list and the track detail both match it. The 33-start `practiceLeakScan` check is unchanged.
+  - Red (old test, pack at v4): `not ok 1`, "tracks list applied-ai@3: … version 4", `# pass 0 / # fail 1`.
+  - Green (new test): `ok 1`, "started 33 exercises, 33 clean", `# pass 1 / # fail 0`.
+- **QA spoiler read (independent of backend's 3-token guard):** all 33 pack objectives match the `new` values in `docs/research/applied-ai/objective-rewrite.json`. I read each of the 17 catch objectives against its narration, planted statements and misconceptions.
+  - **No objective states, paraphrases or implies a planted misconception, or the kind of error.**
+  - **No objective signals that a set is error-free.** All 17 use one template, including the 4 zero-error sets.
+  - **Borderline lexical narrowing (minor, information only):** `m2-catch-04-memory-state`. A topic word in its objective appears literally in only one narration line, and that line is planted. The topic is still the whole set. Weaker overlaps that I judged not to be hints: `m1-catch-01-context-window` and `m1-catch-04-embeddings`.
+  - **Residual leak outside the objectives:** the 4 zero-error exercise ids end in `-clean`, and the id is in the start body (`exercise.id`). This is learning-designer's open "Later (PM)" item in thread 0007, so I filed no new bug here.
+- **Regression:** a fresh `npm test` exits 0. `# tests 502 / # pass 416 / # fail 0 / # skipped 0 / # todo 86` (the todos are the pre-existing TODO-marked tickets).
+- **Verdicts are unchanged:** Functional PASS and AI quality PASS. No prompt or model changed.

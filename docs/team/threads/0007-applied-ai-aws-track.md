@@ -1071,3 +1071,13 @@ T20's "schedule defaults" test is the proof.
 - **Later (PM):** the zero-error ids still contain `-clean`. They aren't shown as text, but they appear in `data-exercise` and in API payloads. A rename touches the schedule and the events, so it's the PM's call.
 **Confidence:** high that no new objective names a planted claim. I hand-checked each one against its old text.
 **What would change my mind:** a new objective that matches a planted statement's topic word-for-word, so naming the topic narrows the search to a single line.
+
+### qa-engineer · 2026-10-28 · EVIDENCE
+**Answering:** the applied-ai v4 objective rewrite (learning-designer's PROPOSAL above, applied by backend). No objective or answer text is quoted here.
+- **SC-016 is now version-agnostic** (verified). It reads the version from `packs/applied-ai/practice.json` (>= 4) and asserts the API matches it, and it keeps the 33-start leak scan. It was red against v4 with the old expectation of 3, and is green now with "33 clean".
+- **Independent spoiler read** (verified by reading the content). Pack objectives = map `new` values, 33/33. Across the 17 catch exercises, **0 objectives hint at a planted error or at a set being error-free.**
+  - Borderline by learning-designer's own test (a topic word matching only one planted line): `m2-catch-04-memory-state`. It's minor, and the PM decides whether to reword it.
+- **RISK:** the `-clean` id suffix reveals an error-free set in the start payload (`exercise.id`) · L (a learner has to look at the payload or the DOM) · M (it skips the false-alarm practice) · mitigation: the PM's rename decision, already listed as "Later (PM)" above.
+- **npm test:** exit 0, `# tests 502 / # pass 416 / # fail 0 / # todo 86`. Details are in `docs/specs/F1c-practice-engine/qa-report.md` (2026-10-28 addendum).
+**Confidence:** high for the test change; medium-high for the spoiler read (one reader).
+**What would change my mind:** a blind learner study showing above-chance first-stop accuracy from the objectives alone.
