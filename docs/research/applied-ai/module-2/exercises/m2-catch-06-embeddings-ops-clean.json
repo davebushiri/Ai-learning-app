@@ -2,7 +2,7 @@
   "id": "m2-catch-06-embeddings-ops-clean",
   "module": "m2",
   "type": "catch",
-  "objective": "Recognize correct embedding operations (input types, normalization, approximate search, dimensions, model changes, thresholds) without false alarms.",
+  "objective": "Catch errors about running embeddings in production.",
   "prerequisites": [
     "m2-learn-03-embedding-migration"
   ],

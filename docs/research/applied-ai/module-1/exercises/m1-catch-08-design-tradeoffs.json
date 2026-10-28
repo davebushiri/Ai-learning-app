@@ -2,7 +2,7 @@
   "id": "m1-catch-08-design-tradeoffs",
   "module": "m1",
   "type": "catch",
-  "objective": "Catch context-dependent design claims stated as universal rules.",
+  "objective": "Catch errors about RAG design trade-offs.",
   "prerequisites": [
     "m1-catch-04-embeddings",
     "m1-catch-06-retrieval-vs-generation"

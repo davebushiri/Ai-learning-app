@@ -2,7 +2,7 @@
   "id": "m1-interview-01-design-rag",
   "module": "m1",
   "type": "interview",
-  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "objective": "Answer an interview question about designing a RAG system.",
   "prerequisites": [
     "m1-scenario-01-policy-assistant"
   ],

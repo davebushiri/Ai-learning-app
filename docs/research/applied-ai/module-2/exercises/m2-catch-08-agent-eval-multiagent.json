@@ -2,7 +2,7 @@
   "id": "m2-catch-08-agent-eval-multiagent",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch context-dependent errors in agent evaluation and multi-agent design: reading reliability from single trials, and splitting interdependent work across subagents.",
+  "objective": "Catch errors about agent evaluation and multi-agent design.",
   "prerequisites": [
     "m2-catch-03-workflow-or-agent",
     "m2-catch-07-production-failures"

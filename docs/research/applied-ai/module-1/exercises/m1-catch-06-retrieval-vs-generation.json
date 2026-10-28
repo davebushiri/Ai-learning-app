@@ -2,7 +2,7 @@
   "id": "m1-catch-06-retrieval-vs-generation",
   "module": "m1",
   "type": "catch",
-  "objective": "Catch subtle errors in diagnosing a wrong RAG answer.",
+  "objective": "Catch errors about diagnosing a wrong RAG answer.",
   "prerequisites": [
     "m1-learn-03-rag-failures"
   ],

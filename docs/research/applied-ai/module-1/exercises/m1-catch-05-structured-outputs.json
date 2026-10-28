@@ -2,7 +2,7 @@
   "id": "m1-catch-05-structured-outputs",
   "module": "m1",
   "type": "catch",
-  "objective": "Catch errors about what schemas and temperature guarantee.",
+  "objective": "Catch errors about structured outputs and temperature.",
   "prerequisites": [
     "m1-learn-01-how-llms-answer"
   ],

@@ -2,7 +2,7 @@
   "id": "m1-learn-01-how-llms-answer",
   "module": "m1",
   "type": "learn",
-  "objective": "Explain tokens, the context window, token-by-token inference, temperature and structured outputs in plain words.",
+  "objective": "Learn how an LLM turns input into an answer, then explain it back.",
   "prerequisites": [],
   "difficulty": 1,
   "concepts": [

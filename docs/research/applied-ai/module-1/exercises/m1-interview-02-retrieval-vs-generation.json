@@ -2,7 +2,7 @@
   "id": "m1-interview-02-retrieval-vs-generation",
   "module": "m1",
   "type": "interview",
-  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "objective": "Answer an interview question about diagnosing a wrong RAG answer.",
   "prerequisites": [
     "m1-catch-06-retrieval-vs-generation"
   ],

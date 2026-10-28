@@ -2,7 +2,7 @@
   "id": "m1-learn-03-rag-failures",
   "module": "m1",
   "type": "learn",
-  "objective": "Separate retrieval failures from generation failures, and explain freshness, access control, abstention and pre-production evaluation.",
+  "objective": "Learn how RAG systems fail and how to test them, then explain it back.",
   "prerequisites": [
     "m1-learn-02-rag-pipeline"
   ],

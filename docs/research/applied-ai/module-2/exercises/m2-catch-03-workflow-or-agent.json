@@ -2,7 +2,7 @@
   "id": "m2-catch-03-workflow-or-agent",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch errors in choosing between a workflow and an agent: assuming autonomy raises accuracy, and skipping the simpler baseline.",
+  "objective": "Catch errors about choosing a workflow or an agent.",
   "prerequisites": [
     "m2-catch-02-agent-loop-clean"
   ],

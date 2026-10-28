@@ -2,7 +2,7 @@
   "id": "m2-catch-04-memory-state",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch errors about agent memory: treating a large context window as a memory design, and saving untrusted tool output to long-term memory.",
+  "objective": "Catch errors about agent memory and state.",
   "prerequisites": [
     "m2-catch-02-agent-loop-clean"
   ],

@@ -2,7 +2,7 @@
   "id": "m1-interview-03-when-not-rag",
   "module": "m1",
   "type": "interview",
-  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "objective": "Answer an interview question about when to use RAG.",
   "prerequisites": [
     "m1-catch-08-design-tradeoffs"
   ],
