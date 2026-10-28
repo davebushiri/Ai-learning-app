@@ -1,0 +1,134 @@
+{
+  "m1-catch-01-context-window": {
+    "old": "Catch errors about what the context window is and how well models use long inputs.",
+    "new": "Catch errors about context windows."
+  },
+  "m1-catch-02-rag-vs-finetune": {
+    "old": "Catch errors about what RAG and fine-tuning change.",
+    "new": "Catch errors about RAG and fine-tuning."
+  },
+  "m1-catch-03-pipeline-clean": {
+    "old": "Recognize a correct RAG pipeline description and resist false alarms.",
+    "new": "Catch errors about the RAG pipeline."
+  },
+  "m1-catch-04-embeddings": {
+    "old": "Catch errors about what similarity scores mean, exact-term search and embedding-model changes.",
+    "new": "Catch errors about embeddings and similarity search."
+  },
+  "m1-catch-05-structured-outputs": {
+    "old": "Catch errors about what schemas and temperature guarantee.",
+    "new": "Catch errors about structured outputs and temperature."
+  },
+  "m1-catch-06-retrieval-vs-generation": {
+    "old": "Catch subtle errors in diagnosing a wrong RAG answer.",
+    "new": "Catch errors about diagnosing a wrong RAG answer."
+  },
+  "m1-catch-07-access-freshness-clean": {
+    "old": "Recognize correct access-control, injection, freshness and abstention practice without false alarms.",
+    "new": "Catch errors about access control and freshness in RAG."
+  },
+  "m1-catch-08-design-tradeoffs": {
+    "old": "Catch context-dependent design claims stated as universal rules.",
+    "new": "Catch errors about RAG design trade-offs."
+  },
+  "m1-learn-01-how-llms-answer": {
+    "old": "Explain tokens, the context window, token-by-token inference, temperature and structured outputs in plain words.",
+    "new": "Learn how an LLM turns input into an answer, then explain it back."
+  },
+  "m1-learn-02-rag-pipeline": {
+    "old": "Describe the RAG pipeline end to end and explain why RAG is chosen over fine-tuning for changing, private knowledge.",
+    "new": "Learn how a RAG pipeline works end to end, then explain it back."
+  },
+  "m1-learn-03-rag-failures": {
+    "old": "Separate retrieval failures from generation failures, and explain freshness, access control, abstention and pre-production evaluation.",
+    "new": "Learn how RAG systems fail and how to test them, then explain it back."
+  },
+  "m1-scenario-01-policy-assistant": {
+    "old": "Design a RAG system for an internal policy assistant with access control, freshness, citations and abstention, and defend the trade-offs.",
+    "new": "Design an internal policy assistant, and defend your choices."
+  },
+  "m1-interview-01-design-rag": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about designing a RAG system."
+  },
+  "m1-interview-02-retrieval-vs-generation": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about diagnosing a wrong RAG answer."
+  },
+  "m1-interview-03-when-not-rag": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about when to use RAG."
+  },
+  "m1-interview-04-evaluate-rag": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about evaluating a RAG system."
+  },
+  "m2-catch-01-tool-calling": {
+    "old": "Catch errors about who executes a tool call, what a tool schema guarantees, and how tool descriptions affect tool choice.",
+    "new": "Catch errors about tool calling."
+  },
+  "m2-catch-02-agent-loop-clean": {
+    "old": "Recognize a correctly bounded agent loop (stop reasons, step caps, budgets, timeouts, loop detection, honest reporting) without false alarms.",
+    "new": "Catch errors about the agent loop."
+  },
+  "m2-catch-03-workflow-or-agent": {
+    "old": "Catch errors in choosing between a workflow and an agent: assuming autonomy raises accuracy, and skipping the simpler baseline.",
+    "new": "Catch errors about choosing a workflow or an agent."
+  },
+  "m2-catch-04-memory-state": {
+    "old": "Catch errors about agent memory: treating a large context window as a memory design, and saving untrusted tool output to long-term memory.",
+    "new": "Catch errors about agent memory and state."
+  },
+  "m2-catch-05-guardrails": {
+    "old": "Catch errors in agent guardrails: shared admin credentials, and relying on a prompt instruction to stop prompt injection.",
+    "new": "Catch errors about agent guardrails."
+  },
+  "m2-catch-06-embeddings-ops-clean": {
+    "old": "Recognize correct embedding operations (input types, normalization, approximate search, dimensions, model changes, thresholds) without false alarms.",
+    "new": "Catch errors about running embeddings in production."
+  },
+  "m2-catch-07-production-failures": {
+    "old": "Catch subtle errors in fixing production agent failures: idempotency keys minted per call, loop limits that live only in the prompt, and blind restarts after partial failure.",
+    "new": "Catch errors about fixing agent failures in production."
+  },
+  "m2-catch-08-agent-eval-multiagent": {
+    "old": "Catch context-dependent errors in agent evaluation and multi-agent design: reading reliability from single trials, and splitting interdependent work across subagents.",
+    "new": "Catch errors about agent evaluation and multi-agent design."
+  },
+  "m2-catch-09-retrieval-eval": {
+    "old": "Catch context-dependent errors about reranking, recall@k and the chunking-versus-model choice.",
+    "new": "Catch errors about improving and measuring retrieval."
+  },
+  "m2-learn-01-agent-loop": {
+    "old": "Walk through one tool-using agent run end to end: who executes the tool, how errors come back, what ends the loop, and why the code checks the outcome.",
+    "new": "Learn how one tool-using agent run works end to end, then explain it back."
+  },
+  "m2-learn-02-agent-guardrails": {
+    "old": "Walk through the guardrails on an agent that can take an irreversible action: least-privilege tools, human approval, injection through tool results, idempotency, logging and tests.",
+    "new": "Learn how to guard an agent that takes real actions, then explain it back."
+  },
+  "m2-learn-03-embedding-migration": {
+    "old": "Walk through choosing and migrating to a new embedding model: evaluate on your own labelled queries, rebuild the index, retune thresholds, compare hybrid and reranking, and keep a rollback.",
+    "new": "Learn how to choose and switch embedding models, then explain it back."
+  },
+  "m2-scenario-01-delivery-support-agent": {
+    "old": "Design a customer-facing support assistant that takes real actions (reschedule, credits), choosing between workflow and agent, with least-privilege tools, approvals, idempotency, failure handling and an evaluation plan.",
+    "new": "Design a customer support assistant that takes real actions, and defend your choices."
+  },
+  "m2-interview-01-evaluate-agent": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about evaluating an AI agent."
+  },
+  "m2-interview-02-workflow-or-agent": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about choosing a workflow or an agent."
+  },
+  "m2-interview-03-embedding-model-change": {
+    "old": "Answer an interview question at the level of a hands-on practitioner.",
+    "new": "Answer an interview question about choosing and changing embedding models."
+  },
+  "m2-interview-04-defend-agents": {
+    "old": "Defend my build: answer an agents-experience question truthfully from your own project, without overclaiming.",
+    "new": "Defend my build: answer a question about your own hands-on agent experience."
+  }
+}

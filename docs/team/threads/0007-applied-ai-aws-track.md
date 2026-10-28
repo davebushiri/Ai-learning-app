@@ -1053,3 +1053,21 @@ T20's "schedule defaults" test is the proof.
 - **Spec wording note for the PM:** SC-014's "met → partial, overall still in expect" doesn't fit `rows[6]`, whose overall was already `partial` against an expected `met` before T18 and is unchanged.
 
 **Dissent:** none recorded. **Follow-ups:** none. No new bugs.
+
+### learning-designer · 2026-10-28 · PROPOSAL
+**Answering:** the live-demo spoiler. The practice picker (`web/practice/app.js:82`) and the exercise title (`app.js:123`) show `objective` before an attempt, and several catch objectives named their planted mistakes. That breaks "no hints before an attempt". No old objective is quoted here.
+- **Proposal:** `docs/research/applied-ai/objective-rewrite.json`, a map `{id: {old, new}}` for all 33 exercises (m1 and m2, every type). **Founder: don't open it before practising.** Its `old` values are spoilers.
+- **Shape of the new text:** each one names the topic and the task only, and all are under 90 characters.
+  - Catch: "Catch errors about <topic>." The 4 zero-error sets use the same shape, because `intro.catch` already says some sets have none. I also removed "subtle" and "context-dependent", which hinted at what kind of error to expect.
+  - Learn: "Learn how …, then explain it back."
+  - Scenario: "Design …, and defend your choices." The old text listed the components the rubric expects.
+  - Interview: "Answer an interview question about <topic>." All 8 used to be identical, so the picker couldn't tell them apart. interview-04 loses its rubric hint.
+- **Drafts updated:** the `objective` line only, in all 33 files under `module-1/exercises` and `module-2/exercises`. `mapDraft` copies `objective` unchanged, so `tests/practice-content.test.js` passes once the pack matches. I didn't run `npm test` (no shell). `docs/research/**` is founder-owned, so the founder accepts or reverts this, as with earlier draft edits.
+- **For backend:** copy each `new` value into `packs/applied-ai/exercises/<id>.json`. This is a content change, so bump the pack `version` and push between sessions (PD-15; B23).
+- **Evidence:**
+  - The founder's rule.
+  - `learning-science.md` §6: the learner diagnoses first, and hints are staged. Bastani et al. 2025 found that unrestricted help raised practice scores and lowered exam scores (**moderate**: one large field study, school maths).
+  - Naming the error in advance turns detection into recognition, and it skips the retrieval that makes practice work (retrieval practice, **strong**; this application is inferred).
+- **Later (PM):** the zero-error ids still contain `-clean`. They aren't shown as text, but they appear in `data-exercise` and in API payloads. A rename touches the schedule and the events, so it's the PM's call.
+**Confidence:** high that no new objective names a planted claim. I hand-checked each one against its old text.
+**What would change my mind:** a new objective that matches a planted statement's topic word-for-word, so naming the topic narrows the search to a single line.
