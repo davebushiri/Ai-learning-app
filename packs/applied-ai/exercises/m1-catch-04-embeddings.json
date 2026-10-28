@@ -2,7 +2,7 @@
   "id": "m1-catch-04-embeddings",
   "module": "m1",
   "type": "catch",
-  "objective": "Catch errors about what similarity scores mean, exact-term search and embedding-model changes.",
+  "objective": "Catch errors about embeddings and similarity search.",
   "prerequisites": [
     "m1-catch-03-pipeline-clean"
   ],

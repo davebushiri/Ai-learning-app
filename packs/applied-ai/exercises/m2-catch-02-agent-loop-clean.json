@@ -2,7 +2,7 @@
   "id": "m2-catch-02-agent-loop-clean",
   "module": "m2",
   "type": "catch",
-  "objective": "Recognize a correctly bounded agent loop (stop reasons, step caps, budgets, timeouts, loop detection, honest reporting) without false alarms.",
+  "objective": "Catch errors about the agent loop.",
   "prerequisites": [
     "m2-learn-01-agent-loop"
   ],

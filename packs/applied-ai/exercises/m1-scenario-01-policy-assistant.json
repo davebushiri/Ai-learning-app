@@ -2,7 +2,7 @@
   "id": "m1-scenario-01-policy-assistant",
   "module": "m1",
   "type": "scenario",
-  "objective": "Design a RAG system for an internal policy assistant with access control, freshness, citations and abstention, and defend the trade-offs.",
+  "objective": "Design an internal policy assistant, and defend your choices.",
   "prerequisites": [
     "m1-learn-03-rag-failures",
     "m1-catch-08-design-tradeoffs"

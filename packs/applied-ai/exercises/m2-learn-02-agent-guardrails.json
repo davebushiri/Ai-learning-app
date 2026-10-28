@@ -2,7 +2,7 @@
   "id": "m2-learn-02-agent-guardrails",
   "module": "m2",
   "type": "learn",
-  "objective": "Walk through the guardrails on an agent that can take an irreversible action: least-privilege tools, human approval, injection through tool results, idempotency, logging and tests.",
+  "objective": "Learn how to guard an agent that takes real actions, then explain it back.",
   "prerequisites": [
     "m2-learn-01-agent-loop"
   ],

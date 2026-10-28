@@ -2,7 +2,7 @@
   "id": "m1-catch-02-rag-vs-finetune",
   "module": "m1",
   "type": "catch",
-  "objective": "Catch errors about what RAG and fine-tuning change.",
+  "objective": "Catch errors about RAG and fine-tuning.",
   "prerequisites": [
     "m1-learn-02-rag-pipeline"
   ],

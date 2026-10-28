@@ -2,7 +2,7 @@
   "id": "m1-catch-07-access-freshness-clean",
   "module": "m1",
   "type": "catch",
-  "objective": "Recognize correct access-control, injection, freshness and abstention practice without false alarms.",
+  "objective": "Catch errors about access control and freshness in RAG.",
   "prerequisites": [
     "m1-learn-03-rag-failures"
   ],

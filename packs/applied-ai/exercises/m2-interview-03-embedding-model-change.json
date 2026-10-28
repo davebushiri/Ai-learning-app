@@ -2,7 +2,7 @@
   "id": "m2-interview-03-embedding-model-change",
   "module": "m2",
   "type": "interview",
-  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "objective": "Answer an interview question about choosing and changing embedding models.",
   "prerequisites": [
     "m2-catch-09-retrieval-eval"
   ],

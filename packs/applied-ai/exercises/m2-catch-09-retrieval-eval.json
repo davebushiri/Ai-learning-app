@@ -2,7 +2,7 @@
   "id": "m2-catch-09-retrieval-eval",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch context-dependent errors about reranking, recall@k and the chunking-versus-model choice.",
+  "objective": "Catch errors about improving and measuring retrieval.",
   "prerequisites": [
     "m2-catch-06-embeddings-ops-clean"
   ],

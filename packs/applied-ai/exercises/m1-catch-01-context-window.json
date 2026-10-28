@@ -2,7 +2,7 @@
   "id": "m1-catch-01-context-window",
   "module": "m1",
   "type": "catch",
-  "objective": "Catch errors about what the context window is and how well models use long inputs.",
+  "objective": "Catch errors about context windows.",
   "prerequisites": [
     "m1-learn-01-how-llms-answer"
   ],

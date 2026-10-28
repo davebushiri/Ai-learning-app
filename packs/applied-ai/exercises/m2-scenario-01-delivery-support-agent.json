@@ -2,7 +2,7 @@
   "id": "m2-scenario-01-delivery-support-agent",
   "module": "m2",
   "type": "scenario",
-  "objective": "Design a customer-facing support assistant that takes real actions (reschedule, credits), choosing between workflow and agent, with least-privilege tools, approvals, idempotency, failure handling and an evaluation plan.",
+  "objective": "Design a customer support assistant that takes real actions, and defend your choices.",
   "prerequisites": [
     "m2-learn-02-agent-guardrails",
     "m2-catch-07-production-failures"

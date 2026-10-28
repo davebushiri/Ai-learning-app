@@ -2,7 +2,7 @@
   "id": "m2-interview-04-defend-agents",
   "module": "m2",
   "type": "interview",
-  "objective": "Defend my build: answer an agents-experience question truthfully from your own project, without overclaiming.",
+  "objective": "Defend my build: answer a question about your own hands-on agent experience.",
   "prerequisites": [
     "m2-interview-02-workflow-or-agent"
   ],

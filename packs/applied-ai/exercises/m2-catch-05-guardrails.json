@@ -2,7 +2,7 @@
   "id": "m2-catch-05-guardrails",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch errors in agent guardrails: shared admin credentials, and relying on a prompt instruction to stop prompt injection.",
+  "objective": "Catch errors about agent guardrails.",
   "prerequisites": [
     "m2-learn-02-agent-guardrails"
   ],

@@ -2,7 +2,7 @@
   "id": "m1-learn-02-rag-pipeline",
   "module": "m1",
   "type": "learn",
-  "objective": "Describe the RAG pipeline end to end and explain why RAG is chosen over fine-tuning for changing, private knowledge.",
+  "objective": "Learn how a RAG pipeline works end to end, then explain it back.",
   "prerequisites": [
     "m1-learn-01-how-llms-answer"
   ],

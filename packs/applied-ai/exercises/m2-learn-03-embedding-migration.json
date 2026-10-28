@@ -2,7 +2,7 @@
   "id": "m2-learn-03-embedding-migration",
   "module": "m2",
   "type": "learn",
-  "objective": "Walk through choosing and migrating to a new embedding model: evaluate on your own labelled queries, rebuild the index, retune thresholds, compare hybrid and reranking, and keep a rollback.",
+  "objective": "Learn how to choose and switch embedding models, then explain it back.",
   "prerequisites": [
     "m1-learn-02-rag-pipeline"
   ],

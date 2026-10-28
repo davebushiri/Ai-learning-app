@@ -66,7 +66,7 @@ test('applied-ai validates', () => {
   const p = readPack();
   assert.deepEqual(validatePracticePack(p), []);
   assert.equal(p.manifest.id, 'applied-ai');
-  assert.equal(p.manifest.version, 3, 'bumped once for revision 6: the loader refuses changed content under a stored version');
+  assert.equal(p.manifest.version, 4, 'bumped for the objective rewrite (revision 6 was 3): the loader refuses changed content under a stored version');
   assert.deepEqual(p.manifest.modules.map(m => m.id), ['m1', 'm2']);
   assert.deepEqual([...moduleOf(p, 'm1').exercises].sort(), [...readDrafts().keys()], 'every m1 draft exercise, nothing else');
   assert.equal(moduleOf(p, 'm2').title, 'Agents and embeddings in depth');
@@ -362,7 +362,7 @@ test('lexicon is the draft synonym list minus the FR-017-failing forms, plus the
   assert.deepEqual(readPack().manifest.lexicon.synonyms, applyB2Lexicon(want));
 });
 
-test('loader stores applied-ai@3 once', t => {
+test('loader stores applied-ai@4 once', t => {
   const dir = mkdtempSync(path.join(tmpdir(), 'f1c-t11-'));
   const file = path.join(dir, 'app.db');
   const warn = console.warn;
@@ -378,14 +378,71 @@ test('loader stores applied-ai@3 once', t => {
   db.close();
   console.warn = warn;
   assert.deepEqual(warnings.filter(w => w.startsWith('[practice]')), []);
-  assert.deepEqual(listTracks().find(x => x.id === 'applied-ai'), { id: 'applied-ai', title: 'Applied AI', version: 3 });
+  assert.deepEqual(listTracks().find(x => x.id === 'applied-ai'), { id: 'applied-ai', title: 'Applied AI', version: 4 });
   const ro = new DatabaseSync(file, { readOnly: true });
   t.after(() => ro.close());
   const rows = ro.prepare("SELECT id, version FROM subject_pack WHERE id = 'applied-ai'").all().map(r => ({ ...r }));
-  assert.deepEqual(rows, [{ id: 'applied-ai', version: 3 }]);
+  assert.deepEqual(rows, [{ id: 'applied-ai', version: 4 }]);
 });
 
 test('listSubjects() is unchanged by packs/applied-ai (C3)', () => {
   loadPacks(PACKS, openDb(':memory:'));
   assert.deepEqual(listSubjects().map(s => s.id), ['demo-trades']);
+});
+
+// Live-demo finding: the picker shows each exercise's objective before the attempt, so an
+// objective must not name a planted mistake. The learning-designer's rewrite is in
+// docs/research/applied-ai/objective-rewrite.json. The matcher exports no tokenizer, so this
+// mirrors its content-token rule (lowercase, apostrophes dropped, split on non-alphanumerics,
+// length >= 2, generic function words removed). A run of 3 consecutive content tokens shared with
+// a planted statement's narration or misconception counts as a reveal.
+const OBJECTIVE_STOPWORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'if', 'then', 'than', 'so', 'as', 'of', 'at', 'by',
+  'for', 'from', 'in', 'into', 'on', 'onto', 'to', 'with', 'within', 'about', 'above', 'after',
+  'against', 'along', 'among', 'around', 'before', 'behind', 'below', 'between', 'during',
+  'over', 'through', 'under', 'until', 'upon', 'via', 'per',
+  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'am', 'do', 'does', 'did', 'doing',
+  'have', 'has', 'had', 'having', 'it', 'its', 'itself', 'this', 'that', 'these', 'those',
+  'there', 'here', 'they', 'them', 'their', 'theirs', 'we', 'us', 'our', 'ours', 'you', 'your',
+  'yours', 'he', 'him', 'his', 'she', 'her', 'hers', 'me', 'my', 'mine', 'what', 'which',
+  'who', 'whom', 'whose', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each',
+  'either', 'some', 'such', 'own', 'just', 'also', 'very', 'too', 'can', 'could', 'would',
+  'should', 'will', 'shall', 'may', 'might', 'must', 'ok', 'okay', 'yes', 'yeah', 'oh',
+  'well', 'really', 'still', 'even', 'ever', 'again', 'im', 'thats', 'theres'
+].filter(w => !MATCHER_RULES.negators.includes(w)));
+const contentTokens = t => t.toLowerCase().replace(/[’'`]/g, '').split(/[^a-z0-9]+/)
+  .filter(w => w.length >= 2 && !OBJECTIVE_STOPWORDS.has(w));
+const trigrams = t => {
+  const w = contentTokens(t);
+  return new Set(w.slice(2).map((_, i) => w.slice(i, i + 3).join(' ')));
+};
+
+// The planted statements an objective shares a 3-token run with ("<statementId> narration|misconception").
+function plantedReveals(objective, ex) {
+  const grams = trigrams(objective);
+  const hits = [];
+  for (const { statementId, misconception } of ex.answerKey.planted) {
+    const narration = ex.narration.find(x => x.id === statementId).text;
+    for (const [field, text] of [['narration', narration], ['misconception', misconception]]) {
+      if ([...trigrams(text)].some(g => grams.has(g))) hits.push(`${statementId} ${field}`);
+    }
+  }
+  return hits;
+}
+
+test('objectives reveal no planted claim', () => {
+  const p = readPack();
+  const catches = [...p.exercises.values()].filter(ex => ex.type === 'catch');
+  assert.equal(catches.length, 17);
+  // Ids only in messages: the founder is the learner.
+  const bad = catches.flatMap(ex => plantedReveals(ex.objective, ex).map(h => `${ex.id} ${h}`));
+  assert.deepEqual(bad, []);
+  // The check has teeth: it flags at least one pre-rewrite objective.
+  const rewrite = readJson(path.join(ROOT, 'docs', 'research', 'applied-ai', 'objective-rewrite.json'));
+  assert.ok(catches.some(ex => plantedReveals(rewrite[ex.id].old, ex).length > 0), 'the check flags an old objective');
+});
+
+test('every objective is at most 90 characters', () => {
+  const long = [...readPack().exercises.values()].filter(ex => ex.objective.length > 90).map(ex => ex.id);
+  assert.deepEqual(long, []);
 });

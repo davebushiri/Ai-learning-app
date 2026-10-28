@@ -2,7 +2,7 @@
   "id": "m2-interview-02-workflow-or-agent",
   "module": "m2",
   "type": "interview",
-  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "objective": "Answer an interview question about choosing a workflow or an agent.",
   "prerequisites": [
     "m2-catch-03-workflow-or-agent"
   ],

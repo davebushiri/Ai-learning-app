@@ -2,7 +2,7 @@
   "id": "m1-catch-03-pipeline-clean",
   "module": "m1",
   "type": "catch",
-  "objective": "Recognize a correct RAG pipeline description and resist false alarms.",
+  "objective": "Catch errors about the RAG pipeline.",
   "prerequisites": [
     "m1-learn-02-rag-pipeline"
   ],

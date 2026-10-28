@@ -2,7 +2,7 @@
   "id": "m2-catch-01-tool-calling",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch errors about who executes a tool call, what a tool schema guarantees, and how tool descriptions affect tool choice.",
+  "objective": "Catch errors about tool calling.",
   "prerequisites": [
     "m2-learn-01-agent-loop"
   ],

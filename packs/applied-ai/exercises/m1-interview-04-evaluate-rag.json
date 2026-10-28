@@ -2,7 +2,7 @@
   "id": "m1-interview-04-evaluate-rag",
   "module": "m1",
   "type": "interview",
-  "objective": "Answer an interview question at the level of a hands-on practitioner.",
+  "objective": "Answer an interview question about evaluating a RAG system.",
   "prerequisites": [
     "m1-learn-03-rag-failures"
   ],

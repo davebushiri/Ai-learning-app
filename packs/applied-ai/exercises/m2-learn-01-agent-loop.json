@@ -2,7 +2,7 @@
   "id": "m2-learn-01-agent-loop",
   "module": "m2",
   "type": "learn",
-  "objective": "Walk through one tool-using agent run end to end: who executes the tool, how errors come back, what ends the loop, and why the code checks the outcome.",
+  "objective": "Learn how one tool-using agent run works end to end, then explain it back.",
   "prerequisites": [
     "m1-learn-01-how-llms-answer"
   ],

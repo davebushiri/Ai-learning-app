@@ -2,7 +2,7 @@
   "id": "m2-catch-07-production-failures",
   "module": "m2",
   "type": "catch",
-  "objective": "Catch subtle errors in fixing production agent failures: idempotency keys minted per call, loop limits that live only in the prompt, and blind restarts after partial failure.",
+  "objective": "Catch errors about fixing agent failures in production.",
   "prerequisites": [
     "m2-catch-05-guardrails"
   ],
